@@ -1,0 +1,10 @@
+<resources>
+
+    <style name="XPicker_FullTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimaryDark">@color/XPicker_black</item>
+        <item name="colorPrimary">@color/XPicker_black</item>
+        <item name="colorAccent">@color/XPicker_black</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+</resources>

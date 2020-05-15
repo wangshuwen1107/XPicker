@@ -1,0 +1,3 @@
+rootProject.name='XPicker'
+include ':app'
+include ':lib_picker'
