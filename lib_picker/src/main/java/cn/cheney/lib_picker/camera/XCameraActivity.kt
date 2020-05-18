@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.CameraSelector
+import androidx.camera.core.CameraX
 import cn.cheney.lib_picker.R
 import cn.cheney.lib_picker.XPicker
 import cn.cheney.lib_picker.view.CaptureLayer
@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.xpicker_activity_camera.*
 
 class XCameraActivity : AppCompatActivity() {
 
-    private var lensFacing: Int = CameraSelector.LENS_FACING_BACK
+    private var lensFacing: CameraX.LensFacing = CameraX.LensFacing.BACK
 
     private var displayId: Int? = null
 
@@ -50,6 +50,7 @@ class XCameraActivity : AppCompatActivity() {
             }
 
             override fun onLongClick() {
+                cameraEngine.startRecord()
             }
 
             override fun onClick() {
@@ -70,10 +71,10 @@ class XCameraActivity : AppCompatActivity() {
 
         })
         xpicker_camera_switch_iv.setOnClickListener {
-            lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
-                CameraSelector.LENS_FACING_FRONT
+            lensFacing = if (lensFacing == CameraX.LensFacing.BACK) {
+                CameraX.LensFacing.FRONT
             } else {
-                CameraSelector.LENS_FACING_BACK
+                CameraX.LensFacing.BACK
             }
             cameraEngine.initAndPreviewCamera(lensFacing, xpicker_camera_preview)
         }
