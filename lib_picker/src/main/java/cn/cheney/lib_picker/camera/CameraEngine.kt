@@ -18,6 +18,7 @@ import androidx.camera.core.*
 import androidx.core.net.toFile
 import cn.cheney.lib_picker.XAngelManager
 import cn.cheney.lib_picker.XPicker
+import cn.cheney.lib_picker.util.mainExecutor
 import cn.cheney.lib_picker.view.AutoFitPreviewBuilder
 import java.io.File
 import java.text.SimpleDateFormat
@@ -30,6 +31,7 @@ import kotlin.math.min
 
 typealias TakePhotoCallback = (fileUrl: Uri?) -> Unit
 
+@SuppressLint("RestrictedApi")
 class CameraEngine(private var context: AppCompatActivity) {
 
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
@@ -38,7 +40,7 @@ class CameraEngine(private var context: AppCompatActivity) {
 
     private var videoCapture: VideoCapture? = null
 
-    private var cameraId: CameraX.LensFacing? = null
+    private var lensFacing: CameraX.LensFacing? = null
 
     private val defaultRecordSize = Size(720, 480)
 
@@ -47,9 +49,8 @@ class CameraEngine(private var context: AppCompatActivity) {
     /**
      * 初始化并且开启摄像头
      */
-    @SuppressLint("RestrictedApi")
     fun initAndPreviewCamera(lensFacing: CameraX.LensFacing, view: TextureView) {
-        this.cameraId = lensFacing
+        this.lensFacing = lensFacing
         this.surfaceView = view
 
         //size比列获取
@@ -69,7 +70,7 @@ class CameraEngine(private var context: AppCompatActivity) {
             setTargetAspectRatio(screenAspectRatio)
             setLensFacing(lensFacing)
             setCaptureMode(ImageCapture.CaptureMode.MAX_QUALITY)
-            setTargetRotation(view.display.rotation)
+            setTargetRotation(rotation)
         }.build()
 
         imageCapture = ImageCapture(imageCaptureConfig)
@@ -79,8 +80,9 @@ class CameraEngine(private var context: AppCompatActivity) {
             setTargetAspectRatio(screenAspectRatio)
             setLensFacing(lensFacing)
             setVideoFrameRate(24)
-            setTargetRotation(view.display.rotation)
+            setTargetRotation(rotation)
         }.build()
+
         videoCapture = VideoCapture(videoCaptureConfig)
 
         CameraX.unbindAll()
@@ -93,7 +95,7 @@ class CameraEngine(private var context: AppCompatActivity) {
      */
     fun takePhoto(callback: TakePhotoCallback) {
         val metadata = ImageCapture.Metadata().apply {
-            isReversedHorizontal = cameraId == CameraX.LensFacing.FRONT
+            isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
         }
         val photoPath = createFile(context.externalMediaDirs.first(), FILENAME, PHOTO_EXTENSION)
         when (XAngelManager.sensorAngle) {
@@ -142,48 +144,37 @@ class CameraEngine(private var context: AppCompatActivity) {
     }
 
 
-    fun startRecord(): Boolean {
+    private var isRecording = false
 
-//        if (null == cameraId || null == surfaceView) {
-//            return false
-//        }
-//        val characteristics = cameraManager.getCameraCharacteristics("${cameraId!!}")
-//        val cameraConfig = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
-//        var outPutSize: Size? = null
-//        cameraConfig.getOutputSizes(MediaRecorder::class.java).forEach {
-//            if (it.width == defaultRecordSize.width
-//                && it.height == it.height
-//            ) {
-//                outPutSize = this@CameraEngine.defaultRecordSize
-//                return@forEach
-//            }
-//        }
-//        if (null == outPutSize) {
-//            outPutSize = getPerfectSize(
-//                cameraConfig.getOutputSizes(MediaRecorder::class.java).toList(),
-//                surfaceView!!.width, surfaceView!!.height
-//            )
-//        }
-//        Log.i(XPicker.TAG, "outPutSize =${outPutSize}")
-//
-//        recorder.apply {
-//            reset()
-//            val outPutFile =
-//                createFile(context.externalMediaDirs.first(), FILENAME, VIDEO_EXTENSION)
-//            setAudioSource(MediaRecorder.AudioSource.MIC)
-//            setVideoSource(MediaRecorder.VideoSource.SURFACE)
-//            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-//            setOutputFile(outPutFile.absolutePath)
-//            setVideoEncodingBitRate(4 * 1024 * 1024)
-//            setVideoSize(outPutSize!!.width, outPutSize!!.height)
-//            setVideoEncoder(MediaRecorder.VideoEncoder.H264)
-//            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-//            prepare()
-//            start()
-//        }
+    fun startRecord(): Boolean {
+        if (isRecording) {
+            return false
+        }
+        val outPutFile =
+            createFile(context.externalMediaDirs.first(), FILENAME, VIDEO_EXTENSION)
+        isRecording = true
+        videoCapture?.startRecording(outPutFile, context.mainExecutor(),
+            object : VideoCapture.OnVideoSavedListener {
+                override fun onVideoSaved(file: File) {
+
+                }
+
+                override fun onError(
+                    videoCaptureError: VideoCapture.VideoCaptureError,
+                    message: String,
+                    cause: Throwable?
+                ) {
+
+                }
+            })
         return true
     }
 
+
+    fun stopRecord() {
+        videoCapture?.stopRecording()
+        isRecording = false
+    }
 
     fun release() {
         cameraExecutor.shutdownNow()

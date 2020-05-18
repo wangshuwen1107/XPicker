@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraX
 import cn.cheney.lib_picker.R
 import cn.cheney.lib_picker.XPicker
-import cn.cheney.lib_picker.view.CaptureLayer
+import cn.cheney.lib_picker.callback.CaptureListener
 import kotlinx.android.synthetic.main.xpicker_activity_camera.*
 
 class XCameraActivity : AppCompatActivity() {
@@ -37,24 +37,21 @@ class XCameraActivity : AppCompatActivity() {
     }
 
     private fun initListener() {
-        xpicker_camera_capture_layer.setListener(object : CaptureLayer.CaptureListener {
-
-            override fun onBackClick() {
+        xpicker_camera_capture_layer.setListener(object : CaptureListener() {
+            override fun cancel() {
+                super.cancel()
                 xpicker_camera_switch_iv.visibility = View.VISIBLE
                 xpicker_camera_photo_show_iv.visibility = View.GONE
                 xpicker_camera_capture_layer.normal()
             }
 
-            override fun onDoneClick() {
+            override fun ok() {
+                super.ok()
 
             }
 
-            override fun onLongClick() {
-                cameraEngine.startRecord()
-            }
-
-            override fun onClick() {
-                //隐藏切换按钮
+            override fun takePictures() {
+                super.takePictures()
                 xpicker_camera_switch_iv.visibility = View.GONE
                 cameraEngine.takePhoto {
                     if (it == null) {
@@ -67,6 +64,22 @@ class XCameraActivity : AppCompatActivity() {
                         xpicker_camera_capture_layer.done()
                     }
                 }
+            }
+
+            override fun recordStart() {
+                super.recordStart()
+                cameraEngine.startRecord()
+            }
+
+            override fun recordShort(time: Long) {
+                super.recordShort(time)
+                Toast.makeText(this@XCameraActivity, "拍摄时间太短了~", Toast.LENGTH_SHORT)
+                    .show()
+            }
+
+            override fun recordEnd(time: Long) {
+                super.recordEnd(time)
+                cameraEngine.stopRecord()
             }
 
         })

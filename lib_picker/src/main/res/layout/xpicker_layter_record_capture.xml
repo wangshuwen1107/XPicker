@@ -5,35 +5,15 @@
     android:layout_height="80dp">
 
 
-    <RelativeLayout
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+    <FrameLayout
+        android:id="@+id/capture_action_layer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp">
+        >
 
-        <cn.cheney.lib_picker.view.CircleProgressView
-            android:id="@+id/common_capture_action_iv"
-            android:layout_width="60dp"
-            android:layout_height="60dp" />
-
-
-        <ImageView
-            android:id="@+id/media_record_red_circle"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
-            android:layout_centerInParent="true"
-            android:src="@drawable/media_record_red_circle" />
-
-        <ImageView
-            android:id="@+id/media_record_red_square"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_centerInParent="true"
-            android:src="@drawable/media_record_red_square"
-            android:visibility="gone" />
-
-    </RelativeLayout>
+    </FrameLayout>
 
 
     <LinearLayout
