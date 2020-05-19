@@ -41,13 +41,13 @@ class XCameraActivity : AppCompatActivity() {
             override fun cancel() {
                 super.cancel()
                 xpicker_camera_switch_iv.visibility = View.VISIBLE
-                xpicker_camera_photo_show_iv.visibility = View.GONE
-                xpicker_camera_capture_layer.normal()
+                xpicker_camera_photo_preview_iv.visibility = View.GONE
+                xpicker_camera_capture_layer.reset()
             }
 
             override fun ok() {
                 super.ok()
-
+                TODO()
             }
 
             override fun takePictures() {
@@ -57,10 +57,10 @@ class XCameraActivity : AppCompatActivity() {
                     if (it == null) {
                         Toast.makeText(this@XCameraActivity, "拍照出错~", Toast.LENGTH_SHORT)
                             .show()
-                        xpicker_camera_capture_layer.normal()
+                        xpicker_camera_capture_layer.reset()
                     } else {
-                        xpicker_camera_photo_show_iv.visibility = View.VISIBLE
-                        XPicker.onImageLoad(it, xpicker_camera_photo_show_iv)
+                        xpicker_camera_photo_preview_iv.visibility = View.VISIBLE
+                        XPicker.onImageLoad(it, xpicker_camera_photo_preview_iv)
                         xpicker_camera_capture_layer.done()
                     }
                 }
@@ -68,13 +68,16 @@ class XCameraActivity : AppCompatActivity() {
 
             override fun recordStart() {
                 super.recordStart()
-                cameraEngine.startRecord()
+                cameraEngine.startRecord { videoUri, coverUri, duration->
+
+                }
             }
 
             override fun recordShort(time: Long) {
                 super.recordShort(time)
                 Toast.makeText(this@XCameraActivity, "拍摄时间太短了~", Toast.LENGTH_SHORT)
                     .show()
+                xpicker_camera_capture_layer.reset()
             }
 
             override fun recordEnd(time: Long) {

@@ -2,18 +2,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/common_capture_root"
     android:layout_width="match_parent"
-    android:layout_height="80dp">
+    android:layout_height="wrap_content">
 
-
-    <FrameLayout
-        android:id="@+id/capture_action_layer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <cn.cheney.lib_picker.view.CaptureButton
+        android:id="@+id/capture_action_btn"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        >
-
-    </FrameLayout>
+        android:layout_marginBottom="20dp" />
 
 
     <LinearLayout

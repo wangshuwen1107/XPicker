@@ -2,12 +2,16 @@ package cn.cheney.lib_picker.camera
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
 import android.hardware.Camera
+import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
+import android.text.TextUtils
 import android.util.DisplayMetrics
 import android.util.Log
+import android.util.Pair
 import android.util.Size
 import android.view.Surface
 import android.view.TextureView
@@ -18,9 +22,11 @@ import androidx.camera.core.*
 import androidx.core.net.toFile
 import cn.cheney.lib_picker.XAngelManager
 import cn.cheney.lib_picker.XPicker
-import cn.cheney.lib_picker.util.mainExecutor
 import cn.cheney.lib_picker.view.AutoFitPreviewBuilder
+import java.io.BufferedOutputStream
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -30,6 +36,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 typealias TakePhotoCallback = (fileUrl: Uri?) -> Unit
+typealias RecordCallback = (videoUrl: Uri?, coverUrl: Uri?, duration: Int?) -> Unit
 
 @SuppressLint("RestrictedApi")
 class CameraEngine(private var context: AppCompatActivity) {
@@ -45,6 +52,9 @@ class CameraEngine(private var context: AppCompatActivity) {
     private val defaultRecordSize = Size(720, 480)
 
     private var surfaceView: View? = null
+
+    private var isRecording = false
+
 
     /**
      * 初始化并且开启摄像头
@@ -69,7 +79,7 @@ class CameraEngine(private var context: AppCompatActivity) {
         val imageCaptureConfig = ImageCaptureConfig.Builder().apply {
             setTargetAspectRatio(screenAspectRatio)
             setLensFacing(lensFacing)
-            setCaptureMode(ImageCapture.CaptureMode.MAX_QUALITY)
+            setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY)
             setTargetRotation(rotation)
         }.build()
 
@@ -104,12 +114,18 @@ class CameraEngine(private var context: AppCompatActivity) {
             180 -> imageCapture?.setTargetRotation(Surface.ROTATION_180)
             270 -> imageCapture?.setTargetRotation(Surface.ROTATION_90)
         }
+        Log.d(XPicker.TAG, "takePhoto is called ")
         imageCapture?.takePicture(
             photoPath,
             metadata,
             cameraExecutor, object : ImageCapture.OnImageSavedListener {
                 override fun onImageSaved(file: File) {
                     val savedUri = Uri.fromFile(file)
+                    context.runOnUiThread {
+                        callback.invoke(savedUri)
+                        Log.d(XPicker.TAG, "onImageSaved: $savedUri")
+                    }
+
                     //添加到系统相册
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
                         context.sendBroadcast(
@@ -124,9 +140,6 @@ class CameraEngine(private var context: AppCompatActivity) {
                         arrayOf(mimeType)
                     ) { _, uri ->
                         Log.d(XPicker.TAG, "Image capture scanned into media store: $uri")
-                    }
-                    context.runOnUiThread {
-                        callback.invoke(savedUri)
                     }
                 }
 
@@ -144,27 +157,32 @@ class CameraEngine(private var context: AppCompatActivity) {
     }
 
 
-    private var isRecording = false
-
-    fun startRecord(): Boolean {
+    fun startRecord(callback: RecordCallback?=null): Boolean {
         if (isRecording) {
             return false
         }
         val outPutFile =
             createFile(context.externalMediaDirs.first(), FILENAME, VIDEO_EXTENSION)
         isRecording = true
-        videoCapture?.startRecording(outPutFile, context.mainExecutor(),
+        videoCapture?.startRecording(outPutFile, cameraExecutor,
             object : VideoCapture.OnVideoSavedListener {
                 override fun onVideoSaved(file: File) {
-
+                    val coverFile = getVideoAndDuration(file.absolutePath)?.first
+                    var coverUrl: Uri? = null
+                    if (null != coverFile) {
+                        coverUrl = Uri.fromFile(coverFile)
+                    }
+                    callback?.invoke(
+                        Uri.fromFile(file),
+                        coverUrl,
+                        getVideoAndDuration(file.absolutePath)?.second
+                    )
                 }
 
                 override fun onError(
-                    videoCaptureError: VideoCapture.VideoCaptureError,
-                    message: String,
-                    cause: Throwable?
-                ) {
-
+                    videoCaptureError: VideoCapture.VideoCaptureError, message: String,
+                    cause: Throwable?) {
+                    callback?.invoke(null, null, null)
                 }
             })
         return true
@@ -181,6 +199,38 @@ class CameraEngine(private var context: AppCompatActivity) {
         XAngelManager.unregisterSensorManager(context)
     }
 
+    private fun getVideoAndDuration(videoPath: String): Pair<File, Int>? {
+        if (TextUtils.isEmpty(videoPath)) {
+            return null
+        }
+        if (!File(videoPath).exists()) {
+            return null
+        }
+        val mmr = MediaMetadataRetriever()
+        mmr.setDataSource(videoPath)
+        val duration =
+            mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+        val bitmap = mmr.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+        val replace = videoPath.replace(".mp4", ".jpg")
+        if (null == bitmap) {
+            Log.e(XPicker.TAG, "firstFrame get Failed -------")
+            return Pair.create(null, duration.toInt())
+        }
+        saveBitmapFile(bitmap, File(replace))
+        return Pair.create(File(replace), duration.toInt())
+    }
+
+    private fun saveBitmapFile(bitmap: Bitmap, file: File) {
+        try {
+            val bos =
+                BufferedOutputStream(FileOutputStream(file))
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos)
+            bos.flush()
+            bos.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
 
     private fun aspectRatio(width: Int, height: Int): AspectRatio {
         val previewRatio = max(width, height).toDouble() / min(width, height)

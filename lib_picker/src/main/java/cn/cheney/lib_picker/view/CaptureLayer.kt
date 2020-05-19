@@ -12,7 +12,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import cn.cheney.lib_picker.R
 import cn.cheney.lib_picker.callback.CaptureListener
-import cn.cheney.lib_picker.util.toPx
 
 class CaptureLayer @JvmOverloads constructor(
     context: Context,
@@ -34,21 +33,21 @@ class CaptureLayer @JvmOverloads constructor(
 
     private fun initView() {
         val rootView =
-            View.inflate(context, R.layout.xpicker_layter_record_capture, null)
+            View.inflate(context, R.layout.xpicker_layer_record_capture, null)
         rootLayer = rootView.findViewById(R.id.common_capture_root)
-        captureBtnLayer = rootView.findViewById(R.id.capture_action_layer)
+        captureBtnLayer = rootView.findViewById(R.id.capture_action_btn)
         doneLayer = rootView.findViewById(R.id.common_capture_done_layer)
         doneIv = rootView.findViewById(R.id.common_capture_done_iv)
         cancelIv = rootView.findViewById(R.id.common_capture_cancel_iv)
+        captureBtn = rootView.findViewById(R.id.capture_action_btn)
 
-        captureBtn = CaptureButton(context, 60.toPx())
-        captureBtnLayer.addView(captureBtn)
-        captureBtn.setCaptureListener(object : CaptureListener() {
+        captureBtn.listener = (object : CaptureListener() {
             override fun takePictures() {
                 listener?.takePictures()
             }
 
             override fun recordShort(time: Long) {
+                captureBtn.resetSate()
                 listener?.recordShort(time)
             }
 
@@ -58,11 +57,12 @@ class CaptureLayer @JvmOverloads constructor(
 
             override fun recordStart() {
                 listener?.recordStart()
-                recording()
+                doneLayer.visibility = View.GONE
             }
 
             override fun recordEnd(time: Long) {
                 listener?.recordEnd(time)
+                done()
             }
 
             override fun recordZoom(zoom: Float) {
@@ -73,22 +73,24 @@ class CaptureLayer @JvmOverloads constructor(
             listener?.ok()
         })
         cancelIv.setOnClickListener(OnClickListener { v: View? ->
+            captureBtn.resetSate()
             listener?.cancel()
         })
         addView(rootView)
-        normal()
+        reset()
     }
 
-    private fun recording() {
-        doneLayer.visibility = View.GONE
-    }
 
-    fun normal() {
+    fun reset() {
+        captureBtn.resetSate()
+        captureBtn.visibility = View.VISIBLE
         doneLayer.visibility = View.GONE
     }
 
 
     fun done() {
+        captureBtn.visibility = View.GONE
+
         doneLayer.visibility = View.VISIBLE
         val cancelAnimation = TranslateAnimation(
             Animation.RELATIVE_TO_SELF,
