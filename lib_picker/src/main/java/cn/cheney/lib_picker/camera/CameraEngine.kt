@@ -12,7 +12,6 @@ import android.text.TextUtils
 import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Pair
-import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
@@ -20,8 +19,8 @@ import android.webkit.MimeTypeMap
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.core.net.toFile
-import cn.cheney.lib_picker.XAngelManager
 import cn.cheney.lib_picker.XPicker
+import cn.cheney.lib_picker.util.XAngelManager
 import cn.cheney.lib_picker.view.AutoFitPreviewBuilder
 import java.io.BufferedOutputStream
 import java.io.File
@@ -48,8 +47,6 @@ class CameraEngine(private var context: AppCompatActivity) {
     private var videoCapture: VideoCapture? = null
 
     private var lensFacing: CameraX.LensFacing? = null
-
-    private val defaultRecordSize = Size(720, 480)
 
     private var surfaceView: View? = null
 
@@ -156,8 +153,10 @@ class CameraEngine(private var context: AppCompatActivity) {
             })
     }
 
-
-    fun startRecord(callback: RecordCallback?=null): Boolean {
+    /**
+     * 录制视频
+     */
+    fun startRecord(callback: RecordCallback? = null): Boolean {
         if (isRecording) {
             return false
         }
@@ -172,74 +171,44 @@ class CameraEngine(private var context: AppCompatActivity) {
                     if (null != coverFile) {
                         coverUrl = Uri.fromFile(coverFile)
                     }
-                    callback?.invoke(
-                        Uri.fromFile(file),
-                        coverUrl,
-                        getVideoAndDuration(file.absolutePath)?.second
-                    )
+                    context.runOnUiThread {
+                        callback?.invoke(
+                            Uri.fromFile(file),
+                            coverUrl,
+                            getVideoAndDuration(file.absolutePath)?.second
+                        )
+                    }
                 }
 
                 override fun onError(
                     videoCaptureError: VideoCapture.VideoCaptureError, message: String,
-                    cause: Throwable?) {
-                    callback?.invoke(null, null, null)
+                    cause: Throwable?
+                ) {
+                    context.runOnUiThread {
+                        callback?.invoke(null, null, null)
+                    }
                 }
             })
         return true
     }
 
-
+    /**
+     * 停止录制视频
+     */
     fun stopRecord() {
         videoCapture?.stopRecording()
         isRecording = false
+    }
+
+
+
+    fun focus(){
     }
 
     fun release() {
         cameraExecutor.shutdownNow()
         XAngelManager.unregisterSensorManager(context)
     }
-
-    private fun getVideoAndDuration(videoPath: String): Pair<File, Int>? {
-        if (TextUtils.isEmpty(videoPath)) {
-            return null
-        }
-        if (!File(videoPath).exists()) {
-            return null
-        }
-        val mmr = MediaMetadataRetriever()
-        mmr.setDataSource(videoPath)
-        val duration =
-            mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-        val bitmap = mmr.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
-        val replace = videoPath.replace(".mp4", ".jpg")
-        if (null == bitmap) {
-            Log.e(XPicker.TAG, "firstFrame get Failed -------")
-            return Pair.create(null, duration.toInt())
-        }
-        saveBitmapFile(bitmap, File(replace))
-        return Pair.create(File(replace), duration.toInt())
-    }
-
-    private fun saveBitmapFile(bitmap: Bitmap, file: File) {
-        try {
-            val bos =
-                BufferedOutputStream(FileOutputStream(file))
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos)
-            bos.flush()
-            bos.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun aspectRatio(width: Int, height: Int): AspectRatio {
-        val previewRatio = max(width, height).toDouble() / min(width, height)
-        if (abs(previewRatio - RATIO_4_3_VALUE) <= abs(previewRatio - RATIO_16_9_VALUE)) {
-            return AspectRatio.RATIO_4_3
-        }
-        return AspectRatio.RATIO_16_9
-    }
-
 
     companion object {
         private const val FILENAME = "yyyy-MM-dd-HH-mm-ss-SSS"
@@ -253,6 +222,51 @@ class CameraEngine(private var context: AppCompatActivity) {
                 baseFolder, SimpleDateFormat(format, Locale.CHINA)
                     .format(System.currentTimeMillis()) + extension
             )
+
+
+        private fun aspectRatio(width: Int, height: Int): AspectRatio {
+            val previewRatio = max(width, height).toDouble() / min(width, height)
+            if (abs(previewRatio - RATIO_4_3_VALUE) <= abs(previewRatio - RATIO_16_9_VALUE)) {
+                return AspectRatio.RATIO_4_3
+            }
+            return AspectRatio.RATIO_16_9
+        }
+
+
+
+        private fun getVideoAndDuration(videoPath: String): Pair<File, Int>? {
+            if (TextUtils.isEmpty(videoPath)) {
+                return null
+            }
+            if (!File(videoPath).exists()) {
+                return null
+            }
+            val mmr = MediaMetadataRetriever()
+            mmr.setDataSource(videoPath)
+            val duration =
+                mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            val bitmap = mmr.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+            val replace = videoPath.replace(".mp4", ".jpg")
+            if (null == bitmap) {
+                Log.e(XPicker.TAG, "firstFrame get Failed -------")
+                return Pair.create(null, duration.toInt())
+            }
+            saveBitmapFile(bitmap, File(replace))
+            return Pair.create(File(replace), duration.toInt())
+        }
+
+        private fun saveBitmapFile(bitmap: Bitmap, file: File) {
+            try {
+                val bos =
+                    BufferedOutputStream(FileOutputStream(file))
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos)
+                bos.flush()
+                bos.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+
     }
 
 }

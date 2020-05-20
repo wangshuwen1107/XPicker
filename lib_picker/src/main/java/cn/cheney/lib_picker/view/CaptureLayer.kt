@@ -62,7 +62,6 @@ class CaptureLayer @JvmOverloads constructor(
 
             override fun recordEnd(time: Long) {
                 listener?.recordEnd(time)
-                done()
             }
 
             override fun recordZoom(zoom: Float) {
@@ -114,5 +113,20 @@ class CaptureLayer @JvmOverloads constructor(
         this.listener = listener
     }
 
+    fun setMaxDuration(duration: Int) {
+        if (duration > 1000) {
+            captureBtn.maxDuration = duration.toLong()
+        }
 
+    }
+
+    fun setMinDuration(duration: Int) {
+        if (duration > 1000) {
+            captureBtn.minDuration = duration.toLong()
+        }
+    }
+
+    fun setCameraType(type: String) {
+        captureBtn.cameraType = type
+    }
 }

@@ -1,11 +1,10 @@
-package cn.cheney.lib_picker
+package cn.cheney.lib_picker.util
 
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import cn.cheney.lib_picker.util.getSensorAngle
 
 object XAngelManager {
 
@@ -44,7 +43,9 @@ object XAngelManager {
         if (sensorManager == null) {
             sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         }
-        sensorManager!!.unregisterListener(sensorEventListener)
+        sensorManager!!.unregisterListener(
+            sensorEventListener
+        )
     }
 
 }

@@ -20,10 +20,12 @@
         android:visibility="gone" />
 
 
-    <TextureView
-        android:id="@+id/xpicker_camera_video_preview"
+    <RelativeLayout
+        android:id="@+id/xpicker_camera_video_layer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:background="@color/XPicker_black"
+        android:visibility="gone" />
 
 
     <ImageView

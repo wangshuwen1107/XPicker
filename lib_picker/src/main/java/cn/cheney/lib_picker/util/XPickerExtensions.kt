@@ -1,12 +1,7 @@
 package cn.cheney.lib_picker.util
 
-import android.content.Context
 import android.content.res.Resources
-import android.os.Build
-import cn.cheney.lib_picker.XAngelManager
-import java.util.concurrent.Executor
 import kotlin.math.abs
-
 
 fun XAngelManager.getSensorAngle(x: Float, y: Float): Int {
     return if (abs(x) > abs(y)) {
@@ -47,11 +42,6 @@ fun XAngelManager.getSensorAngle(x: Float, y: Float): Int {
             0
         }
     }
-}
-fun Context.mainExecutor(): Executor = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-    mainExecutor
-} else {
-    MainExecutor()
 }
 
 fun Int.toDp(): Int = (this / Resources.getSystem().displayMetrics.density).toInt()
