@@ -1,69 +1,92 @@
 package cn.cheney.lib_picker.camera
 
+import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
+import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
+import android.text.TextUtils
 import android.util.DisplayMetrics
-import android.view.*
+import android.util.Log
+import android.view.Surface
+import android.view.TextureView
 import android.view.TextureView.SurfaceTextureListener
+import android.view.View
+import android.view.ViewGroup
+import android.webkit.MimeTypeMap
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.CameraX
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.VideoCapture
+import androidx.camera.view.CameraView
 import cn.cheney.lib_picker.*
+import cn.cheney.lib_picker.callback.CameraSaveCallback
 import cn.cheney.lib_picker.callback.CaptureListener
 import cn.cheney.lib_picker.media.XMediaPlayer
 import kotlinx.android.synthetic.main.xpicker_activity_camera.*
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
 
 class XCameraActivity : AppCompatActivity() {
 
-    private lateinit var lensFacing: CameraX.LensFacing
-    private var displayId: Int? = null
-    private var videoUri: Uri? = null
-    private var coverUri: Uri? = null
-    private var duration: Int? = null
+    private var lensFacing: Int = 1
     private var videoTextureView: TextureView? = null
     private var hasPauseVideo = false
     private var videoSurface: Surface? = null
+
+    private var videoUri: Uri? = null
+    private var coverUri: Uri? = null
+    private var duration: Int? = null
+    private var videoFile: File? = null
+
+    private var photoFile: File? = null
+    private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private var xPickerRequest: XPickerRequest? = null
+
+    /**
+     * 当前模式
+     */
+    private var currentType: Int? = null
 
     private val xMediaPlayer: XMediaPlayer by lazy {
         XMediaPlayer(this)
     }
 
-    private val cameraEngine: CameraEngine by lazy {
-        CameraEngine(this)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.xpicker_activity_camera)
-        xpicker_camera_preview.post {
-            displayId = xpicker_camera_preview.display.displayId
-            cameraEngine.initAndPreviewCamera(lensFacing, xpicker_camera_preview)
-        }
+        xpicker_camera_preview.captureMode = CameraView.CaptureMode.MIXED
+        xpicker_camera_preview.isPinchToZoomEnabled = false
+        xpicker_camera_preview.bindToLifecycle(this)
         initConfig()
         initListener()
+        xpicker_camera_preview.captureMode
     }
 
 
     private fun initConfig() {
-        val xPickerRequest = intent.getParcelableExtra<XPickerRequest>(REQUEST_KEY)
+        xPickerRequest = intent.getParcelableExtra<XPickerRequest>(REQUEST_KEY)
         if (null == xPickerRequest) {
             finish()
             return
         }
-        lensFacing = when (xPickerRequest.defaultLensFacing) {
-            FRONT -> {
-                CameraX.LensFacing.FRONT
-            }
-            else -> {
-                CameraX.LensFacing.BACK
-            }
-        }
-        xpicker_camera_capture_layer.setMaxDuration(xPickerRequest.maxRecordTime)
-        xpicker_camera_capture_layer.setMinDuration(xPickerRequest.minRecordTime)
-        xpicker_camera_capture_layer.setCameraType(xPickerRequest.cameraType)
+        lensFacing = xPickerRequest!!.defaultLensFacing
+        xpicker_camera_capture_layer.setMaxDuration(xPickerRequest!!.maxRecordTime)
+        xpicker_camera_capture_layer.setMinDuration(xPickerRequest!!.minRecordTime)
+        xpicker_camera_capture_layer.setCameraType(xPickerRequest!!.captureMode)
     }
 
     override fun onResume() {
@@ -86,7 +109,13 @@ class XCameraActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraEngine.release()
+        cameraExecutor.shutdownNow()
+    }
+
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        callbackFailed("USER_CANCEL")
     }
 
     private fun initListener() {
@@ -129,49 +158,99 @@ class XCameraActivity : AppCompatActivity() {
         xpicker_camera_capture_layer.setListener(object : CaptureListener() {
             override fun cancel() {
                 super.cancel()
+                delCacheFile()
                 actionCancel()
             }
 
             override fun ok() {
                 super.ok()
-                TODO()
+                if (null != videoFile) {
+                    //获取封面和时间
+                    val coverAndDuration = getVideoAndDuration(videoFile!!.absolutePath)
+                    this@XCameraActivity.coverUri =
+                        if (coverAndDuration?.first == null) null else Uri.fromFile(
+                            coverAndDuration.first
+                        )
+                    this@XCameraActivity.duration = coverAndDuration?.second
+                    //添加到系统相册
+                    scanPhotoAlbum(this@XCameraActivity, videoFile)
+                }
+                if (null != photoFile) {
+                    scanPhotoAlbum(this@XCameraActivity, photoFile)
+                }
+                finish()
+                callbackSuccess()
             }
 
             override fun takePictures() {
                 super.takePictures()
-                xpicker_camera_switch_iv.visibility = View.GONE
-                xpicker_camera_back_iv.visibility = View.GONE
-
-                cameraEngine.takePhoto {
-                    if (it == null) {
-                        Toast.makeText(
-                            this@XCameraActivity,
-                            getString(R.string.xpicker_take_photo_error),
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                        xpicker_camera_capture_layer.reset()
-                    } else {
-                        xpicker_camera_photo_preview_iv.visibility = View.VISIBLE
-                        XPicker.onImageLoad(it, xpicker_camera_photo_preview_iv)
-                        xpicker_camera_capture_layer.done()
+                val photoFile = createFile(externalMediaDirs.first(), FILENAME, PHOTO_EXTENSION)
+                xpicker_camera_preview.takePicture(photoFile, cameraExecutor, object :
+                    ImageCapture.OnImageSavedCallback {
+                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                        runOnUiThread {
+                            if (!photoFile.exists()) {
+                                Toast.makeText(
+                                    this@XCameraActivity,
+                                    getString(R.string.xpicker_take_photo_error),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@runOnUiThread
+                            }
+                            this@XCameraActivity.photoFile = photoFile
+                            xpicker_camera_photo_preview_iv.visibility = View.VISIBLE
+                            XPicker.onImageLoad(
+                                Uri.fromFile(photoFile),
+                                xpicker_camera_photo_preview_iv
+                            )
+                            xpicker_camera_capture_layer.done()
+                            xpicker_camera_switch_iv.visibility = View.GONE
+                            xpicker_camera_back_iv.visibility = View.GONE
+                        }
                     }
-                }
+
+                    override fun onError(exception: ImageCaptureException) {
+                        runOnUiThread {
+                            Toast.makeText(
+                                this@XCameraActivity,
+                                getString(R.string.xpicker_take_photo_error),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+
+                })
             }
 
             override fun recordStart() {
                 super.recordStart()
-                cameraEngine.startRecord { videoUri, coverUri, duration ->
-                    this@XCameraActivity.videoUri = videoUri
-                    this@XCameraActivity.coverUri = coverUri
-                    this@XCameraActivity.duration = duration
-                    if (null != videoUri) {
-                        xpicker_camera_capture_layer.done()
-                        playVideo()
-                    } else {
-                        xpicker_camera_capture_layer.reset()
-                    }
-                }
+                val videoFile = createFile(externalMediaDirs.first(), FILENAME, VIDEO_EXTENSION)
+                xpicker_camera_preview.startRecording(videoFile, cameraExecutor,
+                    object : VideoCapture.OnVideoSavedCallback {
+                        override fun onVideoSaved(file: File) {
+                            runOnUiThread {
+                                if (!videoFile.exists()) {
+                                    xpicker_camera_capture_layer.reset()
+                                    return@runOnUiThread
+                                }
+                                this@XCameraActivity.videoFile = videoFile
+                                this@XCameraActivity.videoUri = Uri.fromFile(videoFile)
+                                xpicker_camera_capture_layer.done()
+                                playVideo()
+                            }
+                        }
+
+                        override fun onError(
+                            videoCaptureError: Int, message: String,
+                            cause: Throwable?
+                        ) {
+                            runOnUiThread {
+                                xpicker_camera_capture_layer.reset()
+                            }
+
+                        }
+
+                    })
             }
 
             override fun recordShort(time: Long) {
@@ -179,40 +258,84 @@ class XCameraActivity : AppCompatActivity() {
                 Toast.makeText(
                     this@XCameraActivity,
                     getString(R.string.xpicker_recorder_too_short), Toast.LENGTH_SHORT
-                )
-                    .show()
+                ).show()
                 xpicker_camera_capture_layer.reset()
             }
 
             override fun recordEnd(time: Long) {
                 super.recordEnd(time)
-                cameraEngine.stopRecord()
+                xpicker_camera_preview.stopRecording()
             }
 
         })
         //切换摄像头
         xpicker_camera_switch_iv.setOnClickListener {
-            lensFacing = if (lensFacing == CameraX.LensFacing.BACK) {
-                CameraX.LensFacing.FRONT
-            } else {
-                CameraX.LensFacing.BACK
-            }
-            cameraEngine.initAndPreviewCamera(lensFacing, xpicker_camera_preview)
+            xpicker_camera_preview.toggleCamera()
         }
-
-
         xpicker_camera_back_iv.setOnClickListener {
             finish()
-        }
-
-        xpicker_camera_preview.setOnTouchListener { v, event ->
-            if (event.action != MotionEvent.ACTION_UP) {
-                return@setOnTouchListener false
-            }
-            return@setOnTouchListener true
+            callbackFailed("USER_CANCEL")
         }
     }
 
+
+    private fun callbackSuccess() {
+        when (xPickerRequest!!.captureMode) {
+            ONLY_CAPTURE -> {
+                if (null == photoFile) {
+                    callbackFailed("PHOTO_FILE_EMPTY")
+                } else {
+                    cameraSaveCallback?.onTakePhotoSuccess(Uri.fromFile(photoFile!!))
+                }
+            }
+            ONLY_RECORDER -> {
+                if (null == videoUri) {
+                    callbackFailed("VIDEO_FILE_EMPTY")
+                } else {
+                    cameraSaveCallback?.onVideoSuccess(coverUri, videoUri!!, duration)
+                }
+            }
+            MIXED -> {
+                if (null == photoFile && null == videoUri) {
+                    callbackFailed("BOTH_FILE_EMPTY")
+                } else if (null != photoFile) {
+                    cameraSaveCallback?.onTakePhotoSuccess(Uri.fromFile(photoFile!!))
+                } else {
+                    cameraSaveCallback?.onVideoSuccess(coverUri, videoUri!!, duration)
+                }
+
+            }
+        }
+        xPickerRequest = null
+    }
+
+    private fun callbackFailed(errorCode: String) {
+        when (xPickerRequest!!.captureMode) {
+            ONLY_CAPTURE -> {
+                cameraSaveCallback?.onTakePhotoFailed(errorCode)
+            }
+            ONLY_RECORDER -> {
+                cameraSaveCallback?.onVideoFailed(errorCode)
+            }
+            MIXED -> {
+                cameraSaveCallback?.onTakePhotoFailed(errorCode)
+                cameraSaveCallback?.onVideoFailed(errorCode)
+            }
+        }
+        xPickerRequest = null
+    }
+
+
+    private fun delCacheFile() {
+        if (null != videoFile) {
+            videoFile!!.deleteOnExit()
+            videoFile = null
+        }
+        if (null != photoFile) {
+            photoFile!!.deleteOnExit()
+            photoFile = null
+        }
+    }
 
     private fun actionCancel() {
         stopVideo()
@@ -278,8 +401,74 @@ class XCameraActivity : AppCompatActivity() {
         xMediaPlayer.stop()
     }
 
+    companion object {
+        private const val FILENAME = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private const val PHOTO_EXTENSION = ".jpg"
+        private const val VIDEO_EXTENSION = ".mp4"
+
+        /** Helper function used to create a timestamped file */
+        private fun createFile(baseFolder: File, format: String, extension: String) =
+            File(
+                baseFolder, SimpleDateFormat(format, Locale.CHINA)
+                    .format(System.currentTimeMillis()) + extension
+            )
+
+        private fun getVideoAndDuration(videoPath: String): Pair<File?, Int>? {
+            if (TextUtils.isEmpty(videoPath)) {
+                return null
+            }
+            if (!File(videoPath).exists()) {
+                return null
+            }
+            val mmr = MediaMetadataRetriever()
+            mmr.setDataSource(videoPath)
+            val duration =
+                mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            val bitmap = mmr.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+            val replace = videoPath.replace(".mp4", ".jpg")
+            if (null == bitmap) {
+                Log.e(XPicker.TAG, "firstFrame get Failed -------")
+                return Pair(null, duration.toInt())
+            }
+            saveBitmapFile(bitmap, File(replace))
+            return Pair(File(replace), duration.toInt())
+        }
+
+        private fun saveBitmapFile(bitmap: Bitmap, file: File) {
+            try {
+                val bos =
+                    BufferedOutputStream(FileOutputStream(file))
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos)
+                bos.flush()
+                bos.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+
+        private fun scanPhotoAlbum(context: Context, dataFile: File?) {
+            if (dataFile == null) {
+                return
+            }
+            val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                dataFile.absolutePath.substring(
+                    dataFile.absolutePath.lastIndexOf(".") + 1
+                )
+            )
+            MediaScannerConnection.scanFile(
+                context,
+                arrayOf(dataFile.absolutePath),
+                arrayOf(mimeType),
+                null
+            )
+        }
+
+        var cameraSaveCallback: CameraSaveCallback? = null
+    }
+
 
 }
+
 
 
 

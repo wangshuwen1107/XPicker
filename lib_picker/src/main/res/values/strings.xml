@@ -4,4 +4,5 @@
     <string name="xpicker_play_error">播放出错</string>
     <string name="xpicker_recorder_too_short">录制时间太短了</string>
     <string name="xpicker_take_photo_error">拍照出错</string>
+    <string name="xpicker_recorder_error">录制出错</string>
 </resources>

@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".camera.XCameraActivity">
 
-    <TextureView
+    <androidx.camera.view.CameraView
         android:id="@+id/xpicker_camera_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

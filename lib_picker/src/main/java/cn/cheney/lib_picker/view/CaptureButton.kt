@@ -97,8 +97,10 @@ class CaptureButton @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
+                captureState = State.IDLE
+                mHandler.removeCallbacks(longPressRunnable)
                 if (cameraType != ONLY_CAPTURE) {
-                    mHandler.postDelayed(longPressRunnable, 500)
+                    mHandler.postDelayed(longPressRunnable, 300)
                 }
             }
             MotionEvent.ACTION_UP -> handleUp()

@@ -1,11 +1,15 @@
 package cn.cheney.xpicker
 
 import android.Manifest
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import cn.cheney.lib_picker.CAPTURE_AND_RECORDER
+import cn.cheney.lib_picker.MIXED
+import cn.cheney.lib_picker.XPicker
 import cn.cheney.lib_picker.XPickerRequest
+import cn.cheney.lib_picker.callback.CameraSaveCallback
 import com.yanzhenjie.permission.AndPermission
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -30,10 +34,30 @@ class MainActivity : AppCompatActivity() {
             )
             .onGranted {
                 XPickerRequest().apply {
-                    cameraType = CAPTURE_AND_RECORDER
+                    captureMode = MIXED
                     maxRecordTime = 5000
                     minRecordTime = 2000
-                    start(this@MainActivity)
+                    start(this@MainActivity, object : CameraSaveCallback {
+                        override fun onTakePhotoSuccess(photoUri: Uri) {
+                            Log.i(XPicker.TAG, "onTakePhotoSuccess uri=$photoUri")
+                        }
+
+                        override fun onTakePhotoFailed(errorCode: String) {
+                            Log.e(XPicker.TAG, "onTakePhotoFailed errorCode=$errorCode")
+                        }
+
+                        override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
+                            Log.i(
+                                XPicker.TAG,
+                                "onVideoSuccess coverUrl=$coverUri ,videoUri=$videoUri ,duration=$duration"
+                            )
+                        }
+
+                        override fun onVideoFailed(errorCode: String) {
+                            Log.e(XPicker.TAG, "onVideoFailed errorCode=$errorCode")
+                        }
+
+                    })
                 }
             }
             .onDenied {

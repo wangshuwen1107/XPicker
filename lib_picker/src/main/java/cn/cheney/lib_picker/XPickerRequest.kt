@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.annotation.StringDef
+import cn.cheney.lib_picker.callback.CameraSaveCallback
 import cn.cheney.lib_picker.camera.XCameraActivity
 
 const val REQUEST_KEY = "xPicker_request"
@@ -12,9 +13,9 @@ const val REQUEST_KEY = "xPicker_request"
 
 const val ONLY_CAPTURE = "ONLY_CAPTURE"
 const val ONLY_RECORDER = "ONLY_RECORDER"
-const val CAPTURE_AND_RECORDER = "CAPTURE_AND_RECORDER"
+const val MIXED = "MIXED"
 
-@StringDef(ONLY_CAPTURE, CAPTURE_AND_RECORDER, ONLY_RECORDER)
+@StringDef(ONLY_CAPTURE, MIXED, ONLY_RECORDER)
 @Target(AnnotationTarget.FIELD, AnnotationTarget.VALUE_PARAMETER)
 annotation class CameraType
 
@@ -25,18 +26,10 @@ const val PICKER = "PICKER"
 @Target(AnnotationTarget.FIELD, AnnotationTarget.VALUE_PARAMETER)
 annotation class ActionType
 
-const val FRONT = "FRONT"
-const val BACK = "BACK"
-
-@StringDef(BACK, FRONT)
-@Target(AnnotationTarget.FIELD, AnnotationTarget.VALUE_PARAMETER)
-annotation class LensFacing
-
-
 class XPickerRequest() : Parcelable {
     //摄像头类型
     @CameraType
-    var cameraType: String = ONLY_CAPTURE
+    var captureMode: String = ONLY_CAPTURE
 
     //最小录制时间
     var minRecordTime = 2000
@@ -44,38 +37,38 @@ class XPickerRequest() : Parcelable {
     //最大录制时间
     var maxRecordTime = 10000
 
-    //默认摄像头
-    @LensFacing
-    var defaultLensFacing: String = BACK
+    //默认摄像头 后置
+    var defaultLensFacing: Int = 1
 
     //默认动作类型
     @ActionType
     var actionType = CAMERA
 
     constructor(parcel: Parcel) : this() {
-        cameraType = parcel.readString().toString()
+        captureMode = parcel.readString().toString()
         minRecordTime = parcel.readInt()
         maxRecordTime = parcel.readInt()
-        defaultLensFacing = parcel.readString().toString()
+        defaultLensFacing = parcel.readInt()
         actionType = parcel.readString().toString()
     }
 
-    fun start(context: Context) {
+    fun start(context: Context, callback: CameraSaveCallback? = null) {
         when (actionType) {
             CAMERA -> {
                 val intent = Intent(context, XCameraActivity::class.java)
                 intent.putExtra(REQUEST_KEY, this)
                 context.startActivity(intent)
+                XCameraActivity.cameraSaveCallback = callback
             }
             PICKER -> TODO()
         }
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(cameraType)
+        parcel.writeString(captureMode)
         parcel.writeInt(minRecordTime)
         parcel.writeInt(maxRecordTime)
-        parcel.writeString(defaultLensFacing)
+        parcel.writeInt(defaultLensFacing)
         parcel.writeString(actionType)
     }
 
