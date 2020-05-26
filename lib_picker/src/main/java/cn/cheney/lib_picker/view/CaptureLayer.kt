@@ -40,9 +40,9 @@ class CaptureLayer @JvmOverloads constructor(
         val rootView =
             View.inflate(context, R.layout.xpicker_layer_record_capture, null)
         captureBtnLayer = rootView.findViewById(R.id.capture_btn_layer)
-        doneLayer = rootView.findViewById(R.id.common_capture_done_layer)
-        doneIv = rootView.findViewById(R.id.common_capture_done_iv)
-        cancelIv = rootView.findViewById(R.id.common_capture_cancel_iv)
+        doneLayer = rootView.findViewById(R.id.xpicker_capture_done_layer)
+        doneIv = rootView.findViewById(R.id.xpicker_capture_done_iv)
+        cancelIv = rootView.findViewById(R.id.xpicker_capture_cancel_iv)
         tipTxt = rootView.findViewById(R.id.capture_tip_txt)
         addCaptureBtn()
         doneIv.setOnClickListener(OnClickListener {
