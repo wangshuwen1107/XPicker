@@ -5,4 +5,8 @@
     <string name="xpicker_recorder_too_short">录制时间太短了</string>
     <string name="xpicker_take_photo_error">拍照出错</string>
     <string name="xpicker_recorder_error">录制出错</string>
+
+    <string name="xpicker_mixed_tip">点击拍照，长按录制</string>
+    <string name="xpicker_capture_tip">点击拍照</string>
+    <string name="xpicker_recorder_tip">长按录制</string>
 </resources>

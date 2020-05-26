@@ -55,10 +55,7 @@ class XCameraActivity : AppCompatActivity() {
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private var xPickerRequest: XPickerRequest? = null
 
-    /**
-     * 当前模式
-     */
-    private var currentType: Int? = null
+    private var recordTime: Long = 0
 
     private val xMediaPlayer: XMediaPlayer by lazy {
         XMediaPlayer(this)
@@ -229,10 +226,16 @@ class XCameraActivity : AppCompatActivity() {
                     object : VideoCapture.OnVideoSavedCallback {
                         override fun onVideoSaved(file: File) {
                             runOnUiThread {
-                                if (!videoFile.exists()) {
+                                if (!videoFile.exists() || recordTime < xPickerRequest!!.minRecordTime) {
+                                    Log.e(XPicker.TAG, "record onVideoSaved too short del")
+                                    videoFile.deleteOnExit()
                                     xpicker_camera_capture_layer.reset()
                                     return@runOnUiThread
                                 }
+                                Log.i(
+                                    XPicker.TAG,
+                                    "record onVideoSaved path=${videoFile.absolutePath}"
+                                )
                                 this@XCameraActivity.videoFile = videoFile
                                 this@XCameraActivity.videoUri = Uri.fromFile(videoFile)
                                 xpicker_camera_capture_layer.done()
@@ -244,6 +247,10 @@ class XCameraActivity : AppCompatActivity() {
                             videoCaptureError: Int, message: String,
                             cause: Throwable?
                         ) {
+                            Log.e(
+                                XPicker.TAG,
+                                "record onError videoCaptureError=${videoCaptureError} ,message=${message}"
+                            )
                             runOnUiThread {
                                 xpicker_camera_capture_layer.reset()
                             }
@@ -254,16 +261,20 @@ class XCameraActivity : AppCompatActivity() {
             }
 
             override fun recordShort(time: Long) {
+                recordTime = time
+                Log.e(XPicker.TAG, "record  recordShort time=${time} ")
                 super.recordShort(time)
                 Toast.makeText(
                     this@XCameraActivity,
                     getString(R.string.xpicker_recorder_too_short), Toast.LENGTH_SHORT
                 ).show()
+                xpicker_camera_preview.stopRecording()
                 xpicker_camera_capture_layer.reset()
             }
 
             override fun recordEnd(time: Long) {
                 super.recordEnd(time)
+                recordTime = time
                 xpicker_camera_preview.stopRecording()
             }
 
@@ -277,6 +288,7 @@ class XCameraActivity : AppCompatActivity() {
             callbackFailed("USER_CANCEL")
         }
     }
+
 
 
     private fun callbackSuccess() {

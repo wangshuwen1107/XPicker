@@ -4,19 +4,30 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <cn.cheney.lib_picker.view.CaptureButton
-        android:id="@+id/capture_action_btn"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
+    <TextView
+        android:id="@+id/capture_tip_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/capture_btn_layer"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp" />
+        android:layout_marginBottom="2dp"
+        android:textColor="@color/XPicker_white"
+        android:textSize="12sp" />
+
+    <FrameLayout
+        android:id="@+id/capture_btn_layer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true">
+
+    </FrameLayout>
 
 
     <LinearLayout
         android:id="@+id/common_capture_done_layer"
         android:layout_width="wrap_content"
-        android:layout_height="60dp"
+        android:layout_height="80dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
