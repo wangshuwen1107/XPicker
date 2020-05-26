@@ -4,32 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Parcel
 import android.os.Parcelable
-import androidx.annotation.StringDef
 import cn.cheney.lib_picker.callback.CameraSaveCallback
 import cn.cheney.lib_picker.camera.XCameraActivity
-
-const val REQUEST_KEY = "xPicker_request"
-
-
-const val ONLY_CAPTURE = "ONLY_CAPTURE"
-const val ONLY_RECORDER = "ONLY_RECORDER"
-const val MIXED = "MIXED"
-
-@StringDef(ONLY_CAPTURE, MIXED, ONLY_RECORDER)
-@Target(AnnotationTarget.FIELD, AnnotationTarget.VALUE_PARAMETER)
-annotation class CameraType
-
-const val CAMERA = "CAMERA"
-const val PICKER = "PICKER"
-
-@StringDef(PICKER, CAMERA)
-@Target(AnnotationTarget.FIELD, AnnotationTarget.VALUE_PARAMETER)
-annotation class ActionType
+import cn.cheney.lib_picker.picker.PickerActivity
 
 class XPickerRequest() : Parcelable {
     //摄像头类型
-    @CameraType
-    var captureMode: String = ONLY_CAPTURE
+    var captureMode: String = XPickerConstant.ONLY_CAPTURE
 
     //最小录制时间
     var minRecordTime = 2000
@@ -41,8 +22,7 @@ class XPickerRequest() : Parcelable {
     var defaultLensFacing: Int = 1
 
     //默认动作类型
-    @ActionType
-    var actionType = CAMERA
+    var actionType = XPickerConstant.CAMERA
 
     constructor(parcel: Parcel) : this() {
         captureMode = parcel.readString().toString()
@@ -54,13 +34,17 @@ class XPickerRequest() : Parcelable {
 
     fun start(context: Context, callback: CameraSaveCallback? = null) {
         when (actionType) {
-            CAMERA -> {
+            XPickerConstant.CAMERA -> {
                 val intent = Intent(context, XCameraActivity::class.java)
-                intent.putExtra(REQUEST_KEY, this)
+                intent.putExtra(XPickerConstant.REQUEST_KEY, this)
                 context.startActivity(intent)
                 XCameraActivity.cameraSaveCallback = callback
             }
-            PICKER -> TODO()
+            XPickerConstant.PICKER -> {
+                val intent = Intent(context, PickerActivity::class.java)
+                intent.putExtra(XPickerConstant.REQUEST_KEY, this)
+                context.startActivity(intent)
+            }
         }
     }
 

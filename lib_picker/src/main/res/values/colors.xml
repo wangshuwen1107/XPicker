@@ -2,4 +2,10 @@
 <resources>
     <color name="XPicker_black">#000000</color>
     <color name="XPicker_white">#FFFFFF</color>
+    <color name="XPicker_gray_main">#3E3C3C</color>
+    <color name="XPicker_green">#4CAF50</color>
+
+
+    <color name="XPicker_gray_1">#656262</color>
+    <color name="XPicker_gray_2">#C8C7C7</color>
 </resources>

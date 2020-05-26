@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import cn.cheney.lib_picker.MIXED
+import cn.cheney.lib_picker.PICKER
 import cn.cheney.lib_picker.XPicker
 import cn.cheney.lib_picker.XPickerRequest
 import cn.cheney.lib_picker.callback.CameraSaveCallback
@@ -19,11 +20,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         start_camera.setOnClickListener {
-            goToCamera()
+            action(0)
+        }
+        start_picker.setOnClickListener {
+            action(1)
         }
     }
 
-    private fun goToCamera() {
+    private fun action(action: Int) {
         AndPermission.with(this)
             .runtime()
             .permission(
@@ -33,36 +37,54 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.READ_EXTERNAL_STORAGE
             )
             .onGranted {
-                XPickerRequest().apply {
-                    captureMode = MIXED
-                    maxRecordTime = 5000
-                    minRecordTime = 2000
-                    start(this@MainActivity, object : CameraSaveCallback {
-                        override fun onTakePhotoSuccess(photoUri: Uri) {
-                            Log.i(XPicker.TAG, "onTakePhotoSuccess uri=$photoUri")
-                        }
-
-                        override fun onTakePhotoFailed(errorCode: String) {
-                            Log.e(XPicker.TAG, "onTakePhotoFailed errorCode=$errorCode")
-                        }
-
-                        override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
-                            Log.i(
-                                XPicker.TAG,
-                                "onVideoSuccess coverUrl=$coverUri ,videoUri=$videoUri ,duration=$duration"
-                            )
-                        }
-
-                        override fun onVideoFailed(errorCode: String) {
-                            Log.e(XPicker.TAG, "onVideoFailed errorCode=$errorCode")
-                        }
-
-                    })
+                when (action) {
+                    0 -> {
+                        startCamera()
+                    }
+                    1 -> {
+                        startPicker()
+                    }
                 }
             }
             .onDenied {
                 Toast.makeText(this, "没有权限", Toast.LENGTH_SHORT).show()
             }.start()
 
+    }
+
+    private fun startPicker() {
+        XPickerRequest().apply {
+            actionType = PICKER
+            start(this@MainActivity)
+        }
+    }
+
+    private fun startCamera() {
+        XPickerRequest().apply {
+            captureMode = MIXED
+            maxRecordTime = 5000
+            minRecordTime = 2000
+            start(this@MainActivity, object : CameraSaveCallback {
+                override fun onTakePhotoSuccess(photoUri: Uri) {
+                    Log.i(XPicker.TAG, "onTakePhotoSuccess uri=$photoUri")
+                }
+
+                override fun onTakePhotoFailed(errorCode: String) {
+                    Log.e(XPicker.TAG, "onTakePhotoFailed errorCode=$errorCode")
+                }
+
+                override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
+                    Log.i(
+                        XPicker.TAG,
+                        "onVideoSuccess coverUrl=$coverUri ,videoUri=$videoUri ,duration=$duration"
+                    )
+                }
+
+                override fun onVideoFailed(errorCode: String) {
+                    Log.e(XPicker.TAG, "onVideoFailed errorCode=$errorCode")
+                }
+
+            })
+        }
     }
 }
