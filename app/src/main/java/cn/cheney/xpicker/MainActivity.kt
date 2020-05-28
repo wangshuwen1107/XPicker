@@ -6,9 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import cn.cheney.lib_picker.MIXED
-import cn.cheney.lib_picker.PICKER
 import cn.cheney.lib_picker.XPicker
+import cn.cheney.lib_picker.XPickerConstant
 import cn.cheney.lib_picker.XPickerRequest
 import cn.cheney.lib_picker.callback.CameraSaveCallback
 import com.yanzhenjie.permission.AndPermission
@@ -54,14 +53,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun startPicker() {
         XPickerRequest().apply {
-            actionType = PICKER
+            actionType = XPickerConstant.PICKER
             start(this@MainActivity)
         }
     }
 
     private fun startCamera() {
         XPickerRequest().apply {
-            captureMode = MIXED
+            captureMode = XPickerConstant.MIXED
             maxRecordTime = 5000
             minRecordTime = 2000
             start(this@MainActivity, object : CameraSaveCallback {

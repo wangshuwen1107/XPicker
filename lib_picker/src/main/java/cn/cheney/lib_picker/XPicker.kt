@@ -10,6 +10,8 @@ object XPicker {
 
     val TAG: String = XPicker.javaClass.simpleName
 
+    var spanCount = 4
+
     //图片加载监听
     var imageLoadListener: ImageLoadListener? = null
 

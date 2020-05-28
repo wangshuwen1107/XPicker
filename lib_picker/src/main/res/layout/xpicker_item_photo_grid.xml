@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.percentlayout.widget.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:percent="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+
+    <ImageView
+        android:id="@+id/photo_iv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        percent:layout_aspectRatio="100%"
+        percent:layout_widthPercent="100%" />
+
+
+    <ImageView
+        android:id="@+id/photo_mask_iv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#4D000000"
+        android:visibility="gone"
+        percent:layout_aspectRatio="100%"
+        percent:layout_widthPercent="100%" />
+
+
+    <TextView
+        android:id="@+id/check_tv"
+        android:layout_width="20dp"
+        android:layout_height="0dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:background="@drawable/pciker_select_num_bg"
+        android:gravity="center"
+        android:text="1"
+        android:textColor="@color/XPicker_white"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        percent:layout_aspectRatio="100%" />
+
+
+</androidx.percentlayout.widget.PercentRelativeLayout>

@@ -26,6 +26,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    androidExtensions {
+        experimental = true
+    }
 }
 
 dependencies {
@@ -34,7 +38,8 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.0.2'
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation "com.yanzhenjie.permission:support:2.0.1"
-    implementation "androidx.recyclerview:recyclerview:1.0.0"
+    implementation "androidx.recyclerview:recyclerview:1.1.0"
+    implementation "androidx.percentlayout:percentlayout:1.0.0"
 
     def camerax_version = "1.0.0-beta03"
     def camerax_view_version = "1.0.0-alpha10"

@@ -24,7 +24,11 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.VideoCapture
 import androidx.camera.view.CameraView
-import cn.cheney.lib_picker.*
+import cn.cheney.lib_picker.R
+import cn.cheney.lib_picker.XPicker
+import cn.cheney.lib_picker.XPickerConstant
+import cn.cheney.lib_picker.XPickerConstant.Companion.REQUEST_KEY
+import cn.cheney.lib_picker.XPickerRequest
 import cn.cheney.lib_picker.callback.CameraSaveCallback
 import cn.cheney.lib_picker.callback.CaptureListener
 import cn.cheney.lib_picker.media.XMediaPlayer
@@ -290,24 +294,23 @@ class XCameraActivity : AppCompatActivity() {
     }
 
 
-
     private fun callbackSuccess() {
         when (xPickerRequest!!.captureMode) {
-            ONLY_CAPTURE -> {
+            XPickerConstant.ONLY_CAPTURE -> {
                 if (null == photoFile) {
                     callbackFailed("PHOTO_FILE_EMPTY")
                 } else {
                     cameraSaveCallback?.onTakePhotoSuccess(Uri.fromFile(photoFile!!))
                 }
             }
-            ONLY_RECORDER -> {
+            XPickerConstant.ONLY_RECORDER -> {
                 if (null == videoUri) {
                     callbackFailed("VIDEO_FILE_EMPTY")
                 } else {
                     cameraSaveCallback?.onVideoSuccess(coverUri, videoUri!!, duration)
                 }
             }
-            MIXED -> {
+            XPickerConstant.MIXED -> {
                 if (null == photoFile && null == videoUri) {
                     callbackFailed("BOTH_FILE_EMPTY")
                 } else if (null != photoFile) {
@@ -323,13 +326,13 @@ class XCameraActivity : AppCompatActivity() {
 
     private fun callbackFailed(errorCode: String) {
         when (xPickerRequest!!.captureMode) {
-            ONLY_CAPTURE -> {
+            XPickerConstant.ONLY_CAPTURE -> {
                 cameraSaveCallback?.onTakePhotoFailed(errorCode)
             }
-            ONLY_RECORDER -> {
+            XPickerConstant.ONLY_RECORDER -> {
                 cameraSaveCallback?.onVideoFailed(errorCode)
             }
-            MIXED -> {
+            XPickerConstant.MIXED -> {
                 cameraSaveCallback?.onTakePhotoFailed(errorCode)
                 cameraSaveCallback?.onVideoFailed(errorCode)
             }

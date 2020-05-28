@@ -6,7 +6,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 
-object XAngelManager {
+object XAngelUtil {
 
     private var sensorManager: SensorManager? = null
 

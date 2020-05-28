@@ -3,7 +3,7 @@ package cn.cheney.lib_picker.util
 import android.content.res.Resources
 import kotlin.math.abs
 
-fun XAngelManager.getSensorAngle(x: Float, y: Float): Int {
+fun XAngelUtil.getSensorAngle(x: Float, y: Float): Int {
     return if (abs(x) > abs(y)) {
         /**
          * 横屏倾斜角度比较大

@@ -12,10 +12,8 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import cn.cheney.lib_picker.MIXED
-import cn.cheney.lib_picker.ONLY_CAPTURE
-import cn.cheney.lib_picker.ONLY_RECORDER
 import cn.cheney.lib_picker.R
+import cn.cheney.lib_picker.XPickerConstant
 import cn.cheney.lib_picker.callback.CaptureListener
 
 class CaptureLayer @JvmOverloads constructor(
@@ -149,13 +147,13 @@ class CaptureLayer @JvmOverloads constructor(
 
     private fun setTipByType() {
         when (captureBtn.type) {
-            MIXED -> {
+            XPickerConstant.MIXED -> {
                 tipTxt.text = context.getText(R.string.xpicker_mixed_tip)
             }
-            ONLY_CAPTURE -> {
+            XPickerConstant.ONLY_CAPTURE -> {
                 tipTxt.text = context.getText(R.string.xpicker_capture_tip)
             }
-            ONLY_RECORDER -> {
+            XPickerConstant.ONLY_RECORDER -> {
                 tipTxt.text = context.getText(R.string.xpicker_recorder_tip)
             }
         }
