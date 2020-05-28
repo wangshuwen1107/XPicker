@@ -1,6 +1,9 @@
 package cn.cheney.lib_picker.picker
 
 import android.os.Bundle
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import cn.cheney.lib_picker.R
@@ -21,10 +24,18 @@ class PickerActivity : AppCompatActivity() {
     }
 
     private lateinit var mediaLoader: MediaLoader
+    private lateinit var animationRotateShow: Animation
+    private lateinit var animationRotateHide: Animation
+    var folderListPop: FolderListPop? = null
+
+    private var folderList: List<MediaFolder>? = null
+    private var currentChooseFolderName: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.xpicker_activity_picker)
+        animationRotateShow = AnimationUtils.loadAnimation(this, R.anim.xpicker_folder_arrow_show)
+        animationRotateHide = AnimationUtils.loadAnimation(this, R.anim.xpicker_folder_arrow_hide)
         initView()
         initListener()
         mediaLoader = MediaLoader(this, XPickerConstant.TYPE_IMAGE, true)
@@ -32,7 +43,9 @@ class PickerActivity : AppCompatActivity() {
             if (null == it || it.isEmpty()) {
                 return@loadAllMedia
             }
-            setFolderData(it[0])
+            picker_dir_layer.visibility = View.VISIBLE
+            folderList = it
+            chooseFolder(it[0].name)
         }
     }
 
@@ -49,6 +62,7 @@ class PickerActivity : AppCompatActivity() {
         )
     }
 
+
     private fun initListener() {
         photoAdapter.itemClickListener = { position, mediaEntity, holder ->
             mediaEntity.selected = !mediaEntity.selected
@@ -64,8 +78,18 @@ class PickerActivity : AppCompatActivity() {
             }
             photoAdapter.updateItemCheck(position)
         }
-        picker_dir_layer.setOnClickListener {
 
+        picker_dir_layer.setOnClickListener {
+            if (folderList.isNullOrEmpty()) {
+                return@setOnClickListener
+            }
+            picker_arrow_down_iv.startAnimation(animationRotateShow)
+            folderListPop = FolderListPop(this, folderList!!, currentChooseFolderName!!)
+            folderListPop!!.showAsDropDown(title_layer)
+            folderListPop!!.folderDismissListener = { folderName ->
+                picker_arrow_down_iv.startAnimation(animationRotateHide)
+                chooseFolder(folderName)
+            }
         }
 
     }
@@ -85,10 +109,16 @@ class PickerActivity : AppCompatActivity() {
         }
     }
 
-
-    private fun setFolderData(mediaFolder: MediaFolder) {
-        picker_photo_dir_name_tv.text = mediaFolder.name
-        photoAdapter.mediaList = mediaFolder.mediaList
+    private fun chooseFolder(name: String) {
+        val chooseFolderList = folderList?.filter {
+            it.name == name
+        }
+        if (!chooseFolderList.isNullOrEmpty()) {
+            val chooseFolder = chooseFolderList[0]
+            currentChooseFolderName = chooseFolder.name
+            picker_photo_dir_name_tv.text = chooseFolder.name
+            photoAdapter.mediaList = chooseFolder.mediaList
+        }
     }
 
 

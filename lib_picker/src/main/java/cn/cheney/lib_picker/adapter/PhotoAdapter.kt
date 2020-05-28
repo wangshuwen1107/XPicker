@@ -59,19 +59,18 @@ class PhotoAdapter : RecyclerView.Adapter<ViewHolder>() {
         val mediaEntity = mediaList!![position]
         mediaViewHolder.checkTv.isSelected = mediaEntity.selected
         if (mediaEntity.selected) {
+            mediaViewHolder.maskIv.visibility = View.VISIBLE
             mediaViewHolder.checkTv.text = "${mediaEntity.selectedNum}"
         } else {
             mediaViewHolder.checkTv.text = ""
+            mediaViewHolder.maskIv.visibility = View.GONE
         }
     }
 
-    fun autoCheck(){
-
-
-    }
     class MediaViewHolder(var contentView: View) : RecyclerView.ViewHolder(contentView) {
         var photoIv: ImageView = contentView.findViewById(R.id.photo_iv)
         var checkTv: TextView = contentView.findViewById(R.id.check_tv)
+        var maskIv: ImageView = contentView.findViewById(R.id.photo_mask_iv)
 
     }
 

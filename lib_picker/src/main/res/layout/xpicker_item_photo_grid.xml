@@ -19,7 +19,7 @@
         android:id="@+id/photo_mask_iv"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#4D000000"
+        android:background="#80000000"
         android:visibility="gone"
         percent:layout_aspectRatio="100%"
         percent:layout_widthPercent="100%" />
