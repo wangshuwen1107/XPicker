@@ -1,6 +1,7 @@
 package cn.cheney.lib_picker.picker
 
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -12,6 +13,7 @@ import cn.cheney.lib_picker.XPickerConstant
 import cn.cheney.lib_picker.adapter.GridSpacingItemDecoration
 import cn.cheney.lib_picker.adapter.PhotoAdapter
 import cn.cheney.lib_picker.entity.MediaFolder
+import cn.cheney.lib_picker.util.Logger
 import cn.cheney.lib_picker.util.toPx
 import kotlinx.android.synthetic.main.xpicker_activity_picker.*
 
@@ -39,13 +41,20 @@ class PickerActivity : AppCompatActivity() {
         initView()
         initListener()
         mediaLoader = MediaLoader(this, XPickerConstant.TYPE_IMAGE, true)
-        mediaLoader.loadAllMedia {
-            if (null == it || it.isEmpty()) {
+        mediaLoader.loadAllMedia { newMediaFolderList ->
+            if (newMediaFolderList.isNullOrEmpty()) {
                 return@loadAllMedia
             }
+            Logger.i("loadAllMedia  size = ${newMediaFolderList.size}")
             picker_dir_layer.visibility = View.VISIBLE
-            folderList = it
-            chooseFolder(it[0].name)
+            //将缓存数据注入
+            updateNewFolderListByCache(newMediaFolderList)
+            folderList = newMediaFolderList
+            if (!TextUtils.isEmpty(currentChooseFolderName)) {
+                chooseFolder(currentChooseFolderName!!)
+            } else {
+                chooseFolder(newMediaFolderList[0].name)
+            }
         }
     }
 
@@ -121,5 +130,35 @@ class PickerActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateNewFolderListByCache(newMediaFolderList: List<MediaFolder>) {
+        if (folderList.isNullOrEmpty()) {
+            return
+        }
+        folderList!!.forEach { cacheMediaFolder ->
+            val targetFolders = newMediaFolderList.filter {
+                it.name == cacheMediaFolder.name
+            }
+            if (targetFolders.isNullOrEmpty()
+                || targetFolders[0].mediaList.isNullOrEmpty()
+                || cacheMediaFolder.mediaList.isNullOrEmpty()
+            ) {
+                return@forEach
+            }
+            cacheMediaFolder.mediaList.forEach { cacheMediaEntity ->
+                for (newMedia in targetFolders[0].mediaList) {
+                    if (newMedia.localPath == cacheMediaEntity.localPath
+                    ) {
+                        Logger.i(
+                            "Found new MediaEntity localPath=" +
+                                    "${cacheMediaEntity.localPath}"
+                        )
+                        newMedia.selectedNum = cacheMediaEntity.selectedNum
+                        newMedia.selected = cacheMediaEntity.selected
+                        break
+                    }
+                }
+            }
+        }
+    }
 
 }
