@@ -1,4 +1,4 @@
-package cn.cheney.lib_picker.picker
+package cn.cheney.lib_picker.core
 
 import android.database.Cursor
 import android.os.Bundle

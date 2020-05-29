@@ -1,4 +1,4 @@
-package cn.cheney.lib_picker.picker
+package cn.cheney.lib_picker.activity
 
 import android.annotation.SuppressLint
 import android.graphics.Color
@@ -15,11 +15,15 @@ import cn.cheney.lib_picker.XPickerConstant
 import cn.cheney.lib_picker.XPickerRequest
 import cn.cheney.lib_picker.adapter.GridSpacingItemDecoration
 import cn.cheney.lib_picker.adapter.PhotoAdapter
+import cn.cheney.lib_picker.core.MediaLoader
 import cn.cheney.lib_picker.entity.MediaEntity
 import cn.cheney.lib_picker.entity.MediaFolder
 import cn.cheney.lib_picker.util.Logger
 import cn.cheney.lib_picker.util.toPx
+import cn.cheney.lib_picker.view.FolderListPop
 import kotlinx.android.synthetic.main.xpicker_activity_picker.*
+
+typealias MediaSelectedCallback = (mediaList: List<MediaEntity>?) -> Unit
 
 class PickerActivity : AppCompatActivity() {
 
@@ -61,8 +65,13 @@ class PickerActivity : AppCompatActivity() {
         animationRotateHide = AnimationUtils.loadAnimation(this, R.anim.picker_folder_arrow_hide)
         initView()
         initListener()
-        mediaLoader = MediaLoader(this, xPickerRequest!!.browseType, xPickerRequest!!.supportGif)
-        mediaLoader.loadAllMedia(object : MediaLoader.LocalMediaLoadListener {
+        mediaLoader = MediaLoader(
+            this,
+            xPickerRequest!!.browseType,
+            xPickerRequest!!.supportGif
+        )
+        mediaLoader.loadAllMedia(object :
+            MediaLoader.LocalMediaLoadListener {
             override fun loadComplete(folders: List<MediaFolder>?) {
                 if (folders.isNullOrEmpty()) {
                     return
@@ -106,15 +115,14 @@ class PickerActivity : AppCompatActivity() {
                 if (mediaEntity.selected) {
                     mediaEntity.selectedNum = ++maxNum
                 } else {
-                    //比selectedNum 小的 全减1
                     if (mediaEntity.selectedNum < maxNum) {
-                        getDownItem(mediaEntity.selectedNum)
+                        autoDownSomeItem(mediaEntity.selectedNum)
                     }
                     maxNum--
                     mediaEntity.selectedNum = 0
                 }
                 addToChooseList(mediaEntity, mediaEntity.selected)
-                photoAdapter.updateItemCheck(position,true)
+                photoAdapter.updateItemCheck(position, true)
             }
         }
 
@@ -123,7 +131,11 @@ class PickerActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             picker_arrow_down_iv.startAnimation(animationRotateShow)
-            folderListPop = FolderListPop(this, folderList!!, currentChooseFolderName!!)
+            folderListPop = FolderListPop(
+                this,
+                folderList!!,
+                currentChooseFolderName!!
+            )
             folderListPop!!.showAsDropDown(title_layer)
             folderListPop!!.folderDismissListener = { folderName ->
                 picker_arrow_down_iv.startAnimation(animationRotateHide)
@@ -131,8 +143,16 @@ class PickerActivity : AppCompatActivity() {
             }
         }
         picker_back_iv.setOnClickListener {
-            finish()
+            callback(true)
         }
+        picker_done_tv.setOnClickListener {
+            callback(false)
+        }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        callback(true)
     }
 
     /**
@@ -177,9 +197,10 @@ class PickerActivity : AppCompatActivity() {
     }
 
     /**
-     * 比目标数量小 自动减1
+     * 查找比目标值小的item 减1
+     * @param target 反选的ItemNum
      */
-    private fun getDownItem(target: Int) {
+    private fun autoDownSomeItem(target: Int) {
         if (null == photoAdapter.mediaList) {
             return
         }
@@ -191,6 +212,10 @@ class PickerActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * 选择文件夹
+     * @param name 文件夹名字
+     */
     private fun chooseFolder(name: String) {
         val chooseFolderList = folderList?.filter {
             it.name == name
@@ -203,6 +228,10 @@ class PickerActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * 更新缓存里面的信息
+     * @param newMediaFolderList 新扫描出来的文件夹列表
+     */
     private fun updateNewFolderListByCache(newMediaFolderList: List<MediaFolder>) {
         if (folderList.isNullOrEmpty()) {
             return
@@ -235,4 +264,17 @@ class PickerActivity : AppCompatActivity() {
         }
     }
 
+
+    private fun callback(cancel: Boolean = false) {
+        if (!cancel) {
+            mediaSelectedCallback?.invoke(chooseMediaList)
+        }
+        mediaSelectedCallback = null
+        finish()
+    }
+
+    companion object {
+        var mediaSelectedCallback: MediaSelectedCallback? = null
+
+    }
 }

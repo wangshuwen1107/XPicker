@@ -1,4 +1,4 @@
-package cn.cheney.lib_picker.media
+package cn.cheney.lib_picker.core
 
 import android.content.Context
 import android.media.AudioManager

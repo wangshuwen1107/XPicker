@@ -1,4 +1,4 @@
-package cn.cheney.lib_picker.camera
+package cn.cheney.lib_picker.activity
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -31,7 +31,7 @@ import cn.cheney.lib_picker.XPickerConstant.Companion.REQUEST_KEY
 import cn.cheney.lib_picker.XPickerRequest
 import cn.cheney.lib_picker.callback.CameraSaveCallback
 import cn.cheney.lib_picker.callback.CaptureListener
-import cn.cheney.lib_picker.media.XMediaPlayer
+import cn.cheney.lib_picker.core.XMediaPlayer
 import kotlinx.android.synthetic.main.xpicker_activity_camera.*
 import java.io.BufferedOutputStream
 import java.io.File
@@ -167,17 +167,26 @@ class XCameraActivity : AppCompatActivity() {
                 super.ok()
                 if (null != videoFile) {
                     //获取封面和时间
-                    val coverAndDuration = getVideoAndDuration(videoFile!!.absolutePath)
+                    val coverAndDuration =
+                        getVideoAndDuration(
+                            videoFile!!.absolutePath
+                        )
                     this@XCameraActivity.coverUri =
                         if (coverAndDuration?.first == null) null else Uri.fromFile(
                             coverAndDuration.first
                         )
                     this@XCameraActivity.duration = coverAndDuration?.second
                     //添加到系统相册
-                    scanPhotoAlbum(this@XCameraActivity, videoFile)
+                    scanPhotoAlbum(
+                        this@XCameraActivity,
+                        videoFile
+                    )
                 }
                 if (null != photoFile) {
-                    scanPhotoAlbum(this@XCameraActivity, photoFile)
+                    scanPhotoAlbum(
+                        this@XCameraActivity,
+                        photoFile
+                    )
                 }
                 finish()
                 callbackSuccess()
@@ -185,7 +194,12 @@ class XCameraActivity : AppCompatActivity() {
 
             override fun takePictures() {
                 super.takePictures()
-                val photoFile = createFile(externalMediaDirs.first(), FILENAME, PHOTO_EXTENSION)
+                val photoFile =
+                    createFile(
+                        externalMediaDirs.first(),
+                        FILENAME,
+                        PHOTO_EXTENSION
+                    )
                 xpicker_camera_preview.takePicture(photoFile, cameraExecutor, object :
                     ImageCapture.OnImageSavedCallback {
                     override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
@@ -225,7 +239,12 @@ class XCameraActivity : AppCompatActivity() {
 
             override fun recordStart() {
                 super.recordStart()
-                val videoFile = createFile(externalMediaDirs.first(), FILENAME, VIDEO_EXTENSION)
+                val videoFile =
+                    createFile(
+                        externalMediaDirs.first(),
+                        FILENAME,
+                        VIDEO_EXTENSION
+                    )
                 xpicker_camera_preview.startRecording(videoFile, cameraExecutor,
                     object : VideoCapture.OnVideoSavedCallback {
                         override fun onVideoSaved(file: File) {
@@ -445,7 +464,10 @@ class XCameraActivity : AppCompatActivity() {
                 Log.e(XPicker.TAG, "firstFrame get Failed -------")
                 return Pair(null, duration.toInt())
             }
-            saveBitmapFile(bitmap, File(replace))
+            saveBitmapFile(
+                bitmap,
+                File(replace)
+            )
             return Pair(File(replace), duration.toInt())
         }
 

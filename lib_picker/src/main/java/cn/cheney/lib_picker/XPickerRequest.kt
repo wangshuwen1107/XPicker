@@ -3,9 +3,10 @@ package cn.cheney.lib_picker
 import android.content.Context
 import android.content.Intent
 import android.os.Parcelable
+import cn.cheney.lib_picker.activity.MediaSelectedCallback
+import cn.cheney.lib_picker.activity.PickerActivity
+import cn.cheney.lib_picker.activity.XCameraActivity
 import cn.cheney.lib_picker.callback.CameraSaveCallback
-import cn.cheney.lib_picker.camera.XCameraActivity
-import cn.cheney.lib_picker.picker.PickerActivity
 import kotlinx.android.parcel.Parcelize
 
 /**
@@ -31,18 +32,23 @@ data class XPickerRequest(
     var supportGif: Boolean = false
 ) : Parcelable {
 
-    fun start(context: Context, callback: CameraSaveCallback? = null) {
+    fun start(
+        context: Context,
+        cameraSaveCallback: CameraSaveCallback? = null,
+        mediaSelectedCallback: MediaSelectedCallback? = null
+    ) {
         when (actionType) {
             XPickerConstant.CAMERA -> {
                 val intent = Intent(context, XCameraActivity::class.java)
                 intent.putExtra(XPickerConstant.REQUEST_KEY, this)
                 context.startActivity(intent)
-                XCameraActivity.cameraSaveCallback = callback
+                XCameraActivity.cameraSaveCallback = cameraSaveCallback
             }
             XPickerConstant.PICKER -> {
                 val intent = Intent(context, PickerActivity::class.java)
                 intent.putExtra(XPickerConstant.REQUEST_KEY, this)
                 context.startActivity(intent)
+                PickerActivity.mediaSelectedCallback = mediaSelectedCallback
             }
         }
     }

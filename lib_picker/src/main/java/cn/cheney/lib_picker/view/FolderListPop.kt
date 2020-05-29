@@ -1,4 +1,4 @@
-package cn.cheney.lib_picker.picker
+package cn.cheney.lib_picker.view
 
 import android.content.Context
 import android.content.res.Resources

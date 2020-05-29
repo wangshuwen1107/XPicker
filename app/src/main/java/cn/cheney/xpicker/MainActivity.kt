@@ -10,6 +10,7 @@ import cn.cheney.lib_picker.XPicker
 import cn.cheney.lib_picker.XPickerConstant
 import cn.cheney.lib_picker.XPickerRequest
 import cn.cheney.lib_picker.callback.CameraSaveCallback
+import cn.cheney.lib_picker.util.Logger
 import com.yanzhenjie.permission.AndPermission
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -57,7 +58,11 @@ class MainActivity : AppCompatActivity() {
             browseType = XPickerConstant.TYPE_ALL
             supportGif = true
             maxPickerNum = 5
-            start(this@MainActivity)
+            start(this@MainActivity, mediaSelectedCallback = {
+                it?.forEach { mediaEntity ->
+                    Logger.d("picker choose path = ${mediaEntity.localPath}")
+                }
+            })
         }
     }
 

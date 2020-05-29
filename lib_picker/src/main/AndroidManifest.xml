@@ -20,13 +20,13 @@
 
         <activity
             android:theme="@style/XPicker_FullTheme"
-            android:name=".camera.XCameraActivity"
+            android:name=".activity.XCameraActivity"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
             android:theme="@style/XPicker_NormalTheme"
-            android:name=".picker.PickerActivity"
+            android:name=".activity.PickerActivity"
             android:screenOrientation="portrait">
         </activity>
     </application>
