@@ -10,7 +10,6 @@ object XAngelUtil {
 
     private var sensorManager: SensorManager? = null
 
-
      var sensorAngle: Int = 0
 
 

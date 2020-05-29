@@ -62,24 +62,27 @@ class PickerActivity : AppCompatActivity() {
         initView()
         initListener()
         mediaLoader = MediaLoader(this, xPickerRequest!!.browseType, xPickerRequest!!.supportGif)
-        mediaLoader.loadAllMedia { newMediaFolderList ->
-            if (newMediaFolderList.isNullOrEmpty()) {
-                return@loadAllMedia
+        mediaLoader.loadAllMedia(object : MediaLoader.LocalMediaLoadListener {
+            override fun loadComplete(folders: List<MediaFolder>?) {
+                if (folders.isNullOrEmpty()) {
+                    return
+                }
+                Logger.i("loadAllMedia  size = ${folders.size}")
+                picker_dir_layer.visibility = View.VISIBLE
+                //1.清空选择List
+                chooseMediaList.clear()
+                //2.更新缓存
+                updateNewFolderListByCache(folders)
+                //更新最新List
+                folderList = folders
+                if (!TextUtils.isEmpty(currentChooseFolderName)) {
+                    chooseFolder(currentChooseFolderName!!)
+                } else {
+                    chooseFolder(folders[0].name)
+                }
             }
-            Logger.i("loadAllMedia  size = ${newMediaFolderList.size}")
-            picker_dir_layer.visibility = View.VISIBLE
-            //1.清空选择List
-            chooseMediaList.clear()
-            //2.更新缓存
-            updateNewFolderListByCache(newMediaFolderList)
-            //更新最新List
-            folderList = newMediaFolderList
-            if (!TextUtils.isEmpty(currentChooseFolderName)) {
-                chooseFolder(currentChooseFolderName!!)
-            } else {
-                chooseFolder(newMediaFolderList[0].name)
-            }
-        }
+
+        })
     }
 
 
@@ -159,14 +162,15 @@ class PickerActivity : AppCompatActivity() {
                 picker_done_tv.text = getString(R.string.picker_done)
                 picker_done_tv.setTextColor(Color.parseColor("#C8C7C7"))
 
-                picker_preview_tv.text= getString(R.string.picker_preview)
+                picker_preview_tv.text = getString(R.string.picker_preview)
                 picker_preview_tv.setTextColor(Color.parseColor("#C8C7C7"))
             } else {
                 picker_done_tv.isEnabled = true
                 picker_done_tv.text = "${getString(R.string.picker_done)} (${chooseMediaList.size})"
                 picker_done_tv.setTextColor(Color.WHITE)
 
-                picker_preview_tv.text="${getString(R.string.picker_preview)} (${chooseMediaList.size})"
+                picker_preview_tv.text =
+                    "${getString(R.string.picker_preview)} (${chooseMediaList.size})"
                 picker_preview_tv.setTextColor(Color.WHITE)
             }
         }
