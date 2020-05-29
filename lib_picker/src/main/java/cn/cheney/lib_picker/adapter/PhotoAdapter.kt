@@ -10,7 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import cn.cheney.lib_picker.R
 import cn.cheney.lib_picker.XPicker
+import cn.cheney.lib_picker.XPickerConstant
 import cn.cheney.lib_picker.entity.MediaEntity
+import cn.cheney.lib_picker.util.timeParse
 import java.io.File
 
 typealias ItemClickListener = (position: Int, mediaEntity: MediaEntity, holder: ViewHolder) -> Unit
@@ -43,10 +45,18 @@ class PhotoAdapter : RecyclerView.Adapter<ViewHolder>() {
         holderMap[position] = holder
         val mediaViewHolder = (holder as MediaViewHolder)
         val mediaEntity = mediaList!![position]
+        if (mediaEntity.fileType == XPickerConstant.TYPE_VIDEO) {
+            holder.videoLayer.visibility = View.VISIBLE
+            holder.videoDurationTv.text = "${timeParse(mediaEntity.duration.toLong())}"
+        } else {
+            holder.videoLayer.visibility = View.GONE
+        }
+
         XPicker.imageLoadListener?.invoke(
             Uri.fromFile(File(mediaEntity.localPath!!)),
             mediaViewHolder.photoIv
         )
+
         updateItemCheck(position)
         holder.itemView.setOnClickListener {
             itemClickListener?.invoke(position, mediaEntity, mediaViewHolder)
@@ -71,6 +81,9 @@ class PhotoAdapter : RecyclerView.Adapter<ViewHolder>() {
         var photoIv: ImageView = contentView.findViewById(R.id.photo_iv)
         var checkTv: TextView = contentView.findViewById(R.id.check_tv)
         var maskIv: ImageView = contentView.findViewById(R.id.photo_mask_iv)
+        var videoLayer: ViewGroup = contentView.findViewById(R.id.video_layer)
+        var videoIv: ImageView = contentView.findViewById(R.id.video_iv)
+        var videoDurationTv: TextView = contentView.findViewById(R.id.video_duration_tv)
 
     }
 

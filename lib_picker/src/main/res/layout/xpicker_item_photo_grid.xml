@@ -40,5 +40,31 @@
         android:textStyle="bold"
         percent:layout_aspectRatio="100%" />
 
+    <LinearLayout
+        android:id="@+id/video_layer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="2dp"
+        android:orientation="horizontal">
+
+
+        <ImageView
+            android:id="@+id/video_iv"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/xpicker_video" />
+
+        <TextView
+            android:id="@+id/video_duration_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="6dp"
+            android:textColor="@color/XPicker_white"
+            android:textSize="12sp" />
+
+    </LinearLayout>
 
 </androidx.percentlayout.widget.PercentRelativeLayout>

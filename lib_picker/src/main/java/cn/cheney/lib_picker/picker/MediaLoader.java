@@ -21,33 +21,10 @@ import cn.cheney.lib_picker.entity.MediaEntity;
 import cn.cheney.lib_picker.entity.MediaFolder;
 
 public class MediaLoader {
-
     private static final String DURATION = "duration";
     private int type;
     private FragmentActivity activity;
     private boolean isGif;
-
-    /**
-     * 查询全部图片和视频，并且过滤掉已损坏图片和视频
-     */
-    private static final String SELECTION_ALL =
-            MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
-                    + " OR "
-                    + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
-                    + " AND "
-                    + MediaStore.Images.Media.MIME_TYPE + "!=?"
-                    + " AND "
-                    + MediaStore.Images.Media.MIME_TYPE + "!=?"
-                    + " AND "
-                    + MediaStore.Files.FileColumns.SIZE + ">0";
-
-
-    private static final String[] SELECTION_ALL_ARGS = {
-            String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE),
-            String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO),
-            "image/gif",
-            "image/GIF"
-    };
 
     private static final String[] PROJECTION_ALL = {
             MediaStore.Files.FileColumns._ID,
@@ -59,26 +36,6 @@ public class MediaLoader {
             MediaStore.MediaColumns.MIME_TYPE,
             MediaStore.MediaColumns.WIDTH,
             MediaStore.MediaColumns.HEIGHT,
-    };
-
-    /**
-     * 获取全部图片和视频，但过滤掉gif图片
-     */
-    private static final String SELECTION_ALL_WITHOUT_GIF =
-            "(" + MediaStore.Images.Media.MIME_TYPE + "=?"
-                    + " OR "
-                    + MediaStore.Images.Media.MIME_TYPE + "=?"
-                    + " OR "
-                    + MediaStore.Images.Media.MIME_TYPE + "=?"
-                    + " OR "
-                    + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?)"
-                    + " AND " + MediaStore.MediaColumns.SIZE + ">0";
-
-    private static final String[] SELECTION_ALL_WITHOUT_GIF_ARGS = {
-            "image/jpeg",
-            "image/png",
-            "image/webp",
-            String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO),
     };
 
     /**
@@ -109,77 +66,56 @@ public class MediaLoader {
             MediaStore.Video.Media.DURATION,
     };
 
-    /**
-     * 音频
-     */
-    private final static String[] AUDIO_PROJECTION = {
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.DATA,
-            MediaStore.Audio.Media.DISPLAY_NAME,
-            MediaStore.Audio.Media.DATE_ADDED,
-            MediaStore.Audio.Media.IS_MUSIC,
-            MediaStore.Audio.Media.IS_PODCAST,
-            MediaStore.Audio.Media.MIME_TYPE,
-            MediaStore.Audio.Media.DURATION,
-    };
 
     /**
-     * 只查询图片条件
+     * 查询全部图片和视频
      */
-    private final static String CONDITION_GIF =
-            "(" + MediaStore.Images.Media.MIME_TYPE + "=? or "
-                    + MediaStore.Images.Media.MIME_TYPE + "=?" + " or "
-                    + MediaStore.Images.Media.MIME_TYPE + "=?" + " or "
-                    + MediaStore.Images.Media.MIME_TYPE + "=?)" + " AND "
-                    + MediaStore.MediaColumns.WIDTH + ">0";
+    private static final String SELECTION_ALL =
+            MediaStore.Files.FileColumns.MEDIA_TYPE
+                    + "="
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+                    + " OR "
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE
+                    + "="
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
+                    + " AND "
+                    + MediaStore.Files.FileColumns.SIZE + ">0";
 
-    private final static String[] SELECT_GIF = {
-            "image/jpeg",
-            "image/png",
-            "image/gif",
-            "image/webp"
-    };
+    /**
+     * 获取全部图片和视频，但过滤掉gif图片
+     */
+    private static final String SELECTION_ALL_WITHOUT_GIF =
+            "(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE + " AND "
+                    + MediaStore.Images.Media.MIME_TYPE + "!= 'image/gif')"
+                    + " OR " + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
+                    + " AND " + MediaStore.MediaColumns.SIZE + ">0";
 
     /**
      * 获取全部图片
      */
-    private final static String IMAGE_SELECTION =
-            "(" + MediaStore.Images.Media.MIME_TYPE + "=? or "
-                    + MediaStore.Images.Media.MIME_TYPE + "=?" + " or "
-                    + MediaStore.Images.Media.MIME_TYPE + "=?)" + " AND "
-                    + MediaStore.MediaColumns.WIDTH + ">0";
-
-    /**
-     * 获取全部图片
-     */
-    private final static String[] IMAGE_SELECTION_ARGS = {
-            "image/jpeg",
-            "image/png",
-            "image/webp"
-    };
-
     private static final String SELECTION_IMAGE =
             MediaStore.Files.FileColumns.MEDIA_TYPE + "="
                     + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
+
+    /**
+     * 获取全部图片[除Gif]
+     */
+    private static final String SELECTION_IMAGE_WITHOUT_GIF =
+            MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+                    + "AND"
+                    + MediaStore.Images.Media.MIME_TYPE + "!='image/gif'";
+
     /**
      * 获取全部视频
      */
-    private final static String VIDEO_SELECTION =
-            "(" + MediaStore.Video.Media.MIME_TYPE + "=?)" + " AND "
-                    + MediaStore.MediaColumns.WIDTH + ">0";
-
     private static final String SELECTION_VIDEO =
             MediaStore.Files.FileColumns.MEDIA_TYPE + "="
                     + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
-    /**
-     * 获取全部视频
-     */
-    private final static String[] VIDEO_SELECTION_ARGS = {
-            "video/mp4"
-    };
 
-    private static final String ORDER_BY = MediaStore.Files.FileColumns._ID + " DESC";
 
     public MediaLoader(FragmentActivity activity, int type, boolean isGif) {
         this.activity = activity;
@@ -195,20 +131,38 @@ public class MediaLoader {
                         CursorLoader cursorLoader = null;
                         switch (id) {
                             case XPickerConstant.TYPE_ALL:
-                                cursorLoader = new CursorLoader(
-                                        activity, MediaStore.Files.getContentUri("external"),
-                                        PROJECTION_ALL,
-                                        SELECTION_ALL,
-                                        SELECTION_ALL_ARGS,
-                                        MediaStore.Files.FileColumns.DATE_ADDED + " DESC");
+                                if (isGif) {
+                                    cursorLoader = new CursorLoader(
+                                            activity, MediaStore.Files.getContentUri("external"),
+                                            PROJECTION_ALL,
+                                            SELECTION_ALL,
+                                            null,
+                                            MediaStore.Files.FileColumns.DATE_ADDED + " DESC");
+                                } else {
+                                    cursorLoader = new CursorLoader(
+                                            activity, MediaStore.Files.getContentUri("external"),
+                                            PROJECTION_ALL,
+                                            SELECTION_ALL_WITHOUT_GIF,
+                                            null,
+                                            MediaStore.Files.FileColumns.DATE_ADDED + " DESC");
+                                }
                                 break;
                             case XPickerConstant.TYPE_IMAGE:
-                                cursorLoader = new CursorLoader(
-                                        activity, MediaStore.Files.getContentUri("external"),
-                                        IMAGE_PROJECTION,
-                                         SELECTION_IMAGE,
-                                        null,
-                                        MediaStore.Files.FileColumns.DATE_ADDED + " DESC");
+                                if (isGif) {
+                                    cursorLoader = new CursorLoader(
+                                            activity, MediaStore.Files.getContentUri("external"),
+                                            IMAGE_PROJECTION,
+                                            SELECTION_IMAGE,
+                                            null,
+                                            MediaStore.Files.FileColumns.DATE_ADDED + " DESC");
+                                } else {
+                                    cursorLoader = new CursorLoader(
+                                            activity, MediaStore.Files.getContentUri("external"),
+                                            IMAGE_PROJECTION,
+                                            SELECTION_IMAGE_WITHOUT_GIF,
+                                            null,
+                                            MediaStore.Files.FileColumns.DATE_ADDED + " DESC");
+                                }
                                 break;
                             case XPickerConstant.TYPE_VIDEO:
                                 cursorLoader = new CursorLoader(

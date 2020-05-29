@@ -54,6 +54,8 @@ class MainActivity : AppCompatActivity() {
     private fun startPicker() {
         XPickerRequest().apply {
             actionType = XPickerConstant.PICKER
+            browseType = XPickerConstant.TYPE_ALL
+            supportGif = true
             start(this@MainActivity)
         }
     }

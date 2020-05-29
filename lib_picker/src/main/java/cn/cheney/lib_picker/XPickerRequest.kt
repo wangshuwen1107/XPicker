@@ -2,35 +2,34 @@ package cn.cheney.lib_picker
 
 import android.content.Context
 import android.content.Intent
-import android.os.Parcel
 import android.os.Parcelable
 import cn.cheney.lib_picker.callback.CameraSaveCallback
 import cn.cheney.lib_picker.camera.XCameraActivity
 import cn.cheney.lib_picker.picker.PickerActivity
+import kotlinx.android.parcel.Parcelize
 
-class XPickerRequest() : Parcelable {
-    //摄像头类型
-    var captureMode: String = XPickerConstant.ONLY_CAPTURE
-
-    //最小录制时间
-    var minRecordTime = 2000
-
-    //最大录制时间
-    var maxRecordTime = 10000
-
-    //默认摄像头 后置
-    var defaultLensFacing: Int = 1
-
-    //默认动作类型
-    var actionType = XPickerConstant.CAMERA
-
-    constructor(parcel: Parcel) : this() {
-        captureMode = parcel.readString().toString()
-        minRecordTime = parcel.readInt()
-        maxRecordTime = parcel.readInt()
-        defaultLensFacing = parcel.readInt()
-        actionType = parcel.readString().toString()
-    }
+/**
+ * @param captureMode           拍照模式
+ * @param minRecordTime         录制最小时长（单位 毫秒）
+ * @param maxRecordTime         录制最小时长（单位 毫秒）
+ * @param defaultLensFacing     默认摄像头
+ * @param actionType            拍照 XPickerConstant.CAMERA/浏览图片 XPickerConstant.PICKER
+ * @param maxPickerNum          最大选择数量
+ * @param browseType            浏览媒体类型 XPickerConstant.TYPE_IMAGE/XPickerConstant.TYPE_VIDEO
+ *                              /XPickerConstant.TYPE_ALL
+ *
+ */
+@Parcelize
+data class XPickerRequest(
+    var captureMode: String = XPickerConstant.ONLY_CAPTURE,
+    var minRecordTime: Int = 2000,
+    var maxRecordTime: Int = 10000,
+    var defaultLensFacing: Int = 1,
+    var actionType: String = XPickerConstant.CAMERA,
+    var maxPickerNum: Int = 1,
+    var browseType: Int = XPickerConstant.TYPE_IMAGE,
+    var supportGif: Boolean = false
+) : Parcelable {
 
     fun start(context: Context, callback: CameraSaveCallback? = null) {
         when (actionType) {
@@ -48,26 +47,5 @@ class XPickerRequest() : Parcelable {
         }
     }
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(captureMode)
-        parcel.writeInt(minRecordTime)
-        parcel.writeInt(maxRecordTime)
-        parcel.writeInt(defaultLensFacing)
-        parcel.writeString(actionType)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<XPickerRequest> {
-        override fun createFromParcel(parcel: Parcel): XPickerRequest {
-            return XPickerRequest(parcel)
-        }
-
-        override fun newArray(size: Int): Array<XPickerRequest?> {
-            return arrayOfNulls(size)
-        }
-    }
 
 }

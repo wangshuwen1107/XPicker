@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import cn.cheney.lib_picker.R
 import cn.cheney.lib_picker.XPicker
 import cn.cheney.lib_picker.XPickerConstant
+import cn.cheney.lib_picker.XPickerRequest
 import cn.cheney.lib_picker.adapter.GridSpacingItemDecoration
 import cn.cheney.lib_picker.adapter.PhotoAdapter
 import cn.cheney.lib_picker.entity.MediaFolder
@@ -25,6 +26,7 @@ class PickerActivity : AppCompatActivity() {
         PhotoAdapter()
     }
 
+    private var xPickerRequest: XPickerRequest? = null
     private lateinit var mediaLoader: MediaLoader
     private lateinit var animationRotateShow: Animation
     private lateinit var animationRotateHide: Animation
@@ -33,14 +35,20 @@ class PickerActivity : AppCompatActivity() {
     private var folderList: List<MediaFolder>? = null
     private var currentChooseFolderName: String? = null
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.xpicker_activity_picker)
+        xPickerRequest = intent.getParcelableExtra(XPickerConstant.REQUEST_KEY)
+        if (null == xPickerRequest) {
+            finish()
+            return
+        }
         animationRotateShow = AnimationUtils.loadAnimation(this, R.anim.xpicker_folder_arrow_show)
         animationRotateHide = AnimationUtils.loadAnimation(this, R.anim.xpicker_folder_arrow_hide)
         initView()
         initListener()
-        mediaLoader = MediaLoader(this, XPickerConstant.TYPE_IMAGE, true)
+        mediaLoader = MediaLoader(this, xPickerRequest!!.browseType, xPickerRequest!!.supportGif)
         mediaLoader.loadAllMedia { newMediaFolderList ->
             if (newMediaFolderList.isNullOrEmpty()) {
                 return@loadAllMedia
