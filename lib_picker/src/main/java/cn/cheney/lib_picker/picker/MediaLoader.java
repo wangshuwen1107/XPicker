@@ -21,7 +21,11 @@ import cn.cheney.lib_picker.entity.MediaEntity;
 import cn.cheney.lib_picker.entity.MediaFolder;
 
 public class MediaLoader {
+
     private static final String DURATION = "duration";
+    private static final String VIDEO = "video";
+    private static final String IMAGE = "image";
+
     private int type;
     private FragmentActivity activity;
     private boolean isGif;
@@ -65,7 +69,6 @@ public class MediaLoader {
             MediaStore.Video.Media.MIME_TYPE,
             MediaStore.Video.Media.DURATION,
     };
-
 
     /**
      * 查询全部图片和视频
@@ -195,7 +198,7 @@ public class MediaLoader {
                                         }
                                         String mimeType = data.getString
                                                 (data.getColumnIndexOrThrow(IMAGE_PROJECTION[6]));
-                                        boolean eqImg = mimeType.startsWith(XPickerConstant.IMAGE);
+                                        boolean eqImg = mimeType.startsWith(IMAGE);
                                         int duration = eqImg ? 0 : data.getInt
                                                 (data.getColumnIndexOrThrow(VIDEO_PROJECTION[7]));
                                         int w = eqImg ? data.getInt
@@ -204,9 +207,9 @@ public class MediaLoader {
                                                 (data.getColumnIndexOrThrow(IMAGE_PROJECTION[5])) : 0;
 
                                         int fileType = 0;
-                                        if (mimeType.startsWith(XPickerConstant.IMAGE)) {
+                                        if (mimeType.startsWith(IMAGE)) {
                                             fileType = XPickerConstant.TYPE_IMAGE;
-                                        } else if (mimeType.startsWith(XPickerConstant.VIDEO)) {
+                                        } else if (mimeType.startsWith(VIDEO)) {
                                             fileType = XPickerConstant.TYPE_VIDEO;
                                         }
 

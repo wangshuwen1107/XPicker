@@ -25,20 +25,26 @@
         percent:layout_widthPercent="100%" />
 
 
-    <TextView
-        android:id="@+id/check_tv"
-        android:layout_width="20dp"
+    <FrameLayout
+        android:id="@+id/check_tv_layer"
+        android:layout_width="30dp"
         android:layout_height="0dp"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="4dp"
-        android:background="@drawable/pciker_select_num_bg"
-        android:gravity="center"
-        android:text="1"
-        android:textColor="@color/XPicker_white"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        percent:layout_aspectRatio="100%" />
+        android:padding="5dp"
+        percent:layout_aspectRatio="100%">
+
+        <TextView
+            android:id="@+id/check_tv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/picker_select_num_bg"
+            android:gravity="center"
+            android:textColor="@color/XPicker_white"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+    </FrameLayout>
+
 
     <LinearLayout
         android:id="@+id/video_layer"
@@ -49,12 +55,11 @@
         android:layout_marginBottom="2dp"
         android:orientation="horizontal">
 
-
         <ImageView
             android:id="@+id/video_iv"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:src="@drawable/xpicker_video" />
+            android:src="@drawable/picker_video" />
 
         <TextView
             android:id="@+id/video_duration_tv"
@@ -66,5 +71,23 @@
             android:textSize="12sp" />
 
     </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="6dp"
+        android:paddingBottom="4dp">
+
+        <ImageView
+            android:id="@+id/gif_mark_iv"
+            android:layout_width="20dp"
+            android:layout_height="15dp"
+            android:background="@drawable/pciker_gif_mark_bg"
+            android:src="@drawable/picker_gif"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
 
 </androidx.percentlayout.widget.PercentRelativeLayout>

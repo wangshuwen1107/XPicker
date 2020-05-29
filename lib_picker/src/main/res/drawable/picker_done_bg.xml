@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <padding
-        android:bottom="4dp"
-        android:left="8dp"
-        android:right="8dp"
-        android:top="4dp" />
 
-    <corners android:radius="4dp" />
+    <item android:drawable="@drawable/picker_done_bg_disable" android:state_enabled="false" />
 
-    <solid android:color="@color/XPicker_green" />
+    <item android:drawable="@drawable/picker_done_bg_enable" android:state_enabled="true" />
 
-</shape>
+</selector>

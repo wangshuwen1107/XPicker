@@ -1,5 +1,6 @@
 package cn.cheney.lib_picker.adapter
 
+import android.graphics.Color
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -15,11 +16,11 @@ import cn.cheney.lib_picker.entity.MediaEntity
 import cn.cheney.lib_picker.util.timeParse
 import java.io.File
 
-typealias ItemClickListener = (position: Int, mediaEntity: MediaEntity, holder: ViewHolder) -> Unit
+typealias ItemCheckListener = (position: Int, mediaEntity: MediaEntity, holder: ViewHolder) -> Unit
 
 class PhotoAdapter : RecyclerView.Adapter<ViewHolder>() {
 
-    var itemClickListener: ItemClickListener? = null
+    var itemCheckListener: ItemCheckListener? = null
 
     val holderMap = mutableMapOf<Int, ViewHolder>()
 
@@ -29,6 +30,14 @@ class PhotoAdapter : RecyclerView.Adapter<ViewHolder>() {
             notifyDataSetChanged()
         }
 
+    var hasLimit = false
+        set(value) {
+            val change = value != field
+            field = value
+            if (change) {
+                notifyDataSetChanged()
+            }
+        }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
         val view: View = LayoutInflater.from(parent.context)
@@ -45,21 +54,28 @@ class PhotoAdapter : RecyclerView.Adapter<ViewHolder>() {
         holderMap[position] = holder
         val mediaViewHolder = (holder as MediaViewHolder)
         val mediaEntity = mediaList!![position]
+        //底部文件类型图标
         if (mediaEntity.fileType == XPickerConstant.TYPE_VIDEO) {
             holder.videoLayer.visibility = View.VISIBLE
             holder.videoDurationTv.text = "${timeParse(mediaEntity.duration.toLong())}"
+            holder.gifMarkIv.visibility = View.GONE
         } else {
+            if ("image/gif" == mediaEntity.mineType) {
+                holder.gifMarkIv.visibility = View.VISIBLE
+            } else {
+                holder.gifMarkIv.visibility = View.GONE
+            }
             holder.videoLayer.visibility = View.GONE
         }
-
+        //图片加载
         XPicker.imageLoadListener?.invoke(
             Uri.fromFile(File(mediaEntity.localPath!!)),
             mediaViewHolder.photoIv
         )
-
+        //图片选择
         updateItemCheck(position)
-        holder.itemView.setOnClickListener {
-            itemClickListener?.invoke(position, mediaEntity, mediaViewHolder)
+        holder.checkLayer.setOnClickListener {
+            itemCheckListener?.invoke(position, mediaEntity, mediaViewHolder)
         }
     }
 
@@ -70,20 +86,27 @@ class PhotoAdapter : RecyclerView.Adapter<ViewHolder>() {
         mediaViewHolder.checkTv.isSelected = mediaEntity.selected
         if (mediaEntity.selected) {
             mediaViewHolder.maskIv.visibility = View.VISIBLE
+            mediaViewHolder.maskIv.setBackgroundColor(Color.parseColor("#80000000"))
             mediaViewHolder.checkTv.text = "${mediaEntity.selectedNum}"
         } else {
             mediaViewHolder.checkTv.text = ""
-            mediaViewHolder.maskIv.visibility = View.GONE
+            if (hasLimit) {
+                mediaViewHolder.maskIv.visibility = View.VISIBLE
+                mediaViewHolder.maskIv.setBackgroundColor(Color.parseColor("#80FFFFFF"))
+            } else {
+                mediaViewHolder.maskIv.visibility = View.GONE
+            }
         }
     }
 
     class MediaViewHolder(var contentView: View) : RecyclerView.ViewHolder(contentView) {
         var photoIv: ImageView = contentView.findViewById(R.id.photo_iv)
         var checkTv: TextView = contentView.findViewById(R.id.check_tv)
+        var checkLayer: ViewGroup = contentView.findViewById(R.id.check_tv_layer)
         var maskIv: ImageView = contentView.findViewById(R.id.photo_mask_iv)
         var videoLayer: ViewGroup = contentView.findViewById(R.id.video_layer)
-        var videoIv: ImageView = contentView.findViewById(R.id.video_iv)
         var videoDurationTv: TextView = contentView.findViewById(R.id.video_duration_tv)
+        var gifMarkIv: ImageView = contentView.findViewById(R.id.gif_mark_iv)
 
     }
 

@@ -148,13 +148,13 @@ class CaptureLayer @JvmOverloads constructor(
     private fun setTipByType() {
         when (captureBtn.type) {
             XPickerConstant.MIXED -> {
-                tipTxt.text = context.getText(R.string.xpicker_mixed_tip)
+                tipTxt.text = context.getText(R.string.camera_mixed_tip)
             }
             XPickerConstant.ONLY_CAPTURE -> {
-                tipTxt.text = context.getText(R.string.xpicker_capture_tip)
+                tipTxt.text = context.getText(R.string.camera_capture_tip)
             }
             XPickerConstant.ONLY_RECORDER -> {
-                tipTxt.text = context.getText(R.string.xpicker_recorder_tip)
+                tipTxt.text = context.getText(R.string.camera_recorder_tip)
             }
         }
     }

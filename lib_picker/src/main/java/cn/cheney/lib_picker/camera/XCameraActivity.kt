@@ -148,7 +148,7 @@ class XCameraActivity : AppCompatActivity() {
                 runOnUiThread {
                     Toast.makeText(
                         this@XCameraActivity,
-                        getString(R.string.xpicker_play_error), Toast.LENGTH_SHORT
+                        getString(R.string.media_play_error), Toast.LENGTH_SHORT
                     ).show()
                     actionCancel()
                 }
@@ -193,7 +193,7 @@ class XCameraActivity : AppCompatActivity() {
                             if (!photoFile.exists()) {
                                 Toast.makeText(
                                     this@XCameraActivity,
-                                    getString(R.string.xpicker_take_photo_error),
+                                    getString(R.string.camera_take_photo_error),
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 return@runOnUiThread
@@ -214,7 +214,7 @@ class XCameraActivity : AppCompatActivity() {
                         runOnUiThread {
                             Toast.makeText(
                                 this@XCameraActivity,
-                                getString(R.string.xpicker_take_photo_error),
+                                getString(R.string.camera_take_photo_error),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -270,7 +270,7 @@ class XCameraActivity : AppCompatActivity() {
                 super.recordShort(time)
                 Toast.makeText(
                     this@XCameraActivity,
-                    getString(R.string.xpicker_recorder_too_short), Toast.LENGTH_SHORT
+                    getString(R.string.camera_recorder_too_short), Toast.LENGTH_SHORT
                 ).show()
                 xpicker_camera_preview.stopRecording()
                 xpicker_camera_capture_layer.reset()

@@ -1,5 +1,7 @@
 package cn.cheney.lib_picker.picker
 
+import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
@@ -13,6 +15,7 @@ import cn.cheney.lib_picker.XPickerConstant
 import cn.cheney.lib_picker.XPickerRequest
 import cn.cheney.lib_picker.adapter.GridSpacingItemDecoration
 import cn.cheney.lib_picker.adapter.PhotoAdapter
+import cn.cheney.lib_picker.entity.MediaEntity
 import cn.cheney.lib_picker.entity.MediaFolder
 import cn.cheney.lib_picker.util.Logger
 import cn.cheney.lib_picker.util.toPx
@@ -32,8 +35,18 @@ class PickerActivity : AppCompatActivity() {
     private lateinit var animationRotateHide: Animation
     var folderListPop: FolderListPop? = null
 
+    /**
+     * 全部文件夹集合
+     */
     private var folderList: List<MediaFolder>? = null
+    /**
+     * 当前文件夹名称
+     */
     private var currentChooseFolderName: String? = null
+    /**
+     * 选择的文件集合
+     */
+    private var chooseMediaList: MutableList<MediaEntity> = mutableListOf()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,8 +68,11 @@ class PickerActivity : AppCompatActivity() {
             }
             Logger.i("loadAllMedia  size = ${newMediaFolderList.size}")
             picker_dir_layer.visibility = View.VISIBLE
-            //将缓存数据注入
+            //1.清空选择List
+            chooseMediaList.clear()
+            //2.更新缓存
             updateNewFolderListByCache(newMediaFolderList)
+            //更新最新List
             folderList = newMediaFolderList
             if (!TextUtils.isEmpty(currentChooseFolderName)) {
                 chooseFolder(currentChooseFolderName!!)
@@ -81,19 +97,22 @@ class PickerActivity : AppCompatActivity() {
 
 
     private fun initListener() {
-        photoAdapter.itemClickListener = { position, mediaEntity, holder ->
-            mediaEntity.selected = !mediaEntity.selected
-            if (mediaEntity.selected) {
-                mediaEntity.selectedNum = ++maxNum
-            } else {
-                //比selectedNum 小的 全减1
-                if (mediaEntity.selectedNum < maxNum) {
-                    getDownItem(mediaEntity.selectedNum)
+        photoAdapter.itemCheckListener = { position, mediaEntity, holder ->
+            if (mediaEntity.selected || maxNum < xPickerRequest!!.maxPickerNum) {
+                mediaEntity.selected = !mediaEntity.selected
+                if (mediaEntity.selected) {
+                    mediaEntity.selectedNum = ++maxNum
+                } else {
+                    //比selectedNum 小的 全减1
+                    if (mediaEntity.selectedNum < maxNum) {
+                        getDownItem(mediaEntity.selectedNum)
+                    }
+                    maxNum--
+                    mediaEntity.selectedNum = 0
                 }
-                maxNum--
-                mediaEntity.selectedNum = 0
+                addToChooseList(mediaEntity, mediaEntity.selected)
+                photoAdapter.updateItemCheck(position)
             }
-            photoAdapter.updateItemCheck(position)
         }
 
         picker_dir_layer.setOnClickListener {
@@ -108,7 +127,49 @@ class PickerActivity : AppCompatActivity() {
                 chooseFolder(folderName)
             }
         }
+        picker_back_iv.setOnClickListener {
+            finish()
+        }
+    }
 
+    /**
+     * 选择/反选 mediaEntity
+     */
+    @SuppressLint("SetTextI18n")
+    private fun addToChooseList(mediaEntity: MediaEntity, isChoose: Boolean) {
+        //增加
+        if (!chooseMediaList.any {
+                it.localPath == mediaEntity.localPath
+            } && isChoose) {
+            chooseMediaList.add(mediaEntity)
+        }
+        //删除
+        if (!isChoose) {
+            val filterList = chooseMediaList.filter {
+                it.localPath == mediaEntity.localPath
+            }
+            if (!filterList.isNullOrEmpty()) {
+                chooseMediaList.remove(filterList[0])
+            }
+        }
+        runOnUiThread {
+            photoAdapter.hasLimit = chooseMediaList.size >= xPickerRequest!!.maxPickerNum
+            if (chooseMediaList.isEmpty()) {
+                picker_done_tv.isEnabled = false
+                picker_done_tv.text = getString(R.string.picker_done)
+                picker_done_tv.setTextColor(Color.parseColor("#C8C7C7"))
+
+                picker_preview_tv.text= getString(R.string.picker_preview)
+                picker_preview_tv.setTextColor(Color.parseColor("#C8C7C7"))
+            } else {
+                picker_done_tv.isEnabled = true
+                picker_done_tv.text = "${getString(R.string.picker_done)} (${chooseMediaList.size})"
+                picker_done_tv.setTextColor(Color.WHITE)
+
+                picker_preview_tv.text="${getString(R.string.picker_preview)} (${chooseMediaList.size})"
+                picker_preview_tv.setTextColor(Color.WHITE)
+            }
+        }
     }
 
     /**
@@ -162,6 +223,7 @@ class PickerActivity : AppCompatActivity() {
                         )
                         newMedia.selectedNum = cacheMediaEntity.selectedNum
                         newMedia.selected = cacheMediaEntity.selected
+                        addToChooseList(newMedia, newMedia.selected)
                         break
                     }
                 }
