@@ -1,10 +1,13 @@
 package cn.cheney.lib_picker.adapter
 
+import android.content.Context
 import android.graphics.Color
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -18,11 +21,13 @@ import java.io.File
 
 typealias ItemCheckListener = (position: Int, mediaEntity: MediaEntity, holder: ViewHolder) -> Unit
 
-class PhotoAdapter : RecyclerView.Adapter<ViewHolder>() {
+class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
 
     var itemCheckListener: ItemCheckListener? = null
 
     val holderMap = mutableMapOf<Int, ViewHolder>()
+
+    private lateinit var maskShowAnimation: Animation
 
     var mediaList: List<MediaEntity>? = null
         set(value) {
@@ -38,6 +43,7 @@ class PhotoAdapter : RecyclerView.Adapter<ViewHolder>() {
                 notifyDataSetChanged()
             }
         }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
         val view: View = LayoutInflater.from(parent.context)
@@ -80,23 +86,34 @@ class PhotoAdapter : RecyclerView.Adapter<ViewHolder>() {
     }
 
 
-    fun updateItemCheck(position: Int) {
+    fun updateItemCheck(position: Int, byClick: Boolean = false) {
         val mediaViewHolder = (holderMap[position] as MediaViewHolder)
         val mediaEntity = mediaList!![position]
         mediaViewHolder.checkTv.isSelected = mediaEntity.selected
         if (mediaEntity.selected) {
-            mediaViewHolder.maskIv.visibility = View.VISIBLE
             mediaViewHolder.maskIv.setBackgroundColor(Color.parseColor("#80000000"))
+            mediaViewHolder.maskIv.visibility = View.VISIBLE
             mediaViewHolder.checkTv.text = "${mediaEntity.selectedNum}"
+            if (byClick) {
+                playFadeInCheckAnimation(mediaViewHolder.maskIv)
+                playFadeInCheckAnimation(mediaViewHolder.checkTv)
+            }
         } else {
             mediaViewHolder.checkTv.text = ""
             if (hasLimit) {
-                mediaViewHolder.maskIv.visibility = View.VISIBLE
                 mediaViewHolder.maskIv.setBackgroundColor(Color.parseColor("#80FFFFFF"))
+                mediaViewHolder.maskIv.visibility = View.VISIBLE
             } else {
                 mediaViewHolder.maskIv.visibility = View.GONE
             }
         }
+    }
+
+
+    private fun playFadeInCheckAnimation(view: View) {
+        view.clearAnimation()
+        maskShowAnimation = AnimationUtils.loadAnimation(context, R.anim.picker_mask_show)
+        view.startAnimation(maskShowAnimation)
     }
 
     class MediaViewHolder(var contentView: View) : RecyclerView.ViewHolder(contentView) {

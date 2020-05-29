@@ -47,8 +47,8 @@ class FolderListPop(val context: Context, folderList: List<MediaFolder>, var cho
         width = Resources.getSystem().displayMetrics.widthPixels
         height = Resources.getSystem().displayMetrics.heightPixels
 
-        animationIn = AnimationUtils.loadAnimation(context, R.anim.xpicker_pop_in)
-        animationOut = AnimationUtils.loadAnimation(context, R.anim.xpicker_pop_out)
+        animationIn = AnimationUtils.loadAnimation(context, R.anim.picker_pop_in)
+        animationOut = AnimationUtils.loadAnimation(context, R.anim.picker_pop_out)
 
         rootView.setOnClickListener {
             dismiss()

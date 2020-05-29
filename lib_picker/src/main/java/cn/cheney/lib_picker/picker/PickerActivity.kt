@@ -26,7 +26,7 @@ class PickerActivity : AppCompatActivity() {
     private var maxNum = 0
 
     private val photoAdapter by lazy {
-        PhotoAdapter()
+        PhotoAdapter(this)
     }
 
     private var xPickerRequest: XPickerRequest? = null
@@ -57,8 +57,8 @@ class PickerActivity : AppCompatActivity() {
             finish()
             return
         }
-        animationRotateShow = AnimationUtils.loadAnimation(this, R.anim.xpicker_folder_arrow_show)
-        animationRotateHide = AnimationUtils.loadAnimation(this, R.anim.xpicker_folder_arrow_hide)
+        animationRotateShow = AnimationUtils.loadAnimation(this, R.anim.picker_folder_arrow_show)
+        animationRotateHide = AnimationUtils.loadAnimation(this, R.anim.picker_folder_arrow_hide)
         initView()
         initListener()
         mediaLoader = MediaLoader(this, xPickerRequest!!.browseType, xPickerRequest!!.supportGif)
@@ -114,7 +114,7 @@ class PickerActivity : AppCompatActivity() {
                     mediaEntity.selectedNum = 0
                 }
                 addToChooseList(mediaEntity, mediaEntity.selected)
-                photoAdapter.updateItemCheck(position)
+                photoAdapter.updateItemCheck(position,true)
             }
         }
 
