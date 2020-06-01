@@ -6,7 +6,7 @@
     android:background="#80000000"
     android:orientation="vertical">
 
-    <cn.cheney.lib_picker.view.MaxRecyclerView
+    <cn.cheney.xpicker.view.MaxRecyclerView
         android:id="@+id/folder_rv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

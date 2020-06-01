@@ -49,7 +49,7 @@
         android:src="@drawable/media_record_camera" />
 
 
-    <cn.cheney.lib_picker.view.CaptureLayer
+    <cn.cheney.xpicker.view.CaptureLayer
         android:id="@+id/xpicker_camera_capture_layer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

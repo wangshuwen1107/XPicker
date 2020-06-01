@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/XPicker_black"
-    android:orientation="vertical">
+    android:background="@color/XPicker_black">
 
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/preview_vp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <RelativeLayout
+        android:id="@+id/preview_title_bar"
         android:layout_width="match_parent"
         android:layout_height="45dp"
         android:background="@color/XPicker_gray_main"
@@ -27,7 +32,6 @@
             android:layout_centerVertical="true"
             android:layout_toEndOf="@+id/preview_back_iv"
             android:gravity="center"
-            android:text="1/12"
             android:textColor="@color/XPicker_white"
             android:textSize="14sp" />
 
@@ -46,20 +50,16 @@
 
     </RelativeLayout>
 
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/preview_vp"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-
     <RelativeLayout
+        android:id="@+id/preview_bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="45dp"
+        android:layout_alignParentBottom="true"
         android:background="@color/XPicker_gray_main">
 
 
         <LinearLayout
+            android:id="@+id/preview_select_layer"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_alignParentEnd="true"
@@ -68,7 +68,9 @@
             android:orientation="horizontal">
 
             <ImageView
+                android:id="@+id/preview_select_iv"
                 android:layout_width="20dp"
+                android:padding="3dp"
                 android:layout_height="20dp"
                 android:background="@drawable/picker_select_num_bg" />
 
@@ -84,4 +86,4 @@
 
     </RelativeLayout>
 
-</LinearLayout>
+</RelativeLayout>
