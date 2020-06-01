@@ -50,6 +50,15 @@
 
     </RelativeLayout>
 
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/preview_select_rv"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@color/XPicker_gray_main"
+        android:layout_above="@+id/preview_bottom_bar" />
+
+
     <RelativeLayout
         android:id="@+id/preview_bottom_bar"
         android:layout_width="match_parent"
@@ -70,9 +79,9 @@
             <ImageView
                 android:id="@+id/preview_select_iv"
                 android:layout_width="20dp"
-                android:padding="3dp"
                 android:layout_height="20dp"
-                android:background="@drawable/picker_select_num_bg" />
+                android:background="@drawable/picker_select_num_bg"
+                android:padding="3dp" />
 
             <TextView
                 android:layout_width="wrap_content"

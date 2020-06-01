@@ -33,25 +33,27 @@
         percent:layout_widthPercent="100%" />
 
 
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/check_tv_layer"
-        android:layout_width="30dp"
+        android:layout_width="35dp"
         android:layout_height="0dp"
         android:layout_alignParentEnd="true"
-        android:padding="5dp"
         percent:layout_aspectRatio="100%">
 
         <TextView
             android:id="@+id/check_tv"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
             android:background="@drawable/picker_select_num_bg"
             android:gravity="center"
             android:textColor="@color/XPicker_white"
             android:textSize="14sp"
             android:textStyle="bold" />
 
-    </FrameLayout>
+    </RelativeLayout>
 
 
     <LinearLayout

@@ -13,6 +13,8 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
@@ -20,6 +22,7 @@ import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.XPickerConstant.Companion.PREVIEW_DATA_KEY
 import cn.cheney.xpicker.XPickerConstant.Companion.PREVIEW_INDEX_KEY
 import cn.cheney.xpicker.adapter.PreviewPageAdapter
+import cn.cheney.xpicker.adapter.PreviewSelectAdapter
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.view.photoview.PhotoView
 import com.gyf.immersionbar.BarHide
@@ -31,10 +34,12 @@ import java.io.File
 class PreviewActivity : AppCompatActivity() {
 
     private var previewMediaList: List<MediaEntity>? = null
-
+    private var selectList: ArrayList<MediaEntity> = arrayListOf()
     private var index: Int = 0
 
     private lateinit var mediaAdapter: PreviewPageAdapter
+
+    private val selectAdapter: PreviewSelectAdapter = PreviewSelectAdapter()
 
     private var showStatusBar = true
 
@@ -125,7 +130,13 @@ class PreviewActivity : AppCompatActivity() {
         //预览数字 1/xx
         preview_num_tv.text = "${index + 1}/${previewMediaList!!.size}"
         //选择状态
-        updateSelect(previewMediaList!![index].selected)
+        updateSelectBtn(previewMediaList!![index].selected)
+        //底部选择预览
+        preview_select_rv.layoutManager = LinearLayoutManager(
+            this,
+            RecyclerView.HORIZONTAL, false
+        )
+        preview_select_rv.adapter = selectAdapter
     }
 
 
@@ -164,19 +175,40 @@ class PreviewActivity : AppCompatActivity() {
             override fun onPageSelected(position: Int) {
                 index = position
                 preview_num_tv.text = "${index + 1}/${previewMediaList!!.size}"
-                updateSelect(previewMediaList!![index].selected)
+                updateSelectBtn(previewMediaList!![index].selected)
             }
 
         })
         preview_select_layer.setOnClickListener {
             previewMediaList!![index].selected = !previewMediaList!![index].selected
-            updateSelect(previewMediaList!![index].selected)
+            updateSelectBtn(previewMediaList!![index].selected)
+        }
+        selectAdapter.itemClickListener = { id ->
+            index = previewMediaList!!.indexOf(id)
+            preview_vp.setCurrentItem(index, true)
+            preview_num_tv.text = "${index + 1}/${previewMediaList!!.size}"
+            updateSelectBtn(previewMediaList!![index].selected)
         }
 
     }
 
+    /**
+     * 更新选择栏列表
+     */
+    private fun updateSelectList() {
+        if (selectList.isNullOrEmpty()) {
+            preview_select_rv.visibility = View.GONE
+        } else {
+            preview_select_rv.visibility = View.VISIBLE
+        }
+        selectAdapter.currentPreviewId = previewMediaList!![index].localPath
+        selectAdapter.selectList = selectList
+    }
 
-    private fun updateSelect(select: Boolean) {
+    /**
+     * 更新左下角选择按钮
+     */
+    private fun updateSelectBtn(select: Boolean) {
         preview_select_iv.isSelected = select
         if (select) {
             preview_select_iv.setImageResource(R.drawable.preview_selected)
@@ -184,12 +216,18 @@ class PreviewActivity : AppCompatActivity() {
             preview_select_iv.setImageDrawable(null)
         }
         updateSelectNum()
+        updateSelectList()
     }
 
+
+    /**
+     * 更新完成按钮
+     */
     private fun updateSelectNum() {
         val selectedList = previewMediaList!!.filter {
             it.selected
         }
+        this.selectList.clear()
         if (selectedList.isNullOrEmpty()) {
             preview_done_tv.isEnabled = false
             preview_done_tv.text = getString(R.string.picker_done)
@@ -198,9 +236,14 @@ class PreviewActivity : AppCompatActivity() {
             preview_done_tv.isEnabled = true
             preview_done_tv.text = "${getString(R.string.picker_done)} (${selectedList.size})"
             preview_done_tv.setTextColor(Color.WHITE)
+            this.selectList.addAll(selectedList)
         }
+        selectAdapter.selectList = selectList
     }
 
+    /**
+     * 状态栏显示隐藏
+     */
     private fun setStatusBarVis(show: Boolean) {
         if (show) {
             mImmersionBar.hideBar(BarHide.FLAG_SHOW_BAR).init()

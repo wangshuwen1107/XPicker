@@ -23,6 +23,7 @@ import cn.cheney.xpicker.util.Logger
 import cn.cheney.xpicker.util.toPx
 import cn.cheney.xpicker.view.FolderListPop
 import kotlinx.android.synthetic.main.xpicker_activity_picker.*
+import kotlin.concurrent.thread
 
 typealias MediaSelectedCallback = (mediaList: List<MediaEntity>?) -> Unit
 
@@ -82,16 +83,18 @@ class PickerActivity : AppCompatActivity() {
                 }
                 Logger.i("loadAllMedia  size = ${folders.size}")
                 picker_dir_layer.visibility = View.VISIBLE
-                //1.清空选择List
-                chooseMediaList.clear()
-                //2.更新缓存
-                updateNewFolderListByCache(folders)
-                //更新最新List
-                folderList = folders
-                if (!TextUtils.isEmpty(currentChooseFolderName)) {
-                    chooseFolder(currentChooseFolderName!!)
-                } else {
-                    chooseFolder(folders[0].name)
+                thread {
+                    //1.清空选择List
+                    chooseMediaList.clear()
+                    //2.更新缓存
+                    updateNewFolderListByCache(folders)
+                    //更新最新List
+                    folderList = folders
+                    if (!TextUtils.isEmpty(currentChooseFolderName)) {
+                        chooseFolder(currentChooseFolderName!!)
+                    } else {
+                        chooseFolder(folders[0].name)
+                    }
                 }
             }
 
@@ -249,8 +252,10 @@ class PickerActivity : AppCompatActivity() {
             val chooseFolder = chooseFolderList[0]
             currentFolder = chooseFolder
             currentChooseFolderName = chooseFolder.name
-            picker_photo_dir_name_tv.text = chooseFolder.name
-            photoAdapter.mediaList = chooseFolder.mediaList
+            runOnUiThread {
+                picker_photo_dir_name_tv.text = chooseFolder.name
+                photoAdapter.mediaList = chooseFolder.mediaList
+            }
         }
     }
 
