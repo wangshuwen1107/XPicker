@@ -11,6 +11,7 @@ import androidx.loader.content.Loader
 import cn.cheney.lib_picker.XPickerConstant
 import cn.cheney.lib_picker.entity.MediaEntity
 import cn.cheney.lib_picker.entity.MediaFolder
+import cn.cheney.lib_picker.util.Logger
 import java.io.File
 import java.util.*
 
@@ -72,6 +73,9 @@ class MediaLoader(
                 + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO)
     }
 
+    /**
+     * 所有字段
+     */
     private val PROJECTION_ALL = arrayOf(
         MediaStore.Files.FileColumns._ID,
         MediaStore.MediaColumns.DATA,
@@ -109,7 +113,7 @@ class MediaLoader(
         MediaStore.Video.Media.WIDTH,
         MediaStore.Video.Media.HEIGHT,
         MediaStore.Video.Media.MIME_TYPE,
-        MediaStore.Video.Media.DURATION
+        DURATION
     )
 
 
@@ -239,6 +243,7 @@ class MediaLoader(
                         imageLoadListener.loadComplete(imageFolders)
                     }
                 }
+
                 override fun onLoaderReset(loader: Loader<Cursor?>) {}
             })
     }

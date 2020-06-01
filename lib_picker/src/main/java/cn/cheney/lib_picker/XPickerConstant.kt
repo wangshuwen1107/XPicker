@@ -3,7 +3,9 @@ package cn.cheney.lib_picker
 class XPickerConstant {
 
     companion object {
-        const val REQUEST_KEY = "xPicker_request"
+        const val REQUEST_KEY = "pickerRequest"
+        const val PREVIEW_DATA_KEY = "previewList"
+        const val PREVIEW_INDEX_KEY = "previewIndex"
         //拍照类型
         const val ONLY_CAPTURE = "ONLY_CAPTURE"
         const val ONLY_RECORDER = "ONLY_RECORDER"

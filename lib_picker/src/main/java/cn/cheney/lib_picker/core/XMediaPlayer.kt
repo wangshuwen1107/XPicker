@@ -75,7 +75,7 @@ class XMediaPlayer constructor(private var mContext: Context?) {
         }
     }
 
-    var onCompletionListener = OnCompletionListener {
+    private var onCompletionListener = OnCompletionListener {
         if (null != mMediaListener) {
             mMediaListener!!.onCompleted()
         }

@@ -29,6 +29,13 @@
             android:name=".activity.PickerActivity"
             android:screenOrientation="portrait">
         </activity>
+
+        <activity
+            android:theme="@style/XPicker_NormalTheme"
+            android:name=".activity.PreviewActivity"
+            android:screenOrientation="portrait">
+        </activity>
+
     </application>
 
 </manifest>

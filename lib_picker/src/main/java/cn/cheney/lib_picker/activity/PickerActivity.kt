@@ -1,6 +1,7 @@
 package cn.cheney.lib_picker.activity
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.text.TextUtils
@@ -37,20 +38,22 @@ class PickerActivity : AppCompatActivity() {
     private lateinit var mediaLoader: MediaLoader
     private lateinit var animationRotateShow: Animation
     private lateinit var animationRotateHide: Animation
-    var folderListPop: FolderListPop? = null
+    private var folderListPop: FolderListPop? = null
 
     /**
      * 全部文件夹集合
      */
     private var folderList: List<MediaFolder>? = null
+
     /**
      * 当前文件夹名称
      */
     private var currentChooseFolderName: String? = null
+
     /**
      * 选择的文件集合
      */
-    private var chooseMediaList: MutableList<MediaEntity> = mutableListOf()
+    private var chooseMediaList: ArrayList<MediaEntity> = arrayListOf()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -147,6 +150,13 @@ class PickerActivity : AppCompatActivity() {
         }
         picker_done_tv.setOnClickListener {
             callback(false)
+        }
+        picker_preview_tv.setOnClickListener {
+            val intent = Intent(this, PreviewActivity::class.java).apply {
+                putExtra(XPickerConstant.PREVIEW_INDEX_KEY, 0)
+                putParcelableArrayListExtra(XPickerConstant.PREVIEW_DATA_KEY, chooseMediaList)
+            }
+            startActivity(intent)
         }
     }
 
@@ -267,6 +277,11 @@ class PickerActivity : AppCompatActivity() {
 
     private fun callback(cancel: Boolean = false) {
         if (!cancel) {
+            if (!chooseMediaList.isNullOrEmpty()) {
+                chooseMediaList.sortBy {
+                    it.selectedNum
+                }
+            }
             mediaSelectedCallback?.invoke(chooseMediaList)
         }
         mediaSelectedCallback = null
