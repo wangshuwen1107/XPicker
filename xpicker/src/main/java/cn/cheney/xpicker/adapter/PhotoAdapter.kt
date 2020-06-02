@@ -20,7 +20,7 @@ import cn.cheney.xpicker.util.timeParse
 import java.io.File
 
 typealias ItemCheckListener = (position: Int, mediaEntity: MediaEntity, holder: ViewHolder) -> Unit
-typealias ItemClickListener = (position: Int) -> Unit
+typealias ItemClickListener = (position: Int, isCamera: Boolean) -> Unit
 
 class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
 
@@ -46,54 +46,96 @@ class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
             }
         }
 
+    var haveCamera = false
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
-        val view: View = LayoutInflater.from(parent.context)
-            .inflate(R.layout.xpicker_item_photo_grid, parent, false)
-        return MediaViewHolder(view)
+    override fun getItemViewType(position: Int): Int {
+        if (position == 0 && haveCamera) {
+            return CAMERA_TYPE
+        }
+        return MEDIA_TYPE
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        return if (viewType == CAMERA_TYPE) {
+            CameraViewHolder(
+                LayoutInflater.from(parent.context)
+                    .inflate(R.layout.xpicker_item_camera_grid, parent, false)
+            )
+        } else {
+            MediaViewHolder(
+                LayoutInflater.from(parent.context)
+                    .inflate(R.layout.xpicker_item_photo_grid, parent, false)
+            )
+        }
     }
 
     override fun getItemCount(): Int {
-        return if (null == mediaList) 0 else mediaList!!.size
+        return if (mediaList.isNullOrEmpty() && !haveCamera) {
+            0
+        } else if (haveCamera) {
+            return if (mediaList.isNullOrEmpty()) {
+                1
+            } else {
+                mediaList!!.size + 1
+            }
+        } else {
+            return if (mediaList.isNullOrEmpty()) {
+                0
+            } else {
+                mediaList!!.size
+            }
+        }
     }
 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holderMap[position] = holder
-        val mediaViewHolder = (holder as MediaViewHolder)
-        val mediaEntity = mediaList!![position]
-        //底部文件类型图标
-        if (mediaEntity.fileType == XPickerConstant.TYPE_VIDEO) {
-            holder.videoLayer.visibility = View.VISIBLE
-            holder.videoDurationTv.text = "${timeParse(mediaEntity.duration.toLong())}"
-            holder.gifMarkIv.visibility = View.GONE
-        } else {
-            if ("image/gif" == mediaEntity.mineType) {
-                holder.gifMarkIv.visibility = View.VISIBLE
-            } else {
-                holder.gifMarkIv.visibility = View.GONE
+        if (holder is MediaViewHolder) {
+            holderMap[position] = holder
+            var realPos = position
+            if (haveCamera) {
+                realPos = position - 1
             }
-            holder.videoLayer.visibility = View.GONE
-        }
-        //图片加载
-        XPicker.imageLoadListener?.invoke(
-            Uri.fromFile(File(mediaEntity.localPath!!)),
-            mediaViewHolder.photoIv
-        )
-        //图片选择
-        updateItemCheck(position)
-        holder.checkLayer.setOnClickListener {
-            itemCheckListener?.invoke(position, mediaEntity, mediaViewHolder)
-        }
-        holder.itemView.setOnClickListener {
-            itemClickListener?.invoke(position)
+            val mediaEntity = mediaList!![realPos]
+            //底部文件类型图标
+            if (mediaEntity.fileType == XPickerConstant.TYPE_VIDEO) {
+                holder.videoLayer.visibility = View.VISIBLE
+                holder.videoDurationTv.text = "${timeParse(mediaEntity.duration.toLong())}"
+                holder.gifMarkIv.visibility = View.GONE
+            } else {
+                if ("image/gif" == mediaEntity.mineType) {
+                    holder.gifMarkIv.visibility = View.VISIBLE
+                } else {
+                    holder.gifMarkIv.visibility = View.GONE
+                }
+                holder.videoLayer.visibility = View.GONE
+            }
+            //图片加载
+            XPicker.imageLoadListener?.invoke(
+                Uri.fromFile(File(mediaEntity.localPath!!)),
+                holder.photoIv
+            )
+            //图片选择
+            updateItemCheck(realPos)
+            holder.checkLayer.setOnClickListener {
+                itemCheckListener?.invoke(realPos, mediaEntity, holder)
+            }
+            holder.itemView.setOnClickListener {
+                itemClickListener?.invoke(realPos, false)
+            }
+        } else if (holder is CameraViewHolder) {
+            holder.itemView.setOnClickListener {
+                itemClickListener?.invoke(0, true)
+            }
         }
     }
 
-
     fun updateItemCheck(position: Int, byClick: Boolean = false) {
-        val mediaViewHolder = (holderMap[position] as MediaViewHolder)
+        val mediaViewHolder =
+            (holderMap[if (haveCamera) position + 1 else position] as? MediaViewHolder)
         val mediaEntity = mediaList!![position]
+        if (null == mediaViewHolder) {
+            return
+        }
         mediaViewHolder.checkTv.isSelected = mediaEntity.selected
         if (mediaEntity.selected) {
             mediaViewHolder.maskIv.setBackgroundColor(Color.parseColor("#80000000"))
@@ -129,7 +171,15 @@ class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
         var videoLayer: ViewGroup = contentView.findViewById(R.id.video_layer)
         var videoDurationTv: TextView = contentView.findViewById(R.id.video_duration_tv)
         var gifMarkIv: ImageView = contentView.findViewById(R.id.gif_mark_iv)
-
     }
 
+
+    class CameraViewHolder(var contentView: View) : RecyclerView.ViewHolder(contentView) {
+    }
+
+
+    companion object {
+        const val CAMERA_TYPE = 100
+        const val MEDIA_TYPE = 101
+    }
 }

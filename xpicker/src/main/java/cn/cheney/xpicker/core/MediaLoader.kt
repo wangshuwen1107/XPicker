@@ -119,7 +119,7 @@ class MediaLoader(
 
     fun loadAllMedia(imageLoadListener: LocalMediaLoadListener) {
         LoaderManager.getInstance(activity)
-            .initLoader<Cursor>(type, null, object : LoaderManager.LoaderCallbacks<Cursor?> {
+            .initLoader(type, null, object : LoaderManager.LoaderCallbacks<Cursor?> {
                 override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor?> {
                     var cursorLoader: CursorLoader? = null
                     when (id) {

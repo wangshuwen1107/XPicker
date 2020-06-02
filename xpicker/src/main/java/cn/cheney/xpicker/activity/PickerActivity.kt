@@ -3,6 +3,7 @@ package cn.cheney.xpicker.activity
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
@@ -16,6 +17,7 @@ import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.XPickerRequest
 import cn.cheney.xpicker.adapter.GridSpacingItemDecoration
 import cn.cheney.xpicker.adapter.PhotoAdapter
+import cn.cheney.xpicker.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.PreviewSelectedCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.core.MediaLoader
@@ -28,8 +30,6 @@ import kotlinx.android.synthetic.main.xpicker_activity_picker.*
 import kotlin.concurrent.thread
 
 class PickerActivity : AppCompatActivity() {
-
-    private var maxNum = 0
 
     private val photoAdapter by lazy {
         PhotoAdapter(this)
@@ -59,8 +59,14 @@ class PickerActivity : AppCompatActivity() {
      * 当前显示文件夹
      */
     private var currentFolder: MediaFolder? = null
-
-    private var goToPreview = false
+    /**
+     * 标记是否进入预览界面
+     */
+    private var ignoreUpdate = false
+    /**
+     * 当前最大的选择数字
+     */
+    private var maxNum = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,29 +80,35 @@ class PickerActivity : AppCompatActivity() {
         animationRotateHide = AnimationUtils.loadAnimation(this, R.anim.picker_folder_arrow_hide)
         initView()
         initListener()
+
         mediaLoader = MediaLoader(
             this,
             xPickerRequest!!.browseType,
             xPickerRequest!!.supportGif
         )
+        loadData()
+    }
+
+
+    private fun loadData() {
         mediaLoader.loadAllMedia(object :
             MediaLoader.LocalMediaLoadListener {
             override fun loadComplete(folders: List<MediaFolder>?) {
                 if (folders.isNullOrEmpty()) {
                     return
                 }
-                if (goToPreview) {
-                    goToPreview = false
+                if (ignoreUpdate) {
+                    ignoreUpdate = false
                     return
                 }
-                Logger.i("loadAllMedia  size = ${folders.size}")
+                Logger.i("loadAllMedia  size = ${folders[0].mediaList.size}")
                 picker_dir_layer.visibility = View.VISIBLE
                 thread {
                     //1.清空选择List
                     chooseMediaList.clear()
                     //2.更新缓存
                     updateNewFolderListByCache(folders)
-                    //更新最新List
+                    //3.更新最新List
                     folderList = folders
                     if (!TextUtils.isEmpty(currentChooseFolderName)) {
                         chooseFolder(currentChooseFolderName!!)
@@ -124,8 +136,8 @@ class PickerActivity : AppCompatActivity() {
                 true
             )
         )
+        photoAdapter.haveCamera = xPickerRequest?.haveCameraItem ?: false
     }
-
 
     private fun initListener() {
         photoAdapter.itemCheckListener = { position, mediaEntity, holder ->
@@ -145,9 +157,31 @@ class PickerActivity : AppCompatActivity() {
             }
         }
 
-        photoAdapter.itemClickListener = { position ->
-            if (!currentFolder?.mediaList.isNullOrEmpty()) {
-                goToPreview(currentFolder!!.mediaList, position)
+        photoAdapter.itemClickListener = { position, isCamera ->
+            if (isCamera) {
+                xPickerRequest!!.actionType = XPickerConstant.CAMERA
+                xPickerRequest!!.start(
+                    this@PickerActivity,
+                    cameraSaveCallback = object : CameraSaveCallback {
+                        override fun onTakePhotoSuccess(photoUri: Uri) {
+                            loadData()
+                        }
+
+                        override fun onTakePhotoFailed(errorCode: String) {
+                        }
+
+                        override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
+                            loadData()
+                        }
+
+                        override fun onVideoFailed(errorCode: String) {
+                        }
+
+                    })
+            } else {
+                if (!currentFolder?.mediaList.isNullOrEmpty()) {
+                    goToPreview(currentFolder!!.mediaList, position)
+                }
             }
         }
 
@@ -180,7 +214,7 @@ class PickerActivity : AppCompatActivity() {
 
 
     private fun goToPreview(mediaList: ArrayList<MediaEntity>, index: Int = 0) {
-        goToPreview = true
+        ignoreUpdate = true
         val intent = Intent(this, PreviewActivity::class.java).apply {
             putExtra(XPickerConstant.PREVIEW_INDEX_KEY, index)
             putParcelableArrayListExtra(XPickerConstant.PREVIEW_DATA_KEY, mediaList)
@@ -319,12 +353,6 @@ class PickerActivity : AppCompatActivity() {
                     cacheMediaEntity.selectedNum = newEntity.selectedNum
                     val index = currentFolder?.mediaList?.indexOf(cacheMediaEntity)
                     if (null != index && index >= 0) {
-                        Logger.d(
-                            "LocalPath =${cacheMediaEntity.localPath} ;" +
-                                    " selected=${cacheMediaEntity.selected} ; " +
-                                    " selectedNum=${cacheMediaEntity.selectedNum} ;"
-                                    + " index=${index}"
-                        )
                         photoAdapter.updateItemCheck(index)
                         addToChooseList(cacheMediaEntity, cacheMediaEntity.selected)
                     }

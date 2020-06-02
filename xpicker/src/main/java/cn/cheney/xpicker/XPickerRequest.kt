@@ -29,7 +29,8 @@ data class XPickerRequest(
     var actionType: String = XPickerConstant.CAMERA,
     var maxPickerNum: Int = 1,
     var browseType: Int = XPickerConstant.TYPE_IMAGE,
-    var supportGif: Boolean = false
+    var supportGif: Boolean = false,
+    var haveCameraItem: Boolean = false
 ) : Parcelable {
 
     fun start(

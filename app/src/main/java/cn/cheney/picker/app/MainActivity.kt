@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity() {
             actionType = XPickerConstant.PICKER
             browseType = XPickerConstant.TYPE_ALL
             supportGif = true
+            haveCameraItem = true
             maxPickerNum = 5
             start(this@MainActivity, mediaSelectedCallback = object : SelectedCallback {
                 override fun onSelected(mediaList: List<MediaEntity>?) {
