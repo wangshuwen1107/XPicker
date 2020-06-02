@@ -16,6 +16,8 @@ import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.XPickerRequest
 import cn.cheney.xpicker.adapter.GridSpacingItemDecoration
 import cn.cheney.xpicker.adapter.PhotoAdapter
+import cn.cheney.xpicker.callback.PreviewSelectedCallback
+import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.core.MediaLoader
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.entity.MediaFolder
@@ -24,8 +26,6 @@ import cn.cheney.xpicker.util.toPx
 import cn.cheney.xpicker.view.FolderListPop
 import kotlinx.android.synthetic.main.xpicker_activity_picker.*
 import kotlin.concurrent.thread
-
-typealias MediaSelectedCallback = (mediaList: List<MediaEntity>?) -> Unit
 
 class PickerActivity : AppCompatActivity() {
 
@@ -55,8 +55,12 @@ class PickerActivity : AppCompatActivity() {
      * 选择的文件集合
      */
     private var chooseMediaList: ArrayList<MediaEntity> = arrayListOf()
-
+    /**
+     * 当前显示文件夹
+     */
     private var currentFolder: MediaFolder? = null
+
+    private var goToPreview = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,6 +85,10 @@ class PickerActivity : AppCompatActivity() {
                 if (folders.isNullOrEmpty()) {
                     return
                 }
+                if (goToPreview) {
+                    goToPreview = false
+                    return
+                }
                 Logger.i("loadAllMedia  size = ${folders.size}")
                 picker_dir_layer.visibility = View.VISIBLE
                 thread {
@@ -101,6 +109,10 @@ class PickerActivity : AppCompatActivity() {
         })
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        callback(true)
+    }
 
     private fun initView() {
         picker_photo_rv.adapter = photoAdapter
@@ -135,14 +147,7 @@ class PickerActivity : AppCompatActivity() {
 
         photoAdapter.itemClickListener = { position ->
             if (!currentFolder?.mediaList.isNullOrEmpty()) {
-                val intent = Intent(this, PreviewActivity::class.java).apply {
-                    putExtra(XPickerConstant.PREVIEW_INDEX_KEY, position)
-                    putParcelableArrayListExtra(
-                        XPickerConstant.PREVIEW_DATA_KEY,
-                        currentFolder!!.mediaList
-                    )
-                }
-                startActivity(intent)
+                goToPreview(currentFolder!!.mediaList, position)
             }
         }
 
@@ -169,17 +174,28 @@ class PickerActivity : AppCompatActivity() {
             callback(false)
         }
         picker_preview_tv.setOnClickListener {
-            val intent = Intent(this, PreviewActivity::class.java).apply {
-                putExtra(XPickerConstant.PREVIEW_INDEX_KEY, 0)
-                putParcelableArrayListExtra(XPickerConstant.PREVIEW_DATA_KEY, chooseMediaList)
-            }
-            startActivity(intent)
+            goToPreview(chooseMediaList)
         }
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        callback(true)
+
+    private fun goToPreview(mediaList: ArrayList<MediaEntity>, index: Int = 0) {
+        goToPreview = true
+        val intent = Intent(this, PreviewActivity::class.java).apply {
+            putExtra(XPickerConstant.PREVIEW_INDEX_KEY, index)
+            putParcelableArrayListExtra(XPickerConstant.PREVIEW_DATA_KEY, mediaList)
+            putExtra(XPickerConstant.PREVIEW_CURRENT_MAX_NUM_KEY, xPickerRequest!!.maxPickerNum)
+        }
+        startActivity(intent)
+        PreviewActivity.selectedCallback = object : PreviewSelectedCallback {
+            override fun onSelected(mediaList: List<MediaEntity>?) {
+                callback(false, assign = true, assignList = mediaList)
+            }
+
+            override fun onCancel(mediaList: List<MediaEntity>) {
+                updateMediaEntity(mediaList)
+            }
+        }
     }
 
     /**
@@ -281,10 +297,6 @@ class PickerActivity : AppCompatActivity() {
                 for (newMedia in targetFolders[0].mediaList) {
                     if (newMedia.localPath == cacheMediaEntity.localPath
                     ) {
-                        Logger.i(
-                            "Found new MediaEntity localPath=" +
-                                    "${cacheMediaEntity.localPath}"
-                        )
                         newMedia.selectedNum = cacheMediaEntity.selectedNum
                         newMedia.selected = cacheMediaEntity.selected
                         addToChooseList(newMedia, newMedia.selected)
@@ -296,21 +308,57 @@ class PickerActivity : AppCompatActivity() {
     }
 
 
-    private fun callback(cancel: Boolean = false) {
+    private fun updateMediaEntity(mediaList: List<MediaEntity>?) {
+        if (mediaList.isNullOrEmpty()) {
+            return
+        }
+        currentFolder?.mediaList?.forEach { cacheMediaEntity ->
+            mediaList.forEach newList@{ newEntity ->
+                if (newEntity.localPath == cacheMediaEntity.localPath) {
+                    cacheMediaEntity.selected = newEntity.selected
+                    cacheMediaEntity.selectedNum = newEntity.selectedNum
+                    val index = currentFolder?.mediaList?.indexOf(cacheMediaEntity)
+                    if (null != index && index >= 0) {
+                        Logger.d(
+                            "LocalPath =${cacheMediaEntity.localPath} ;" +
+                                    " selected=${cacheMediaEntity.selected} ; " +
+                                    " selectedNum=${cacheMediaEntity.selectedNum} ;"
+                                    + " index=${index}"
+                        )
+                        photoAdapter.updateItemCheck(index)
+                        addToChooseList(cacheMediaEntity, cacheMediaEntity.selected)
+                    }
+                    return@newList
+                }
+            }
+        }
+        //更新当前最大的选择数量
+        maxNum = currentFolder?.mediaList?.maxBy {
+            it.selectedNum
+        }?.selectedNum ?: 0
+    }
+
+
+    private fun callback(
+        cancel: Boolean = false,
+        assign: Boolean = false,
+        assignList: List<MediaEntity>? = null
+    ) {
         if (!cancel) {
-            if (!chooseMediaList.isNullOrEmpty()) {
+            if (assign) {
+                mediaSelectedCallback?.onSelected(assignList)
+            } else if (!chooseMediaList.isNullOrEmpty()) {
                 chooseMediaList.sortBy {
                     it.selectedNum
                 }
+                mediaSelectedCallback?.onSelected(chooseMediaList)
             }
-            mediaSelectedCallback?.invoke(chooseMediaList)
         }
         mediaSelectedCallback = null
         finish()
     }
 
     companion object {
-        var mediaSelectedCallback: MediaSelectedCallback? = null
-
+        var mediaSelectedCallback: SelectedCallback? = null
     }
 }

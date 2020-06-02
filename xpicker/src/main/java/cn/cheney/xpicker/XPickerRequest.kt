@@ -3,10 +3,10 @@ package cn.cheney.xpicker
 import android.content.Context
 import android.content.Intent
 import android.os.Parcelable
-import cn.cheney.xpicker.activity.MediaSelectedCallback
 import cn.cheney.xpicker.activity.PickerActivity
 import cn.cheney.xpicker.activity.XCameraActivity
 import cn.cheney.xpicker.callback.CameraSaveCallback
+import cn.cheney.xpicker.callback.SelectedCallback
 import kotlinx.android.parcel.Parcelize
 
 /**
@@ -35,7 +35,7 @@ data class XPickerRequest(
     fun start(
         context: Context,
         cameraSaveCallback: CameraSaveCallback? = null,
-        mediaSelectedCallback: MediaSelectedCallback? = null
+        mediaSelectedCallback: SelectedCallback? = null
     ) {
         when (actionType) {
             XPickerConstant.CAMERA -> {

@@ -8,6 +8,7 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
+import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
 import java.io.File
 
@@ -50,6 +51,11 @@ class PreviewSelectAdapter : RecyclerView.Adapter<PreviewSelectAdapter.MediaSele
         } else {
             holder.photoBg.visibility = View.GONE
         }
+        if (selectList!![position].fileType == XPickerConstant.TYPE_VIDEO) {
+            holder.videoIv.visibility = View.VISIBLE
+        } else {
+            holder.videoIv.visibility = View.GONE
+        }
 
         holder.itemView.setOnClickListener {
             itemClickListener?.invoke(selectList!![position])
@@ -58,8 +64,9 @@ class PreviewSelectAdapter : RecyclerView.Adapter<PreviewSelectAdapter.MediaSele
 
 
     class MediaSelectHolder(var contentView: View) : RecyclerView.ViewHolder(contentView) {
-        var photoIv: ImageView = contentView.findViewById(R.id.select_iv)
-        var photoBg: ImageView = contentView.findViewById(R.id.select_bg)
+        var photoIv: ImageView = contentView.findViewById(R.id.preview_item_select_iv)
+        var photoBg: ImageView = contentView.findViewById(R.id.preview_item_select_bg)
+        var videoIv: ImageView = contentView.findViewById(R.id.preview_item_video_iv)
     }
 
 }

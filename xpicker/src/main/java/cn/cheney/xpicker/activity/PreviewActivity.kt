@@ -11,6 +11,7 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,11 +20,14 @@ import androidx.viewpager.widget.ViewPager
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.XPickerConstant
+import cn.cheney.xpicker.XPickerConstant.Companion.PREVIEW_CURRENT_MAX_NUM_KEY
 import cn.cheney.xpicker.XPickerConstant.Companion.PREVIEW_DATA_KEY
 import cn.cheney.xpicker.XPickerConstant.Companion.PREVIEW_INDEX_KEY
 import cn.cheney.xpicker.adapter.PreviewPageAdapter
 import cn.cheney.xpicker.adapter.PreviewSelectAdapter
+import cn.cheney.xpicker.callback.PreviewSelectedCallback
 import cn.cheney.xpicker.entity.MediaEntity
+import cn.cheney.xpicker.util.Logger
 import cn.cheney.xpicker.view.photoview.PhotoView
 import com.gyf.immersionbar.BarHide
 import com.gyf.immersionbar.ImmersionBar
@@ -36,6 +40,8 @@ class PreviewActivity : AppCompatActivity() {
     private var previewMediaList: List<MediaEntity>? = null
     private var selectList: ArrayList<MediaEntity> = arrayListOf()
     private var index: Int = 0
+    private var maxPickerNum: Int = 0
+    private var currentSelectMaxNum: Int = 0
 
     private lateinit var mediaAdapter: PreviewPageAdapter
 
@@ -51,15 +57,35 @@ class PreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.xpicker_activity_preview)
         previewMediaList = intent.getParcelableArrayListExtra(PREVIEW_DATA_KEY)
+        maxPickerNum = intent.getIntExtra(PREVIEW_CURRENT_MAX_NUM_KEY, 0)
         index = intent.getIntExtra(PREVIEW_INDEX_KEY, 0)
         if (previewMediaList.isNullOrEmpty()) {
             finish()
             return
         }
+        updateSelectedListData()
+        val maxNumEntity = selectList.maxBy {
+            it.selectedNum
+        }
+        currentSelectMaxNum = maxNumEntity?.selectedNum ?: 0
+        Logger.d("MaxPickerChooseNum = $maxPickerNum; currentSelectMaxNum=$currentSelectMaxNum")
         initView()
         initListener()
     }
 
+    private fun updateSelectedListData() {
+        this.selectList.clear()
+        this.selectList.addAll(previewMediaList!!.filter {
+            it.selected
+        }.sortedBy {
+            it.selectedNum
+        })
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        callback(false)
+    }
 
     private fun initView() {
         mImmersionBar = ImmersionBar.with(this)
@@ -88,10 +114,22 @@ class PreviewActivity : AppCompatActivity() {
                 playIv.visibility = View.GONE
             }
             viewList.add(rootView)
-            photoView.setOnPhotoTapListener { _, _, _ ->
+            photoView.setOnClickListener {
                 showStatusBar = !showStatusBar
-                preview_title_bar.visibility = if (showStatusBar) View.VISIBLE else View.GONE
                 preview_bottom_bar.visibility = if (showStatusBar) View.VISIBLE else View.GONE
+                if (showStatusBar) {
+                    preview_title_bar.visibility = View.VISIBLE
+                    preview_bottom_bar.visibility = View.VISIBLE
+                    if (selectList.isNullOrEmpty()) {
+                        preview_select_rv.visibility = View.GONE
+                    } else {
+                        preview_select_rv.visibility = View.VISIBLE
+                    }
+                } else {
+                    preview_title_bar.visibility = View.GONE
+                    preview_bottom_bar.visibility = View.GONE
+                    preview_select_rv.visibility = View.GONE
+                }
                 if (showStatusBar) {
                     setStatusBarVis(showStatusBar)
                     preview_title_bar.startAnimation(animationIn)
@@ -140,26 +178,6 @@ class PreviewActivity : AppCompatActivity() {
     }
 
 
-    private fun playVideo(mediaEntity: MediaEntity) {
-        if (TextUtils.isEmpty(mediaEntity.localPath)) {
-            return
-        }
-        val intent = Intent(Intent.ACTION_VIEW)
-        val file = File(mediaEntity.localPath!!)
-        val uri: Uri
-        uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            FileProvider.getUriForFile(this, "cn.cheney.xpicker.fileprovider", file)
-        } else {
-            Uri.fromFile(file)
-        }
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        intent.setDataAndType(uri, "video/*")
-        startActivity(intent)
-    }
-
-
-    @SuppressLint("SetTextI18n")
     private fun initListener() {
         preview_vp.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {
@@ -180,7 +198,29 @@ class PreviewActivity : AppCompatActivity() {
 
         })
         preview_select_layer.setOnClickListener {
-            previewMediaList!![index].selected = !previewMediaList!![index].selected
+            val mediaEntity = previewMediaList!![index]
+            if (!mediaEntity.selected && currentSelectMaxNum >= maxPickerNum) {
+                Toast.makeText(
+                    this,
+                    getString(R.string.picker_preview_max_limit, maxPickerNum),
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+                return@setOnClickListener
+            }
+            mediaEntity.selected = !mediaEntity.selected
+            if (mediaEntity.selected) {
+                mediaEntity.selectedNum = ++currentSelectMaxNum
+            } else {
+                if (mediaEntity.selectedNum < currentSelectMaxNum) {
+                    autoDownSomeItem(mediaEntity.selectedNum)
+                }
+                currentSelectMaxNum--
+                mediaEntity.selectedNum = 0
+            }
+            //更新选择列表
+            updateSelectedListData()
+            //更新视图
             updateSelectBtn(previewMediaList!![index].selected)
         }
         selectAdapter.itemClickListener = { id ->
@@ -189,8 +229,49 @@ class PreviewActivity : AppCompatActivity() {
             preview_num_tv.text = "${index + 1}/${previewMediaList!!.size}"
             updateSelectBtn(previewMediaList!![index].selected)
         }
-
+        preview_back_iv.setOnClickListener {
+            callback(false)
+        }
+        preview_done_tv.setOnClickListener {
+            callback(true)
+        }
     }
+
+    /**
+     * 查找比目标值小的item 减1
+     * @param target 反选的ItemNum
+     */
+    private fun autoDownSomeItem(target: Int) {
+        for ((index, mediaEntity) in selectList.withIndex()) {
+            if (mediaEntity.selectedNum in (target) until (currentSelectMaxNum + 1)
+                && mediaEntity.selected
+            ) {
+                mediaEntity.selectedNum = mediaEntity.selectedNum - 1
+            }
+        }
+    }
+
+    /**
+     * 调用系统播放器播放video
+     */
+    private fun playVideo(mediaEntity: MediaEntity) {
+        if (TextUtils.isEmpty(mediaEntity.localPath)) {
+            return
+        }
+        val intent = Intent(Intent.ACTION_VIEW)
+        val file = File(mediaEntity.localPath!!)
+        val uri: Uri
+        uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            FileProvider.getUriForFile(this, "cn.cheney.xpicker.fileprovider", file)
+        } else {
+            Uri.fromFile(file)
+        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.setDataAndType(uri, "video/*")
+        startActivity(intent)
+    }
+
 
     /**
      * 更新选择栏列表
@@ -224,19 +305,14 @@ class PreviewActivity : AppCompatActivity() {
      * 更新完成按钮
      */
     private fun updateSelectNum() {
-        val selectedList = previewMediaList!!.filter {
-            it.selected
-        }
-        this.selectList.clear()
-        if (selectedList.isNullOrEmpty()) {
+        if (selectList.isNullOrEmpty()) {
             preview_done_tv.isEnabled = false
             preview_done_tv.text = getString(R.string.picker_done)
             preview_done_tv.setTextColor(Color.parseColor("#C8C7C7"))
         } else {
             preview_done_tv.isEnabled = true
-            preview_done_tv.text = "${getString(R.string.picker_done)} (${selectedList.size})"
+            preview_done_tv.text = "${getString(R.string.picker_done)} (${selectList.size})"
             preview_done_tv.setTextColor(Color.WHITE)
-            this.selectList.addAll(selectedList)
         }
         selectAdapter.selectList = selectList
     }
@@ -250,6 +326,26 @@ class PreviewActivity : AppCompatActivity() {
         } else {
             mImmersionBar.hideBar(BarHide.FLAG_HIDE_STATUS_BAR).init()
         }
+    }
+
+
+    private fun callback(done: Boolean = false) {
+        if (!selectList.isNullOrEmpty()) {
+            selectList.sortBy {
+                it.selectedNum
+            }
+        }
+        if (done) {
+            selectedCallback?.onSelected(selectList)
+        } else {
+            selectedCallback?.onCancel(previewMediaList!!)
+        }
+        selectedCallback = null
+        finish()
+    }
+
+    companion object {
+        var selectedCallback: PreviewSelectedCallback? = null
     }
 
 }

@@ -6,6 +6,7 @@ class XPickerConstant {
         const val REQUEST_KEY = "pickerRequest"
         const val PREVIEW_DATA_KEY = "previewList"
         const val PREVIEW_INDEX_KEY = "previewIndex"
+        const val PREVIEW_CURRENT_MAX_NUM_KEY = "previewMaxNum"
         //拍照类型
         const val ONLY_CAPTURE = "ONLY_CAPTURE"
         const val ONLY_RECORDER = "ONLY_RECORDER"

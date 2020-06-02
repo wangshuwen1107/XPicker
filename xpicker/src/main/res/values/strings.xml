@@ -13,6 +13,8 @@
     <string name="picker_done">完成</string>
     <string name="picker_preview">预览</string>
 
+    <string name="picker_preview_max_limit">你最多选择%1$s张照片</string>
+
 
 
 </resources>

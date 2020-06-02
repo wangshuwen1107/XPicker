@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="60dp"
-    android:layout_height="match_parent"
+    android:layout_height="70dp"
     android:layout_marginStart="4dp"
     android:orientation="vertical">
 
 
     <ImageView
-        android:id="@+id/select_iv"
+        android:id="@+id/preview_item_select_iv"
         android:layout_width="58dp"
         android:layout_height="58dp"
         android:layout_centerInParent="true"
@@ -15,9 +15,20 @@
 
 
     <ImageView
-        android:id="@+id/select_bg"
+        android:id="@+id/preview_item_select_bg"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_centerInParent="true"
         android:src="@drawable/picker_preview_select" />
+
+
+    <ImageView
+        android:id="@+id/preview_item_video_iv"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/picker_video" />
+
 </RelativeLayout>
