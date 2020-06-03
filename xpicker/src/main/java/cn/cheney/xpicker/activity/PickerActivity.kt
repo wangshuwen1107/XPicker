@@ -5,6 +5,8 @@ import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.TextUtils
 import android.view.View
 import android.view.animation.Animation
@@ -41,6 +43,7 @@ class PickerActivity : AppCompatActivity() {
     private lateinit var animationRotateHide: Animation
     private var folderListPop: FolderListPop? = null
 
+    private val handler = Handler(Looper.getMainLooper())
     /**
      * 全部文件夹集合
      */
@@ -99,6 +102,11 @@ class PickerActivity : AppCompatActivity() {
                 }
                 if (ignoreUpdate) {
                     ignoreUpdate = false
+                    return
+                }
+                if (!folderList.isNullOrEmpty()
+                    && folderList!![0].mediaList.size == folders[0].mediaList.size
+                ) {
                     return
                 }
                 Logger.i("loadAllMedia  size = ${folders[0].mediaList.size}")
@@ -161,22 +169,24 @@ class PickerActivity : AppCompatActivity() {
             if (isCamera) {
                 xPickerRequest!!.actionType = XPickerConstant.CAMERA
                 xPickerRequest!!.start(
-                    this@PickerActivity,
-                    cameraSaveCallback = object : CameraSaveCallback {
+                    this@PickerActivity, cameraSaveCallback = object : CameraSaveCallback {
                         override fun onTakePhotoSuccess(photoUri: Uri) {
-                            loadData()
+                            handler.postDelayed(Runnable {
+                                loadData()
+                            }, 300)
                         }
 
                         override fun onTakePhotoFailed(errorCode: String) {
                         }
 
                         override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
-                            loadData()
+                            handler.postDelayed(Runnable {
+                                loadData()
+                            }, 300)
                         }
 
                         override fun onVideoFailed(errorCode: String) {
                         }
-
                     })
             } else {
                 if (!currentFolder?.mediaList.isNullOrEmpty()) {
