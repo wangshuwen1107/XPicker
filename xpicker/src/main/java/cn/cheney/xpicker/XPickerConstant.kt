@@ -7,6 +7,7 @@ class XPickerConstant {
         const val PREVIEW_DATA_KEY = "previewList"
         const val PREVIEW_INDEX_KEY = "previewIndex"
         const val PREVIEW_CURRENT_MAX_NUM_KEY = "previewMaxNum"
+        const val PREVIEW_ORIGINAL_KEY = "original"
         //拍照类型
         const val ONLY_CAPTURE = "ONLY_CAPTURE"
         const val ONLY_RECORDER = "ONLY_RECORDER"
@@ -19,6 +20,10 @@ class XPickerConstant {
         const val TYPE_ALL = 0
         const val TYPE_VIDEO = 1
         const val TYPE_IMAGE = 2
+        //mineType
+        const val GIF = "image/gif"
 
+        //compress
+        const val  COMPRESS_DIR_TAG="luban"
     }
 }

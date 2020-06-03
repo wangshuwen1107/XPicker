@@ -4,8 +4,8 @@ import cn.cheney.xpicker.entity.MediaEntity
 
 interface PreviewSelectedCallback {
 
-    fun onSelected(mediaList: List<MediaEntity>?)
+    fun onSelected(mediaList: List<MediaEntity>?, isOrigin: Boolean)
 
-    fun onCancel(mediaList: List<MediaEntity>)
+    fun onCancel(mediaList: List<MediaEntity>, isOrigin: Boolean)
 
 }

@@ -4,7 +4,6 @@ import android.database.Cursor
 import android.provider.MediaStore
 import android.text.TextUtils
 import androidx.fragment.app.FragmentActivity
-import androidx.loader.app.LoaderManager
 import androidx.loader.content.CursorLoader
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
@@ -18,8 +17,6 @@ class MediaLoader(
     var type: Int = 0,
     var isGif: Boolean = false
 ) {
-
-    private val loaderManager: LoaderManager = LoaderManager.getInstance(activity)
 
     companion object {
         private const val DURATION = "duration"

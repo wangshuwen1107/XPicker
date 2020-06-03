@@ -23,11 +23,14 @@ import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.XPickerConstant.Companion.PREVIEW_CURRENT_MAX_NUM_KEY
 import cn.cheney.xpicker.XPickerConstant.Companion.PREVIEW_DATA_KEY
 import cn.cheney.xpicker.XPickerConstant.Companion.PREVIEW_INDEX_KEY
+import cn.cheney.xpicker.XPickerConstant.Companion.PREVIEW_ORIGINAL_KEY
 import cn.cheney.xpicker.adapter.PreviewPageAdapter
 import cn.cheney.xpicker.adapter.PreviewSelectAdapter
 import cn.cheney.xpicker.callback.PreviewSelectedCallback
+import cn.cheney.xpicker.core.MediaPhotoCompress
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.util.Logger
+import cn.cheney.xpicker.view.LoadingDialog
 import cn.cheney.xpicker.view.photoview.PhotoView
 import com.gyf.immersionbar.BarHide
 import com.gyf.immersionbar.ImmersionBar
@@ -42,6 +45,7 @@ class PreviewActivity : AppCompatActivity() {
     private var index: Int = 0
     private var maxPickerNum: Int = 0
     private var currentSelectMaxNum: Int = 0
+    private var isOriginal = false
 
     private lateinit var mediaAdapter: PreviewPageAdapter
 
@@ -53,12 +57,19 @@ class PreviewActivity : AppCompatActivity() {
     private lateinit var animationIn: Animation
     private lateinit var animationOut: Animation
 
+    private val loadingDialog: LoadingDialog by lazy {
+        LoadingDialog(this).apply {
+            setCancelable(false)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.xpicker_activity_preview)
         previewMediaList = intent.getParcelableArrayListExtra(PREVIEW_DATA_KEY)
         maxPickerNum = intent.getIntExtra(PREVIEW_CURRENT_MAX_NUM_KEY, 0)
         index = intent.getIntExtra(PREVIEW_INDEX_KEY, 0)
+        isOriginal = intent.getBooleanExtra(PREVIEW_ORIGINAL_KEY, false)
         if (previewMediaList.isNullOrEmpty()) {
             finish()
             return
@@ -68,10 +79,22 @@ class PreviewActivity : AppCompatActivity() {
             it.selectedNum
         }
         currentSelectMaxNum = maxNumEntity?.selectedNum ?: 0
+        updateOriginal()
         Logger.d("MaxPickerChooseNum = $maxPickerNum; currentSelectMaxNum=$currentSelectMaxNum")
         initView()
         initListener()
     }
+
+
+    private fun updateOriginal() {
+        preview_original_check_iv.isSelected = isOriginal
+        if (isOriginal) {
+            preview_original_check_iv.setImageResource(R.drawable.preview_selected)
+        } else {
+            preview_original_check_iv.setImageDrawable(null)
+        }
+    }
+
 
     private fun updateSelectedListData() {
         this.selectList.clear()
@@ -235,6 +258,10 @@ class PreviewActivity : AppCompatActivity() {
         preview_done_tv.setOnClickListener {
             callback(true)
         }
+        preview_original_check_layer.setOnClickListener {
+            isOriginal = !isOriginal
+            updateOriginal()
+        }
     }
 
     /**
@@ -330,18 +357,34 @@ class PreviewActivity : AppCompatActivity() {
 
 
     private fun callback(done: Boolean = false) {
+        if (!done) {
+            selectedCallback?.onCancel(previewMediaList!!, isOriginal)
+            selectedCallback = null
+            finish()
+            return
+        }
         if (!selectList.isNullOrEmpty()) {
             selectList.sortBy {
                 it.selectedNum
             }
         }
-        if (done) {
-            selectedCallback?.onSelected(selectList)
-        } else {
-            selectedCallback?.onCancel(previewMediaList!!)
+        if (isOriginal) {
+            selectedCallback?.onSelected(selectList, isOriginal)
+            selectedCallback = null
+            finish()
         }
-        selectedCallback = null
-        finish()
+        loadingDialog.showLoading(getString(R.string.picker_compress_tip))
+        MediaPhotoCompress().apply {
+            compressImg(this@PreviewActivity, selectList) {
+                runOnUiThread {
+                    loadingDialog.dismiss()
+                    selectedCallback?.onSelected(selectList, isOriginal)
+                    selectedCallback = null
+                    finish()
+                }
+            }
+        }
+
     }
 
     companion object {

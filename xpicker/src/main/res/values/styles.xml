@@ -2,15 +2,21 @@
 
     <style name="XPicker_FullTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimaryDark">@color/XPicker_gray_main</item>
-        <item name="colorPrimary">@color/XPicker_green</item>
-        <item name="colorAccent">@color/XPicker_green</item>
+        <item name="colorPrimary">@color/XPicker_white</item>
+        <item name="colorAccent">@color/XPicker_white</item>
         <item name="android:windowFullscreen">true</item>
     </style>
 
     <style name="XPicker_NormalTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimaryDark">@color/XPicker_gray_main</item>
-        <item name="colorPrimary">@color/XPicker_green</item>
-        <item name="colorAccent">@color/XPicker_green</item>
+        <item name="colorPrimary">@color/XPicker_white</item>
+        <item name="colorAccent">@color/XPicker_white</item>
+    </style>
+
+
+    <style name="XPicker_LoadingDialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
 </resources>

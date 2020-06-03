@@ -23,11 +23,13 @@ import cn.cheney.xpicker.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.PreviewSelectedCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.core.MediaLoader
+import cn.cheney.xpicker.core.MediaPhotoCompress
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.entity.MediaFolder
 import cn.cheney.xpicker.util.Logger
 import cn.cheney.xpicker.util.toPx
 import cn.cheney.xpicker.view.FolderListPop
+import cn.cheney.xpicker.view.LoadingDialog
 import kotlinx.android.synthetic.main.xpicker_activity_picker.*
 import kotlin.concurrent.thread
 
@@ -35,6 +37,12 @@ class PickerActivity : AppCompatActivity() {
 
     private val photoAdapter by lazy {
         PhotoAdapter(this)
+    }
+
+    private val loadingDialog: LoadingDialog by lazy {
+        LoadingDialog(this).apply {
+            setCancelable(false)
+        }
     }
 
     private var xPickerRequest: XPickerRequest? = null
@@ -70,6 +78,11 @@ class PickerActivity : AppCompatActivity() {
      * 当前最大的选择数字
      */
     private var maxNum = 0
+    /**
+     * 是否选中原图
+     */
+    private var isOriginal = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -220,6 +233,19 @@ class PickerActivity : AppCompatActivity() {
         picker_preview_tv.setOnClickListener {
             goToPreview(chooseMediaList)
         }
+        picker_original_check_layer.setOnClickListener {
+            isOriginal = !isOriginal
+            updateOriginal()
+        }
+    }
+
+    private fun updateOriginal() {
+        picker_original_check_iv.isSelected = isOriginal
+        if (isOriginal) {
+            picker_original_check_iv.setImageResource(R.drawable.preview_selected)
+        } else {
+            picker_original_check_iv.setImageDrawable(null)
+        }
     }
 
 
@@ -229,15 +255,20 @@ class PickerActivity : AppCompatActivity() {
             putExtra(XPickerConstant.PREVIEW_INDEX_KEY, index)
             putParcelableArrayListExtra(XPickerConstant.PREVIEW_DATA_KEY, mediaList)
             putExtra(XPickerConstant.PREVIEW_CURRENT_MAX_NUM_KEY, xPickerRequest!!.maxPickerNum)
+            putExtra(XPickerConstant.PREVIEW_ORIGINAL_KEY, isOriginal)
         }
         startActivity(intent)
         PreviewActivity.selectedCallback = object : PreviewSelectedCallback {
-            override fun onSelected(mediaList: List<MediaEntity>?) {
+            override fun onSelected(mediaList: List<MediaEntity>?, isOrigin: Boolean) {
                 callback(false, assign = true, assignList = mediaList)
+                this@PickerActivity.isOriginal = isOriginal
+                updateOriginal()
             }
 
-            override fun onCancel(mediaList: List<MediaEntity>) {
+            override fun onCancel(mediaList: List<MediaEntity>, isOrigin: Boolean) {
                 updateMediaEntity(mediaList)
+                this@PickerActivity.isOriginal = isOriginal
+                updateOriginal()
             }
         }
     }
@@ -382,21 +413,47 @@ class PickerActivity : AppCompatActivity() {
         assign: Boolean = false,
         assignList: List<MediaEntity>? = null
     ) {
-        if (!cancel) {
-            if (assign) {
-                mediaSelectedCallback?.onSelected(assignList)
-            } else if (!chooseMediaList.isNullOrEmpty()) {
-                chooseMediaList.sortBy {
-                    it.selectedNum
-                }
-                mediaSelectedCallback?.onSelected(chooseMediaList)
+        if (cancel) {
+            mediaSelectedCallback = null
+            finish()
+            return
+        }
+        //指定列表从预览界面返回
+        if (assign) {
+            mediaSelectedCallback?.onSelected(assignList)
+            mediaSelectedCallback = null
+            finish()
+            return
+        }
+        //排序
+        if (!chooseMediaList.isNullOrEmpty()) {
+            chooseMediaList.sortBy {
+                it.selectedNum
             }
         }
-        mediaSelectedCallback = null
-        finish()
+        //原图直接返回
+        if (isOriginal) {
+            mediaSelectedCallback?.onSelected(chooseMediaList)
+            mediaSelectedCallback = null
+            finish()
+            return
+        }
+        loadingDialog.showLoading(getString(R.string.picker_compress_tip))
+        //压缩返回
+        MediaPhotoCompress().apply {
+            compressImg(this@PickerActivity, chooseMediaList) {
+                runOnUiThread {
+                    loadingDialog.dismiss()
+                    mediaSelectedCallback?.onSelected(chooseMediaList)
+                    mediaSelectedCallback = null
+                    finish()
+                }
+            }
+        }
     }
 
     companion object {
         var mediaSelectedCallback: SelectedCallback? = null
     }
+
 }

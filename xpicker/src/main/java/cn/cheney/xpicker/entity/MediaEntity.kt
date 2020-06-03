@@ -9,6 +9,7 @@ data class MediaEntity(
     var mineType: String? = null,
     var duration: Int = 0,
     var localPath: String? = null,
+    var compressLocalPath: String? = null,
     var localThumbnailPath: String? = null,
     var latitude: String? = null,
     var longitude: String? = null,

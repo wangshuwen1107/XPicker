@@ -1,21 +1,20 @@
 package cn.cheney.picker.app
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.XPickerRequest
 import cn.cheney.xpicker.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.entity.MediaEntity
-import cn.cheney.xpicker.util.Logger
 import com.yanzhenjie.permission.AndPermission
 import kotlinx.android.synthetic.main.activity_main.*
 
+@SuppressLint("SetTextI18n")
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,10 +62,11 @@ class MainActivity : AppCompatActivity() {
             maxPickerNum = 5
             start(this@MainActivity, mediaSelectedCallback = object : SelectedCallback {
                 override fun onSelected(mediaList: List<MediaEntity>?) {
+                    var result = ""
                     mediaList?.forEach {
-                        Logger.d("picker choose path = ${it.localPath}")
+                        result += "localPath=${it.localPath} \n localCompressPath =${it.compressLocalPath} \n"
                     }
-
+                    content_tv.text = result
                 }
 
             })
@@ -80,22 +80,22 @@ class MainActivity : AppCompatActivity() {
             minRecordTime = 2000
             start(this@MainActivity, object : CameraSaveCallback {
                 override fun onTakePhotoSuccess(photoUri: Uri) {
-                    Log.i(XPicker.TAG, "onTakePhotoSuccess uri=$photoUri")
+                    content_tv.text = "TakePhoto uri=$photoUri"
                 }
 
                 override fun onTakePhotoFailed(errorCode: String) {
-                    Log.e(XPicker.TAG, "onTakePhotoFailed errorCode=$errorCode")
+                    content_tv.text = "TakePhoto  errorCode=$errorCode"
                 }
 
                 override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
-                    Log.i(
-                        XPicker.TAG,
-                        "onVideoSuccess coverUrl=$coverUri ,videoUri=$videoUri ,duration=$duration"
-                    )
+                    content_tv.text = "Video \n" +
+                            " coverUrl=$coverUri \n " +
+                            " videoUri=$videoUri \n" +
+                            " duration=$duration"
                 }
 
                 override fun onVideoFailed(errorCode: String) {
-                    Log.e(XPicker.TAG, "onVideoFailed errorCode=$errorCode")
+                    content_tv.text = "Video errorCode=$errorCode"
                 }
 
             })
