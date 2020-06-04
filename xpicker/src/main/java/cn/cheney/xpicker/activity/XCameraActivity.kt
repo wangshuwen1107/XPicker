@@ -28,7 +28,7 @@ import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.XPickerConstant.Companion.REQUEST_KEY
-import cn.cheney.xpicker.XPickerRequest
+import cn.cheney.xpicker.entity.PickerRequest
 import cn.cheney.xpicker.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.CaptureListener
 import cn.cheney.xpicker.core.XMediaPlayer
@@ -57,7 +57,7 @@ class XCameraActivity : AppCompatActivity() {
 
     private var photoFile: File? = null
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
-    private var xPickerRequest: XPickerRequest? = null
+    private var xPickerRequest: PickerRequest? = null
 
     private var recordTime: Long = 0
 
@@ -79,7 +79,7 @@ class XCameraActivity : AppCompatActivity() {
 
 
     private fun initConfig() {
-        xPickerRequest = intent.getParcelableExtra<XPickerRequest>(REQUEST_KEY)
+        xPickerRequest = intent.getParcelableExtra<PickerRequest>(REQUEST_KEY)
         if (null == xPickerRequest) {
             finish()
             return

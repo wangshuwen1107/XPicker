@@ -14,8 +14,7 @@ import kotlin.collections.ArrayList
 
 class MediaLoader(
     var activity: FragmentActivity,
-    var type: Int = 0,
-    var isGif: Boolean = false
+    var type: Int = 0
 ) {
 
     companion object {
@@ -195,40 +194,38 @@ class MediaLoader(
     fun loadAllMedia(imageLoadListener: LocalMediaLoadListener) {
         var loader: CursorLoader? = null
         when (type) {
-            XPickerConstant.TYPE_ALL -> loader = if (isGif) {
-                CursorLoader(
+            XPickerConstant.TYPE_ALL ->
+                loader = CursorLoader(
                     activity, MediaStore.Files.getContentUri("external"),
                     PROJECTION_ALL,
                     SELECTION_ALL,
                     null,
                     MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
                 )
-            } else {
-                CursorLoader(
+            XPickerConstant.TYPE_ALL_WITHOUT_GIF ->
+                loader = CursorLoader(
                     activity, MediaStore.Files.getContentUri("external"),
                     PROJECTION_ALL,
                     SELECTION_ALL_WITHOUT_GIF,
                     null,
                     MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
                 )
-            }
-            XPickerConstant.TYPE_IMAGE -> loader = if (isGif) {
-                CursorLoader(
+            XPickerConstant.TYPE_IMAGE ->
+                loader = CursorLoader(
                     activity, MediaStore.Files.getContentUri("external"),
                     IMAGE_PROJECTION,
                     SELECTION_IMAGE,
                     null,
                     MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
                 )
-            } else {
-                CursorLoader(
+            XPickerConstant.TYPE_IMAGE_WITHOUT_GIF ->
+                loader = CursorLoader(
                     activity, MediaStore.Files.getContentUri("external"),
                     IMAGE_PROJECTION,
                     SELECTION_IMAGE_WITHOUT_GIF,
                     null,
                     MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
                 )
-            }
             XPickerConstant.TYPE_VIDEO -> loader =
                 CursorLoader(
                     activity, MediaStore.Files.getContentUri("external"),

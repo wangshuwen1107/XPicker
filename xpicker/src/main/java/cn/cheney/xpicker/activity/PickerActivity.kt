@@ -1,6 +1,7 @@
 package cn.cheney.xpicker.activity
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -16,7 +17,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.XPickerConstant
-import cn.cheney.xpicker.XPickerRequest
+import cn.cheney.xpicker.entity.PickerRequest
 import cn.cheney.xpicker.adapter.GridSpacingItemDecoration
 import cn.cheney.xpicker.adapter.PhotoAdapter
 import cn.cheney.xpicker.callback.CameraSaveCallback
@@ -30,7 +31,12 @@ import cn.cheney.xpicker.util.Logger
 import cn.cheney.xpicker.util.toPx
 import cn.cheney.xpicker.view.FolderListPop
 import cn.cheney.xpicker.view.LoadingDialog
+import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.xpicker_activity_picker.*
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 
 class PickerActivity : AppCompatActivity() {
@@ -45,7 +51,7 @@ class PickerActivity : AppCompatActivity() {
         }
     }
 
-    private var xPickerRequest: XPickerRequest? = null
+    private var xPickerRequest: PickerRequest? = null
     private lateinit var mediaLoader: MediaLoader
     private lateinit var animationRotateShow: Animation
     private lateinit var animationRotateHide: Animation
@@ -102,11 +108,7 @@ class PickerActivity : AppCompatActivity() {
         initView()
         initListener()
 
-        mediaLoader = MediaLoader(
-            this,
-            xPickerRequest!!.browseType,
-            xPickerRequest!!.supportGif
-        )
+        mediaLoader = MediaLoader(this, xPickerRequest!!.mineType)
         loadData()
     }
 
@@ -165,10 +167,10 @@ class PickerActivity : AppCompatActivity() {
 
     private fun initView() {
         picker_photo_rv.adapter = photoAdapter
-        picker_photo_rv.layoutManager = GridLayoutManager(this, XPicker.spanCount)
+        picker_photo_rv.layoutManager = GridLayoutManager(this, xPickerRequest!!.spanCount)
         picker_photo_rv.addItemDecoration(
             GridSpacingItemDecoration(
-                XPicker.spanCount,
+                xPickerRequest!!.spanCount,
                 2.toPx(),
                 true
             )
@@ -196,27 +198,7 @@ class PickerActivity : AppCompatActivity() {
 
         photoAdapter.itemClickListener = { position, isCamera ->
             if (isCamera) {
-                xPickerRequest!!.actionType = XPickerConstant.CAMERA
-                xPickerRequest!!.start(
-                    this@PickerActivity, cameraSaveCallback = object : CameraSaveCallback {
-                        override fun onTakePhotoSuccess(photoUri: Uri) {
-                            handler.postDelayed(Runnable {
-                                loadData()
-                            }, 300)
-                        }
-
-                        override fun onTakePhotoFailed(errorCode: String) {
-                        }
-
-                        override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
-                            handler.postDelayed(Runnable {
-                                loadData()
-                            }, 300)
-                        }
-
-                        override fun onVideoFailed(errorCode: String) {
-                        }
-                    })
+                goToCamera()
             } else {
                 if (!currentFolder?.mediaList.isNullOrEmpty()) {
                     goToPreview(currentFolder!!.mediaList, position)
@@ -255,6 +237,40 @@ class PickerActivity : AppCompatActivity() {
         }
     }
 
+
+    private fun goToCamera() {
+        xPickerRequest?.apply {
+            XPicker.ofCamera()
+                .defaultLensFacing(defaultLensFacing)
+                .maxRecordTime(maxRecordTime)
+                .minRecordTime(minRecordTime)
+                .captureMode(captureMode)
+                .start(this@PickerActivity, cameraSaveCallback = object : CameraSaveCallback {
+                    override fun onTakePhotoSuccess(photoUri: Uri) {
+                        handler.postDelayed(Runnable {
+                            loadData()
+                        }, 300)
+                    }
+
+                    override fun onTakePhotoFailed(errorCode: String) {
+                    }
+
+                    override fun onVideoSuccess(
+                        coverUri: Uri?,
+                        videoUri: Uri,
+                        duration: Int?
+                    ) {
+                        handler.postDelayed(Runnable {
+                            loadData()
+                        }, 300)
+                    }
+
+                    override fun onVideoFailed(errorCode: String) {
+                    }
+                })
+        }
+    }
+
     private fun updateOriginal() {
         picker_original_check_iv.isSelected = isOriginal
         if (isOriginal) {
@@ -287,6 +303,18 @@ class PickerActivity : AppCompatActivity() {
                 updateOriginal()
             }
         }
+
+    }
+
+    private fun goToCrop(mediaEntity: MediaEntity) {
+        UCrop.of(
+            Uri.fromFile(File(mediaEntity.localPath!!)),
+            Uri.fromFile(getCropDir(this, ""))
+        )
+            .withAspectRatio(1f, 1f)
+            .withOptions(UCrop.Options().apply {
+            })
+            .start(this)
     }
 
     /**
@@ -470,6 +498,24 @@ class PickerActivity : AppCompatActivity() {
 
     companion object {
         var mediaSelectedCallback: SelectedCallback? = null
+
+        private const val FILENAME = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private const val PHOTO_EXTENSION = ".jpg"
+
+
+        private fun getCropDir(context: Context, prefix: String): File {
+            val compressDir = File(
+                context.externalMediaDirs.first().absolutePath
+                        + File.separator + XPickerConstant.CROP_DIR_TAG
+            )
+            if (!compressDir.exists()) {
+                compressDir.mkdirs()
+            }
+            return File(
+                compressDir, SimpleDateFormat(FILENAME, Locale.CHINA)
+                    .format(System.currentTimeMillis()) + PHOTO_EXTENSION
+            )
+        }
     }
 
 }

@@ -7,7 +7,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import cn.cheney.xpicker.XPickerConstant
-import cn.cheney.xpicker.XPickerRequest
+import cn.cheney.xpicker.entity.PickerRequest
 import cn.cheney.xpicker.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.entity.MediaEntity
@@ -54,9 +54,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startPicker() {
-        XPickerRequest().apply {
+        PickerRequest().apply {
             actionType = XPickerConstant.PICKER
-            browseType = XPickerConstant.TYPE_ALL
+            mineType = XPickerConstant.TYPE_ALL
             supportGif = true
             haveCameraItem = true
             maxPickerNum = 5
@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startCamera() {
-        XPickerRequest().apply {
+        PickerRequest().apply {
             captureMode = XPickerConstant.MIXED
             maxRecordTime = 5000
             minRecordTime = 2000
