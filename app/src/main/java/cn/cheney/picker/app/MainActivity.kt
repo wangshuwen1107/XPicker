@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startPicker() {
         XPicker.ofPicker()
-            .mineType(MineType.TYPE_ALL)
+            .mineType(1)
             .maxPickerNum(3)
             .haveCameraItem(true)
             .start(this, mediaSelectedCallback = object : SelectedCallback {

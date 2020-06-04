@@ -8,6 +8,9 @@ import cn.cheney.xpicker.activity.PickerActivity
 import cn.cheney.xpicker.activity.XCameraActivity
 import cn.cheney.xpicker.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.SelectedCallback
+import cn.cheney.xpicker.entity.ActionType
+import cn.cheney.xpicker.entity.CaptureType
+import cn.cheney.xpicker.entity.MineType
 import cn.cheney.xpicker.entity.PickerRequest
 
 typealias ImageLoadListener = (fileUrl: Uri, iv: ImageView) -> Unit
@@ -33,8 +36,8 @@ class XPicker private constructor() {
     }
 
 
-    fun captureMode(arg: String): XPicker {
-        request.captureMode = arg
+    fun captureMode(arg: CaptureType): XPicker {
+        request.captureMode = arg.type
         return this
     }
 
@@ -61,19 +64,19 @@ class XPicker private constructor() {
         mediaSelectedCallback: SelectedCallback? = null
     ) {
         when (request.actionType) {
-            XPickerConstant.CAMERA -> {
+            ActionType.CAMERA.type -> {
                 val intent = Intent(context, XCameraActivity::class.java)
                 intent.putExtra(XPickerConstant.REQUEST_KEY, request)
                 context.startActivity(intent)
                 XCameraActivity.cameraSaveCallback = cameraSaveCallback
             }
-            XPickerConstant.PICKER -> {
+            ActionType.PICKER.type-> {
                 val intent = Intent(context, PickerActivity::class.java)
                 intent.putExtra(XPickerConstant.REQUEST_KEY, request)
                 context.startActivity(intent)
                 PickerActivity.mediaSelectedCallback = mediaSelectedCallback
             }
-            XPickerConstant.CROP -> {
+            ActionType.CROP.type -> {
                 val intent = Intent(context, PickerActivity::class.java)
                 intent.putExtra(XPickerConstant.REQUEST_KEY, request)
                 context.startActivity(intent)
@@ -88,19 +91,19 @@ class XPicker private constructor() {
 
         fun ofPicker(): XPicker {
             val xPicker = XPicker()
-            xPicker.request = PickerRequest(actionType = XPickerConstant.PICKER)
+            xPicker.request = PickerRequest(actionType = ActionType.PICKER.type)
             return xPicker
         }
 
         fun ofCamera(): XPicker {
             val xPicker = XPicker()
-            xPicker.request = PickerRequest(actionType = XPickerConstant.CAMERA)
+            xPicker.request = PickerRequest(actionType = ActionType.CAMERA.type)
             return xPicker
         }
 
         fun ofCrop(): XPicker {
             val xPicker = XPicker()
-            xPicker.request = PickerRequest(actionType = XPickerConstant.CROP)
+            xPicker.request = PickerRequest(actionType = ActionType.CROP.type)
             return xPicker
         }
 

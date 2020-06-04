@@ -1,5 +1,7 @@
 package cn.cheney.xpicker
 
+import androidx.annotation.StringDef
+
 class XPickerConstant {
 
     companion object {
@@ -8,16 +10,6 @@ class XPickerConstant {
         const val PREVIEW_INDEX_KEY = "previewIndex"
         const val PREVIEW_CURRENT_MAX_NUM_KEY = "previewMaxNum"
         const val PREVIEW_ORIGINAL_KEY = "original"
-
-        //拍照类型
-        const val ONLY_CAPTURE = "ONLY_CAPTURE"
-        const val ONLY_RECORDER = "ONLY_RECORDER"
-        const val MIXED = "MIXED"
-
-        //拍照 or 选择器 or 头像裁剪
-        const val CAMERA = "CAMERA"
-        const val PICKER = "PICKER"
-        const val CROP = "CROP"
 
         //FileType
         const val FILE_TYPE_VIDEO = 2
@@ -28,12 +20,4 @@ class XPickerConstant {
         const val COMPRESS_DIR_TAG = "luban"
         const val CROP_DIR_TAG = "crop"
     }
-}
-
-enum class MineType(var type: Int) {
-    TYPE_ALL(0),
-    TYPE_ALL_WITHOUT_GIF(1),
-    TYPE_VIDEO(2),
-    TYPE_IMAGE(3),
-    TYPE_IMAGE_WITHOUT_GIF(4)
 }

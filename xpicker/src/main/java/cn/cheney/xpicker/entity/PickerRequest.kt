@@ -16,13 +16,13 @@ import kotlinx.android.parcel.Parcelize
  */
 @Parcelize
 data class PickerRequest(
-    var captureMode: String = XPickerConstant.ONLY_CAPTURE,
+    var captureMode: String = CaptureType.ONLY_CAPTURE.type,
     var minRecordTime: Int = 2000,
     var maxRecordTime: Int = 10000,
     var defaultLensFacing: Int = 1,
-    var actionType: String = XPickerConstant.CAMERA,
+    var actionType: String,
     var maxPickerNum: Int = 1,
-    var mineType: Int = XPickerConstant.TYPE_IMAGE,
+    var mineType: Int = MineType.TYPE_IMAGE_WITHOUT_GIF.type,
     var supportGif: Boolean = false,
     var haveCameraItem: Boolean = false,
     var spanCount: Int = 4

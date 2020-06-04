@@ -5,10 +5,10 @@ import android.provider.MediaStore
 import android.text.TextUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.loader.content.CursorLoader
-import cn.cheney.xpicker.MineType
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.entity.MediaFolder
+import cn.cheney.xpicker.entity.MineType
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
@@ -151,11 +151,11 @@ class MediaLoader(
                         ) else 0
                         var fileType = 0
                         if (mimeType.startsWith(IMAGE)) {
-                            fileType = XPickerConstant.TYPE_IMAGE
+                            fileType = XPickerConstant.FILE_TYPE_IMAGE
                         } else if (mimeType.startsWith(VIDEO)) {
-                            fileType = XPickerConstant.File_TYPE_VIDEO
+                            fileType = XPickerConstant.FILE_TYPE_VIDEO
                         }
-                        if (fileType == XPickerConstant.File_TYPE_VIDEO && duration < 700) {
+                        if (fileType == XPickerConstant.FILE_TYPE_VIDEO && duration < 700) {
                             continue
                         }
                         val mediaEntity = MediaEntity()
@@ -179,7 +179,7 @@ class MediaLoader(
                         allImageFolder.firstImagePath =
                             latelyImages[0].localPath!!
                         val title =
-                            if (type == XPickerConstant.File_TYPE_VIDEO) "所有音频" else "相机胶卷"
+                            if (type == XPickerConstant.FILE_TYPE_VIDEO) "所有音频" else "相机胶卷"
                         allImageFolder.name = title
                         allImageFolder.mediaList = latelyImages
                     }
