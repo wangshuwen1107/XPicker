@@ -52,6 +52,7 @@ class PickerActivity : AppCompatActivity() {
     private var folderListPop: FolderListPop? = null
 
     private val handler = Handler(Looper.getMainLooper())
+
     /**
      * 全部文件夹集合
      */
@@ -66,18 +67,22 @@ class PickerActivity : AppCompatActivity() {
      * 选择的文件集合
      */
     private var chooseMediaList: ArrayList<MediaEntity> = arrayListOf()
+
     /**
      * 当前显示文件夹
      */
     private var currentFolder: MediaFolder? = null
+
     /**
      * 标记是否进入预览界面
      */
     private var ignoreUpdate = false
+
     /**
      * 当前最大的选择数字
      */
     private var maxNum = 0
+
     /**
      * 是否选中原图
      */
@@ -106,11 +111,20 @@ class PickerActivity : AppCompatActivity() {
     }
 
 
+    private fun showEmpty() {
+        if (!xPickerRequest!!.haveCameraItem) {
+            picker_empty_tv.visibility = View.VISIBLE
+            picker_photo_rv.visibility = View.GONE
+        }
+    }
+
+
     private fun loadData() {
         mediaLoader.loadAllMedia(object :
             MediaLoader.LocalMediaLoadListener {
             override fun loadComplete(folders: List<MediaFolder>?) {
                 if (folders.isNullOrEmpty()) {
+                    showEmpty()
                     return
                 }
                 if (ignoreUpdate) {
@@ -122,6 +136,8 @@ class PickerActivity : AppCompatActivity() {
                 ) {
                     return
                 }
+                picker_empty_tv.visibility = View.GONE
+                picker_photo_rv.visibility = View.VISIBLE
                 Logger.i("loadAllMedia  size = ${folders[0].mediaList.size}")
                 picker_dir_layer.visibility = View.VISIBLE
                 thread {

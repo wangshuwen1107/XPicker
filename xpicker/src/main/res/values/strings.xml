@@ -10,11 +10,11 @@
     <string name="camera_recorder_tip">长按录制</string>
 
     <string name="picker_compress_tip">处理中</string>
+    <string name="picker_empty_tip">没有图片或者视频</string>
     <string name="picker_done">完成</string>
     <string name="picker_original">原图</string>
     <string name="picker_preview">预览</string>
     <string name="picker_preview_max_limit">你最多选择%1$d张照片</string>
-
 
 
 </resources>
