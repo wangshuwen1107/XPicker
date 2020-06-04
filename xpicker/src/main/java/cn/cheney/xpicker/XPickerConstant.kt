@@ -8,6 +8,7 @@ class XPickerConstant {
         const val PREVIEW_INDEX_KEY = "previewIndex"
         const val PREVIEW_CURRENT_MAX_NUM_KEY = "previewMaxNum"
         const val PREVIEW_ORIGINAL_KEY = "original"
+
         //拍照类型
         const val ONLY_CAPTURE = "ONLY_CAPTURE"
         const val ONLY_RECORDER = "ONLY_RECORDER"
@@ -17,16 +18,22 @@ class XPickerConstant {
         const val CAMERA = "CAMERA"
         const val PICKER = "PICKER"
         const val CROP = "CROP"
-        //MineType
-        const val TYPE_ALL = 0
-        const val TYPE_ALL_WITHOUT_GIF = 1
-        const val TYPE_VIDEO = 2
-        const val TYPE_IMAGE = 3
-        const val TYPE_IMAGE_WITHOUT_GIF = 4
-        //mineType
+
+        //FileType
+        const val FILE_TYPE_VIDEO = 2
+        const val FILE_TYPE_IMAGE = 3
         const val GIF = "image/gif"
+
         //compress
-        const val  COMPRESS_DIR_TAG="luban"
-        const val  CROP_DIR_TAG="crop"
+        const val COMPRESS_DIR_TAG = "luban"
+        const val CROP_DIR_TAG = "crop"
     }
+}
+
+enum class MineType(var type: Int) {
+    TYPE_ALL(0),
+    TYPE_ALL_WITHOUT_GIF(1),
+    TYPE_VIDEO(2),
+    TYPE_IMAGE(3),
+    TYPE_IMAGE_WITHOUT_GIF(4)
 }

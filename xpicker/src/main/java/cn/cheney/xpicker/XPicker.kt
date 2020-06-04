@@ -39,8 +39,14 @@ class XPicker private constructor() {
     }
 
 
-    fun mineType(arg: Int = 0): XPicker {
-        request.mineType = arg
+    fun mineType(arg: MineType): XPicker {
+        request.mineType = arg.type
+        return this
+    }
+
+
+    fun maxPickerNum(arg: Int = 0): XPicker {
+        request.maxPickerNum = arg
         return this
     }
 
@@ -66,6 +72,12 @@ class XPicker private constructor() {
                 intent.putExtra(XPickerConstant.REQUEST_KEY, request)
                 context.startActivity(intent)
                 PickerActivity.mediaSelectedCallback = mediaSelectedCallback
+            }
+            XPickerConstant.CROP -> {
+                val intent = Intent(context, PickerActivity::class.java)
+                intent.putExtra(XPickerConstant.REQUEST_KEY, request)
+                context.startActivity(intent)
+                XCameraActivity.cameraSaveCallback = cameraSaveCallback
             }
         }
     }

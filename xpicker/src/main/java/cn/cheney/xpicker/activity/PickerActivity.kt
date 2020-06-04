@@ -166,6 +166,7 @@ class PickerActivity : AppCompatActivity() {
     }
 
     private fun initView() {
+//        xPickerRequest!!.actionType ==
         picker_photo_rv.adapter = photoAdapter
         picker_photo_rv.layoutManager = GridLayoutManager(this, xPickerRequest!!.spanCount)
         picker_photo_rv.addItemDecoration(

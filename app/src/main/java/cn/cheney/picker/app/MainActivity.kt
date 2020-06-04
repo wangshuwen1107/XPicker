@@ -6,6 +6,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import cn.cheney.xpicker.MineType
+import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.PickerRequest
 import cn.cheney.xpicker.callback.CameraSaveCallback
@@ -26,6 +28,9 @@ class MainActivity : AppCompatActivity() {
         start_picker.setOnClickListener {
             action(1)
         }
+        start_crop.setOnClickListener {
+            action(2)
+        }
     }
 
     private fun action(action: Int) {
@@ -39,12 +44,9 @@ class MainActivity : AppCompatActivity() {
             )
             .onGranted {
                 when (action) {
-                    0 -> {
-                        startCamera()
-                    }
-                    1 -> {
-                        startPicker()
-                    }
+                    0 -> startCamera()
+                    1 -> startPicker()
+                    2 -> startCrop()
                 }
             }
             .onDenied {
@@ -54,13 +56,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startPicker() {
-        PickerRequest().apply {
-            actionType = XPickerConstant.PICKER
-            mineType = XPickerConstant.TYPE_ALL
-            supportGif = true
-            haveCameraItem = true
-            maxPickerNum = 5
-            start(this@MainActivity, mediaSelectedCallback = object : SelectedCallback {
+        XPicker.ofPicker()
+            .mineType(MineType.TYPE_ALL)
+            .maxPickerNum(3)
+            .haveCameraItem(true)
+            .start(this, mediaSelectedCallback = object : SelectedCallback {
                 override fun onSelected(mediaList: List<MediaEntity>?) {
                     var result = ""
                     mediaList?.forEach {
@@ -68,17 +68,13 @@ class MainActivity : AppCompatActivity() {
                     }
                     content_tv.text = result
                 }
-
             })
-        }
     }
 
     private fun startCamera() {
-        PickerRequest().apply {
-            captureMode = XPickerConstant.MIXED
-            maxRecordTime = 5000
-            minRecordTime = 2000
-            start(this@MainActivity, object : CameraSaveCallback {
+        XPicker.ofCamera()
+            .captureMode(XPickerConstant.MIXED)
+            .start(this, object : CameraSaveCallback {
                 override fun onTakePhotoSuccess(photoUri: Uri) {
                     content_tv.text = "TakePhoto uri=$photoUri"
                 }
@@ -99,6 +95,31 @@ class MainActivity : AppCompatActivity() {
                 }
 
             })
-        }
     }
+
+    private fun startCrop() {
+        XPicker.ofCrop()
+            .start(this, object : CameraSaveCallback {
+                override fun onTakePhotoSuccess(photoUri: Uri) {
+                    content_tv.text = "TakePhoto uri=$photoUri"
+                }
+
+                override fun onTakePhotoFailed(errorCode: String) {
+                    content_tv.text = "TakePhoto  errorCode=$errorCode"
+                }
+
+                override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
+                    content_tv.text = "Video \n" +
+                            " coverUrl=$coverUri \n " +
+                            " videoUri=$videoUri \n" +
+                            " duration=$duration"
+                }
+
+                override fun onVideoFailed(errorCode: String) {
+                    content_tv.text = "Video errorCode=$errorCode"
+                }
+
+            })
+    }
+
 }

@@ -5,6 +5,7 @@ import android.provider.MediaStore
 import android.text.TextUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.loader.content.CursorLoader
+import cn.cheney.xpicker.MineType
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.entity.MediaFolder
@@ -152,9 +153,9 @@ class MediaLoader(
                         if (mimeType.startsWith(IMAGE)) {
                             fileType = XPickerConstant.TYPE_IMAGE
                         } else if (mimeType.startsWith(VIDEO)) {
-                            fileType = XPickerConstant.TYPE_VIDEO
+                            fileType = XPickerConstant.File_TYPE_VIDEO
                         }
-                        if (fileType == XPickerConstant.TYPE_VIDEO && duration < 700) {
+                        if (fileType == XPickerConstant.File_TYPE_VIDEO && duration < 700) {
                             continue
                         }
                         val mediaEntity = MediaEntity()
@@ -178,7 +179,7 @@ class MediaLoader(
                         allImageFolder.firstImagePath =
                             latelyImages[0].localPath!!
                         val title =
-                            if (type == XPickerConstant.TYPE_VIDEO) "所有音频" else "相机胶卷"
+                            if (type == XPickerConstant.File_TYPE_VIDEO) "所有音频" else "相机胶卷"
                         allImageFolder.name = title
                         allImageFolder.mediaList = latelyImages
                     }
@@ -194,7 +195,7 @@ class MediaLoader(
     fun loadAllMedia(imageLoadListener: LocalMediaLoadListener) {
         var loader: CursorLoader? = null
         when (type) {
-            XPickerConstant.TYPE_ALL ->
+            MineType.TYPE_ALL.type ->
                 loader = CursorLoader(
                     activity, MediaStore.Files.getContentUri("external"),
                     PROJECTION_ALL,
@@ -202,7 +203,7 @@ class MediaLoader(
                     null,
                     MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
                 )
-            XPickerConstant.TYPE_ALL_WITHOUT_GIF ->
+            MineType.TYPE_ALL_WITHOUT_GIF.type ->
                 loader = CursorLoader(
                     activity, MediaStore.Files.getContentUri("external"),
                     PROJECTION_ALL,
@@ -210,7 +211,7 @@ class MediaLoader(
                     null,
                     MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
                 )
-            XPickerConstant.TYPE_IMAGE ->
+            MineType.TYPE_IMAGE.type ->
                 loader = CursorLoader(
                     activity, MediaStore.Files.getContentUri("external"),
                     IMAGE_PROJECTION,
@@ -218,7 +219,7 @@ class MediaLoader(
                     null,
                     MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
                 )
-            XPickerConstant.TYPE_IMAGE_WITHOUT_GIF ->
+            MineType.TYPE_IMAGE_WITHOUT_GIF.type ->
                 loader = CursorLoader(
                     activity, MediaStore.Files.getContentUri("external"),
                     IMAGE_PROJECTION,
@@ -226,7 +227,7 @@ class MediaLoader(
                     null,
                     MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
                 )
-            XPickerConstant.TYPE_VIDEO -> loader =
+            MineType.TYPE_VIDEO.type -> loader =
                 CursorLoader(
                     activity, MediaStore.Files.getContentUri("external"),
                     VIDEO_PROJECTION,

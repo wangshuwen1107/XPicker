@@ -51,7 +51,7 @@ class PreviewSelectAdapter : RecyclerView.Adapter<PreviewSelectAdapter.MediaSele
         } else {
             holder.photoBg.visibility = View.GONE
         }
-        if (selectList!![position].fileType == XPickerConstant.TYPE_VIDEO) {
+        if (selectList!![position].fileType == XPickerConstant.File_TYPE_VIDEO) {
             holder.videoIv.visibility = View.VISIBLE
         } else {
             holder.videoIv.visibility = View.GONE
