@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
-        android:background="#0288D1"
+        android:background="@color/colorPrimary"
         android:text="Camera"
         android:textColor="#FFFFFF" />
 
@@ -22,7 +22,7 @@
         android:layout_below="@+id/start_camera"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
-        android:background="#0288D1"
+        android:background="@color/colorPrimary"
         android:text="Picker"
         android:textColor="#FFFFFF" />
 
@@ -34,7 +34,7 @@
         android:layout_below="@+id/start_picker"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
-        android:background="#0288D1"
+        android:background="@color/colorPrimary"
         android:text="Crop"
         android:textColor="#FFFFFF" />
 
@@ -44,7 +44,7 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/start_crop"
         android:layout_marginTop="30dp"
-        android:background="#3949AB"
+        android:background="#6AE53935"
         android:padding="10dp"
         android:visibility="gone">
 
@@ -71,6 +71,6 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/start_crop"
         android:layout_marginTop="30dp"
-        android:background="#3949AB" />
+        android:background="#6AE53935" />
 
 </RelativeLayout>

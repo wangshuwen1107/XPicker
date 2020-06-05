@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-
+apply plugin: 'com.novoda.bintray-release'
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
@@ -30,6 +30,15 @@ android {
     androidExtensions {
         experimental = true
     }
+}
+
+publish {
+    userOrg = 'wenwen'
+    groupId = 'cn.cheney.media'
+    artifactId = 'xpicker'
+    publishVersion = '1.0.0'
+    desc = 'this is a picker lib'
+    website = 'https://github.com/novoda/bintray-release'
 }
 
 dependencies {
