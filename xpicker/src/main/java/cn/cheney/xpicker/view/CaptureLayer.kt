@@ -15,6 +15,7 @@ import android.widget.TextView
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.callback.CaptureListener
+import cn.cheney.xpicker.entity.CaptureType
 
 class CaptureLayer @JvmOverloads constructor(
     context: Context,
@@ -146,14 +147,14 @@ class CaptureLayer @JvmOverloads constructor(
 
 
     private fun setTipByType() {
-        when (captureBtn.type) {
-            XPickerConstant.MIXED -> {
+        when (CaptureType.valueOf(captureBtn.type)) {
+            CaptureType.MIXED -> {
                 tipTxt.text = context.getText(R.string.camera_mixed_tip)
             }
-            XPickerConstant.ONLY_CAPTURE -> {
+            CaptureType.ONLY_CAPTURE -> {
                 tipTxt.text = context.getText(R.string.camera_capture_tip)
             }
-            XPickerConstant.ONLY_RECORDER -> {
+            CaptureType.ONLY_RECORDER -> {
                 tipTxt.text = context.getText(R.string.camera_recorder_tip)
             }
         }

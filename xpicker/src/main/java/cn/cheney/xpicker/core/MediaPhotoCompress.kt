@@ -24,7 +24,7 @@ class MediaPhotoCompress {
         }
         mediaList.forEach {
             if (!TextUtils.isEmpty(it.localPath)
-                && it.fileType == XPickerConstant.TYPE_IMAGE
+                && it.fileType == XPickerConstant.FILE_TYPE_IMAGE
                 && XPickerConstant.GIF != it.mineType
             ) {
                 this.mediaList.add(it)

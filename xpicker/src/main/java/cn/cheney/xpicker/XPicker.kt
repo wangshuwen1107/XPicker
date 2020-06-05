@@ -3,6 +3,7 @@ package cn.cheney.xpicker
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import android.widget.ImageView
 import cn.cheney.xpicker.activity.PickerActivity
 import cn.cheney.xpicker.activity.XCameraActivity
@@ -78,9 +79,11 @@ class XPicker private constructor() {
             }
             ActionType.CROP.type -> {
                 val intent = Intent(context, PickerActivity::class.java)
-                intent.putExtra(XPickerConstant.REQUEST_KEY, request)
+                val bundle = Bundle()
+                bundle.putParcelable(XPickerConstant.REQUEST_KEY, request)
+                intent.putExtra("123",bundle)
                 context.startActivity(intent)
-                XCameraActivity.cameraSaveCallback = cameraSaveCallback
+                PickerActivity.mediaSelectedCallback = mediaSelectedCallback
             }
         }
     }

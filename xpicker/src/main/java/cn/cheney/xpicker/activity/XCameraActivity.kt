@@ -1,5 +1,6 @@
 package cn.cheney.xpicker.activity
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
@@ -10,7 +11,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.Surface
 import android.view.TextureView
 import android.view.TextureView.SurfaceTextureListener
@@ -26,12 +26,13 @@ import androidx.camera.core.VideoCapture
 import androidx.camera.view.CameraView
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
-import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.XPickerConstant.Companion.REQUEST_KEY
 import cn.cheney.xpicker.entity.PickerRequest
 import cn.cheney.xpicker.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.CaptureListener
 import cn.cheney.xpicker.core.XMediaPlayer
+import cn.cheney.xpicker.entity.CaptureType
+import cn.cheney.xpicker.util.Logger
 import kotlinx.android.synthetic.main.xpicker_activity_camera.*
 import java.io.BufferedOutputStream
 import java.io.File
@@ -66,6 +67,7 @@ class XCameraActivity : AppCompatActivity() {
     }
 
 
+    @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.xpicker_activity_camera)
@@ -250,13 +252,12 @@ class XCameraActivity : AppCompatActivity() {
                         override fun onVideoSaved(file: File) {
                             runOnUiThread {
                                 if (!videoFile.exists() || recordTime < xPickerRequest!!.minRecordTime) {
-                                    Log.e(XPicker.TAG, "record onVideoSaved too short del")
+                                    Logger.e("record onVideoSaved too short del")
                                     videoFile.deleteOnExit()
                                     xpicker_camera_capture_layer.reset()
                                     return@runOnUiThread
                                 }
-                                Log.i(
-                                    XPicker.TAG,
+                                Logger.i(
                                     "record onVideoSaved path=${videoFile.absolutePath}"
                                 )
                                 this@XCameraActivity.videoFile = videoFile
@@ -270,8 +271,7 @@ class XCameraActivity : AppCompatActivity() {
                             videoCaptureError: Int, message: String,
                             cause: Throwable?
                         ) {
-                            Log.e(
-                                XPicker.TAG,
+                            Logger.e(
                                 "record onError videoCaptureError=${videoCaptureError} ,message=${message}"
                             )
                             runOnUiThread {
@@ -285,7 +285,6 @@ class XCameraActivity : AppCompatActivity() {
 
             override fun recordShort(time: Long) {
                 recordTime = time
-                Log.e(XPicker.TAG, "record  recordShort time=${time} ")
                 super.recordShort(time)
                 Toast.makeText(
                     this@XCameraActivity,
@@ -314,22 +313,22 @@ class XCameraActivity : AppCompatActivity() {
 
 
     private fun callbackSuccess() {
-        when (xPickerRequest!!.captureMode) {
-            XPickerConstant.ONLY_CAPTURE -> {
+        when (CaptureType.valueOf(xPickerRequest!!.captureMode)) {
+            CaptureType.ONLY_CAPTURE -> {
                 if (null == photoFile) {
                     callbackFailed("PHOTO_FILE_EMPTY")
                 } else {
                     cameraSaveCallback?.onTakePhotoSuccess(Uri.fromFile(photoFile!!))
                 }
             }
-            XPickerConstant.ONLY_RECORDER -> {
+            CaptureType.ONLY_RECORDER -> {
                 if (null == videoUri) {
                     callbackFailed("VIDEO_FILE_EMPTY")
                 } else {
                     cameraSaveCallback?.onVideoSuccess(coverUri, videoUri!!, duration)
                 }
             }
-            XPickerConstant.MIXED -> {
+            CaptureType.MIXED -> {
                 if (null == photoFile && null == videoUri) {
                     callbackFailed("BOTH_FILE_EMPTY")
                 } else if (null != photoFile) {
@@ -344,14 +343,14 @@ class XCameraActivity : AppCompatActivity() {
     }
 
     private fun callbackFailed(errorCode: String) {
-        when (xPickerRequest!!.captureMode) {
-            XPickerConstant.ONLY_CAPTURE -> {
+        when (CaptureType.valueOf(xPickerRequest!!.captureMode)) {
+            CaptureType.ONLY_CAPTURE -> {
                 cameraSaveCallback?.onTakePhotoFailed(errorCode)
             }
-            XPickerConstant.ONLY_RECORDER -> {
+            CaptureType.ONLY_RECORDER -> {
                 cameraSaveCallback?.onVideoFailed(errorCode)
             }
-            XPickerConstant.MIXED -> {
+            CaptureType.MIXED -> {
                 cameraSaveCallback?.onTakePhotoFailed(errorCode)
                 cameraSaveCallback?.onVideoFailed(errorCode)
             }
@@ -461,7 +460,6 @@ class XCameraActivity : AppCompatActivity() {
             val bitmap = mmr.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
             val replace = videoPath.replace(".mp4", ".jpg")
             if (null == bitmap) {
-                Log.e(XPicker.TAG, "firstFrame get Failed -------")
                 return Pair(null, duration.toInt())
             }
             saveBitmapFile(

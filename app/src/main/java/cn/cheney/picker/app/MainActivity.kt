@@ -6,13 +6,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import cn.cheney.xpicker.MineType
 import cn.cheney.xpicker.XPicker
-import cn.cheney.xpicker.XPickerConstant
-import cn.cheney.xpicker.entity.PickerRequest
 import cn.cheney.xpicker.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.SelectedCallback
+import cn.cheney.xpicker.entity.CaptureType
 import cn.cheney.xpicker.entity.MediaEntity
+import cn.cheney.xpicker.entity.MineType
 import com.yanzhenjie.permission.AndPermission
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -57,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startPicker() {
         XPicker.ofPicker()
-            .mineType(1)
+            .mineType(MineType.TYPE_ALL)
             .maxPickerNum(3)
             .haveCameraItem(true)
             .start(this, mediaSelectedCallback = object : SelectedCallback {
@@ -73,7 +72,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startCamera() {
         XPicker.ofCamera()
-            .captureMode(XPickerConstant.MIXED)
+            .captureMode(CaptureType.MIXED)
             .start(this, object : CameraSaveCallback {
                 override fun onTakePhotoSuccess(photoUri: Uri) {
                     content_tv.text = "TakePhoto uri=$photoUri"
@@ -99,26 +98,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun startCrop() {
         XPicker.ofCrop()
-            .start(this, object : CameraSaveCallback {
-                override fun onTakePhotoSuccess(photoUri: Uri) {
-                    content_tv.text = "TakePhoto uri=$photoUri"
+            .start(this, mediaSelectedCallback = object : SelectedCallback {
+                override fun onSelected(mediaList: List<MediaEntity>?) {
+                    var result = ""
+                    mediaList?.forEach {
+                        result += "localPath=${it.localPath} \n localCompressPath =${it.compressLocalPath} \n"
+                    }
+                    content_tv.text = result
                 }
-
-                override fun onTakePhotoFailed(errorCode: String) {
-                    content_tv.text = "TakePhoto  errorCode=$errorCode"
-                }
-
-                override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
-                    content_tv.text = "Video \n" +
-                            " coverUrl=$coverUri \n " +
-                            " videoUri=$videoUri \n" +
-                            " duration=$duration"
-                }
-
-                override fun onVideoFailed(errorCode: String) {
-                    content_tv.text = "Video errorCode=$errorCode"
-                }
-
             })
     }
 

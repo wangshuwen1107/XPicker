@@ -128,7 +128,7 @@ class PreviewActivity : AppCompatActivity() {
                 Uri.fromFile(File(mediaEntity.localPath!!)),
                 photoView
             )
-            if (mediaEntity.fileType == XPickerConstant.File_TYPE_VIDEO) {
+            if (mediaEntity.fileType == XPickerConstant.FILE_TYPE_VIDEO) {
                 playIv.visibility = View.VISIBLE
                 playIv.setOnClickListener {
                     playVideo(mediaEntity)

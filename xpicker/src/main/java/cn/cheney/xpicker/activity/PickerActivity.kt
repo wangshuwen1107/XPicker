@@ -26,6 +26,7 @@ import cn.cheney.xpicker.callback.PreviewSelectedCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.core.MediaLoader
 import cn.cheney.xpicker.core.MediaPhotoCompress
+import cn.cheney.xpicker.entity.CaptureType
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.entity.MediaFolder
 import cn.cheney.xpicker.util.Logger
@@ -99,7 +100,7 @@ class PickerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.xpicker_activity_picker)
-        xPickerRequest = intent.getParcelableExtra(XPickerConstant.REQUEST_KEY)
+        xPickerRequest = intent.getBundleExtra("123").getParcelable(XPickerConstant.REQUEST_KEY)
         if (null == xPickerRequest) {
             finish()
             return
@@ -247,7 +248,7 @@ class PickerActivity : AppCompatActivity() {
                 .defaultLensFacing(defaultLensFacing)
                 .maxRecordTime(maxRecordTime)
                 .minRecordTime(minRecordTime)
-                .captureMode(captureMode)
+                .captureMode(CaptureType.valueOf(captureMode))
                 .start(this@PickerActivity, cameraSaveCallback = object : CameraSaveCallback {
                     override fun onTakePhotoSuccess(photoUri: Uri) {
                         handler.postDelayed(Runnable {

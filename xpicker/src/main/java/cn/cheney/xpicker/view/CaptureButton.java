@@ -12,8 +12,8 @@ import android.os.CountDownTimer;
 import android.view.MotionEvent;
 import android.view.View;
 
-import cn.cheney.xpicker.XPickerConstant;
 import cn.cheney.xpicker.callback.CaptureListener;
+import cn.cheney.xpicker.entity.CaptureType;
 
 
 public class CaptureButton extends View {
@@ -84,7 +84,7 @@ public class CaptureButton extends View {
         longPressRunnable = new LongPressRunnable();
 
         state = STATE_IDLE;                //初始化为空闲状态
-        button_state = XPickerConstant.ONLY_CAPTURE;  //初始化按钮为可录制可拍照
+        button_state = CaptureType.ONLY_CAPTURE.getType();  //初始化按钮为可录制可拍照
         duration = 15 * 1000;              //默认最长录制时间为15s
         min_duration = 1000;              //默认最短录制时间为1s
 
@@ -142,15 +142,15 @@ public class CaptureButton extends View {
                     state = STATE_PRESS;        //修改当前状态为点击按下
 
                     //判断按钮状态是否为可录制状态
-                    if ((button_state.equals(XPickerConstant.ONLY_RECORDER)
-                            || button_state.equals(XPickerConstant.MIXED)))
+                    if ((button_state.equals(CaptureType.ONLY_RECORDER.getType())
+                            || button_state.equals(CaptureType.MIXED.getType())))
                         postDelayed(longPressRunnable, 500);    //同时延长500启动长按后处理的逻辑Runnable
                     break;
                 case MotionEvent.ACTION_MOVE:
                     if (captureLisenter != null
                             && state == STATE_RECORDERING
-                            && (button_state.equals(XPickerConstant.ONLY_RECORDER)
-                            || button_state.equals(XPickerConstant.MIXED))) {
+                            && (button_state.equals(CaptureType.ONLY_RECORDER.getType())
+                            || button_state.equals(CaptureType.MIXED.getType()))) {
                         //记录当前Y值与按下时候Y值的差值，调用缩放回调接口
                         captureLisenter.recordZoom(event_Y - event.getY());
                     }
@@ -174,8 +174,8 @@ public class CaptureButton extends View {
             switch (state) {
                 //当前是点击按下
                 case STATE_PRESS:
-                    if (captureLisenter != null && (button_state.equals(XPickerConstant.ONLY_CAPTURE)
-                            || button_state.equals(XPickerConstant.MIXED))) {
+                    if (captureLisenter != null && (button_state.equals(CaptureType.ONLY_CAPTURE.getType())
+                            || button_state.equals(CaptureType.MIXED.getType()))) {
                         startCaptureAnimation(button_inside_radius);
                     } else {
                         state = STATE_IDLE;
