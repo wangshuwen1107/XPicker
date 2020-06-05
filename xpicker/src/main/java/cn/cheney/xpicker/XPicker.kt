@@ -22,45 +22,69 @@ class XPicker private constructor() {
     private lateinit var request: PickerRequest
 
 
+    /**
+     * set max record time （unit ms）
+     */
     fun maxRecordTime(arg: Int): XPicker {
         request.maxRecordTime = arg
         return this
     }
 
+    /**
+     * set min record time （unit ms）
+     */
     fun minRecordTime(arg: Int): XPicker {
         request.minRecordTime = arg
         return this
     }
 
+    /**
+     * set default camera id
+     */
     fun defaultLensFacing(arg: Int): XPicker {
         request.defaultLensFacing = arg
         return this
     }
 
-
+    /**
+     * set a captureType to camera
+     * @see CaptureType
+     */
     fun captureMode(arg: CaptureType): XPicker {
         request.captureMode = arg.type
         return this
     }
 
 
+    /**
+     * set load  media type
+     * @see MineType
+     */
     fun mineType(arg: MineType): XPicker {
         request.mineType = arg.type
         return this
     }
 
-
+    /**
+     * set max choose num to picker
+     */
     fun maxPickerNum(arg: Int = 0): XPicker {
         request.maxPickerNum = arg
         return this
     }
 
+    /**
+     * whether they contain camera item in picker
+     */
     fun haveCameraItem(arg: Boolean = false): XPicker {
         request.haveCameraItem = arg
         return this
     }
 
 
+    /**
+     * set the crop circle/square
+     */
     fun circleCrop(arg: Boolean = false): XPicker {
         request.circleCrop = arg
         return this

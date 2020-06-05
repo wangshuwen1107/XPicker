@@ -61,37 +61,37 @@ class PickerActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
 
     /**
-     * 全部文件夹集合
+     * The of media folder
      */
     private var folderList: List<MediaFolder>? = null
 
     /**
-     * 当前文件夹名称
+     * The current media folder name
      */
     private var currentChooseFolderName: String? = null
 
     /**
-     * 选择的文件集合
+     * The current folder media list
      */
     private var chooseMediaList: ArrayList<MediaEntity> = arrayListOf()
 
     /**
-     * 当前显示文件夹
+     * The current media folder
      */
     private var currentFolder: MediaFolder? = null
 
     /**
-     * 标记是否进入预览界面
+     * Whether to ignore update tag
      */
     private var ignoreUpdate = false
 
     /**
-     * 当前最大的选择数字
+     * The current max select Num
      */
     private var maxNum = 0
 
     /**
-     * 是否选中原图
+     * Whether selected original of tags
      */
     private var isOriginal = false
 
@@ -351,9 +351,6 @@ class PickerActivity : AppCompatActivity() {
             .start(this)
     }
 
-    /**
-     * 选择/反选 mediaEntity
-     */
     @SuppressLint("SetTextI18n")
     private fun addToChooseList(mediaEntity: MediaEntity, isChoose: Boolean) {
         //增加
@@ -392,10 +389,6 @@ class PickerActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 查找比目标值小的item 减1
-     * @param target 反选的ItemNum
-     */
     private fun autoDownSomeItem(target: Int) {
         if (null == photoAdapter.mediaList) {
             return
@@ -409,10 +402,6 @@ class PickerActivity : AppCompatActivity() {
     }
 
 
-    /**
-     * 选择文件夹
-     * @param name 文件夹名字
-     */
     private fun chooseFolder(name: String) {
         val chooseFolderList = folderList?.filter {
             it.name == name
@@ -428,10 +417,6 @@ class PickerActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 更新缓存里面的信息
-     * @param newMediaFolderList 新扫描出来的文件夹列表
-     */
     private fun updateNewFolderListByCache(newMediaFolderList: List<MediaFolder>) {
         if (folderList.isNullOrEmpty()) {
             return
@@ -460,7 +445,6 @@ class PickerActivity : AppCompatActivity() {
         }
     }
 
-
     private fun updateMediaEntity(mediaList: List<MediaEntity>?) {
         if (mediaList.isNullOrEmpty()) {
             return
@@ -479,7 +463,6 @@ class PickerActivity : AppCompatActivity() {
                 }
             }
         }
-        //更新当前最大的选择数量
         maxNum = currentFolder?.mediaList?.maxBy {
             it.selectedNum
         }?.selectedNum ?: 0
@@ -496,20 +479,17 @@ class PickerActivity : AppCompatActivity() {
             finish()
             return
         }
-        //指定列表从预览界面返回
         if (assign) {
             mediaSelectedCallback?.onSelected(assignList)
             mediaSelectedCallback = null
             finish()
             return
         }
-        //排序
         if (!chooseMediaList.isNullOrEmpty()) {
             chooseMediaList.sortBy {
                 it.selectedNum
             }
         }
-        //原图直接返回
         if (isOriginal) {
             mediaSelectedCallback?.onSelected(chooseMediaList)
             mediaSelectedCallback = null
@@ -517,7 +497,6 @@ class PickerActivity : AppCompatActivity() {
             return
         }
         loadingDialog.showLoading(getString(R.string.picker_compress_tip))
-        //压缩返回
         MediaPhotoCompress().apply {
             compressImg(this@PickerActivity, chooseMediaList) {
                 runOnUiThread {

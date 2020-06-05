@@ -42,7 +42,6 @@ class DemoPhotoAdapter(var context: Context) :
 
     override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
         val mediaEntity = mediaList!![position]
-        //底部文件类型图标
         if (mediaEntity.fileType == XPickerConstant.FILE_TYPE_VIDEO) {
             holder.videoLayer.visibility = View.VISIBLE
             holder.videoDurationTv.text = "${timeParse(mediaEntity.duration.toLong())}"
@@ -55,7 +54,6 @@ class DemoPhotoAdapter(var context: Context) :
             }
             holder.videoLayer.visibility = View.GONE
         }
-        //图片加载
         Glide.with(context)
             .load(File(mediaEntity.localPath!!))
             .into(holder.photoIv)

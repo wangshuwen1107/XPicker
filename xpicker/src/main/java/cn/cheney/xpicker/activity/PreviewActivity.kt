@@ -187,11 +187,8 @@ class PreviewActivity : AppCompatActivity() {
         mediaAdapter = PreviewPageAdapter(viewList)
         preview_vp.adapter = mediaAdapter
         preview_vp.setCurrentItem(index, false)
-        //预览数字 1/xx
         preview_num_tv.text = "${index + 1}/${previewMediaList!!.size}"
-        //选择状态
         updateSelectBtn(previewMediaList!![index].selected)
-        //底部选择预览
         preview_select_rv.layoutManager = LinearLayoutManager(
             this,
             RecyclerView.HORIZONTAL, false
@@ -240,9 +237,7 @@ class PreviewActivity : AppCompatActivity() {
                 currentSelectMaxNum--
                 mediaEntity.selectedNum = 0
             }
-            //更新选择列表
             updateSelectedListData()
-            //更新视图
             updateSelectBtn(previewMediaList!![index].selected)
         }
         selectAdapter.itemClickListener = { id ->
@@ -263,10 +258,6 @@ class PreviewActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 查找比目标值小的item 减1
-     * @param target 反选的ItemNum
-     */
     private fun autoDownSomeItem(target: Int) {
         for ((index, mediaEntity) in selectList.withIndex()) {
             if (mediaEntity.selectedNum in (target) until (currentSelectMaxNum + 1)
@@ -277,9 +268,6 @@ class PreviewActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 调用系统播放器播放video
-     */
     private fun playVideo(mediaEntity: MediaEntity) {
         if (null == mediaEntity.localPath) {
             return
@@ -292,9 +280,6 @@ class PreviewActivity : AppCompatActivity() {
     }
 
 
-    /**
-     * 更新选择栏列表
-     */
     private fun updateSelectList() {
         if (selectList.isNullOrEmpty()) {
             preview_select_rv.visibility = View.GONE
@@ -305,9 +290,6 @@ class PreviewActivity : AppCompatActivity() {
         selectAdapter.selectList = selectList
     }
 
-    /**
-     * 更新左下角选择按钮
-     */
     private fun updateSelectBtn(select: Boolean) {
         preview_select_iv.isSelected = select
         if (select) {
@@ -320,9 +302,6 @@ class PreviewActivity : AppCompatActivity() {
     }
 
 
-    /**
-     * 更新完成按钮
-     */
     private fun updateSelectNum() {
         if (selectList.isNullOrEmpty()) {
             preview_done_tv.isEnabled = false
@@ -336,9 +315,6 @@ class PreviewActivity : AppCompatActivity() {
         selectAdapter.selectList = selectList
     }
 
-    /**
-     * 状态栏显示隐藏
-     */
     private fun setStatusBarVis(show: Boolean) {
         if (show) {
             mImmersionBar.hideBar(BarHide.FLAG_SHOW_BAR).init()

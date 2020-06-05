@@ -23,9 +23,6 @@ class MediaLoader(
         private const val VIDEO = "video"
         private const val IMAGE = "image"
 
-        /**
-         * 查询全部图片和视频
-         */
         private const val SELECTION_ALL = (MediaStore.Files.FileColumns.MEDIA_TYPE
                 + "="
                 + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
@@ -36,9 +33,6 @@ class MediaLoader(
                 + " AND "
                 + MediaStore.Files.FileColumns.SIZE + ">0")
 
-        /**
-         * 获取全部图片和视频，但过滤掉gif图片
-         */
         private const val SELECTION_ALL_WITHOUT_GIF =
             ("(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
                     + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE + " AND "
@@ -47,32 +41,19 @@ class MediaLoader(
                     + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
                     + " AND " + MediaStore.MediaColumns.SIZE + ">0")
 
-        /**
-         * 获取全部图片
-         */
         private const val SELECTION_IMAGE = (MediaStore.Files.FileColumns.MEDIA_TYPE + "="
                 + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE)
 
-
-        /**
-         * 获取全部图片[除Gif]
-         */
         private const val SELECTION_IMAGE_WITHOUT_GIF =
             (MediaStore.Files.FileColumns.MEDIA_TYPE + "="
                     + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
                     + " AND "
                     + MediaStore.Images.Media.MIME_TYPE + "!='image/gif'")
 
-        /**
-         * 获取全部视频
-         */
         private const val SELECTION_VIDEO = (MediaStore.Files.FileColumns.MEDIA_TYPE + "="
                 + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO)
     }
 
-    /**
-     * 所有字段
-     */
     private val PROJECTION_ALL = arrayOf(
         MediaStore.Files.FileColumns._ID,
         MediaStore.MediaColumns.DATA,
@@ -85,9 +66,6 @@ class MediaLoader(
         MediaStore.MediaColumns.HEIGHT
     )
 
-    /**
-     * 图片
-     */
     private val IMAGE_PROJECTION = arrayOf(
         MediaStore.Images.Media._ID,
         MediaStore.Images.Media.DATA,
@@ -99,9 +77,6 @@ class MediaLoader(
         MediaStore.Images.Media.SIZE
     )
 
-    /**
-     * 视频
-     */
     private val VIDEO_PROJECTION = arrayOf(
         MediaStore.Video.Media._ID,
         MediaStore.Video.Media.DATA,
@@ -130,7 +105,6 @@ class MediaLoader(
                                 IMAGE_PROJECTION[1]
                             )
                         )
-                        // 如原图路径不存在或者路径存在但文件不存在,就结束当前循环
                         if (TextUtils.isEmpty(path) || !File(path).exists()) {
                             continue
                         }

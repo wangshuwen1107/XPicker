@@ -104,7 +104,7 @@ class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
                 holder.videoDurationTv.text = "${timeParse(mediaEntity.duration.toLong())}"
                 holder.gifMarkIv.visibility = View.GONE
             } else {
-                if ("image/gif" == mediaEntity.mineType) {
+                if (XPickerConstant.GIF == mediaEntity.mineType) {
                     holder.gifMarkIv.visibility = View.VISIBLE
                 } else {
                     holder.gifMarkIv.visibility = View.GONE
