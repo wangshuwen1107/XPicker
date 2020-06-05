@@ -21,7 +21,7 @@
 #### 1.root project build.gradle
 
 ```gradle
-allprojects {
+	allprojects {
 		repositories {
 			...
 			maven { url 'https://jitpack.io' }
