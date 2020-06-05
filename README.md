@@ -2,13 +2,14 @@
 
 提供 简便的照片选择器功能，图片Crop，视频录制，照相
 
-```
 [![](https://jitpack.io/v/wangshuwen1107/xpicker.svg)](https://jitpack.io/#wangshuwen1107/xpicker)
-```
+
 
 ### 展示
+<img src="./art/demo1.jpeg" width="30%" /> <img src="./art/demo2.jpeg" width="30%" /> <img src="./art/demo3.jpeg" width="30%" />
 
-[<img src="./art/demo1.jpeg" style="zoom:20%;" />       <img src="./art/demo3.jpeg" style="zoom:20%;" />    ] <img src="./art/demo2.jpeg" style="zoom:20%;" />
+
+
 
 ### 说明
 
