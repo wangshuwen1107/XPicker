@@ -15,7 +15,7 @@ import cn.cheney.xpicker.entity.CaptureType
 import cn.cheney.xpicker.entity.MineType
 import cn.cheney.xpicker.entity.PickerRequest
 
-typealias ImageLoadListener = (fileUrl: Uri, iv: ImageView) -> Unit
+typealias ImageLoadListener = (fileUrl: Uri, iv: ImageView, mineType: String?) -> Unit
 
 class XPicker private constructor() {
 
@@ -57,6 +57,12 @@ class XPicker private constructor() {
 
     fun haveCameraItem(arg: Boolean = false): XPicker {
         request.haveCameraItem = arg
+        return this
+    }
+
+
+    fun circleCrop(arg: Boolean = false): XPicker {
+        request.circleCrop = arg
         return this
     }
 
@@ -117,8 +123,8 @@ class XPicker private constructor() {
             return xPicker
         }
 
-        fun onImageLoad(fileUrl: Uri, iv: ImageView) {
-            imageLoadListener?.invoke(fileUrl, iv)
+        fun onImageLoad(fileUrl: Uri, iv: ImageView, mineType: String) {
+            imageLoadListener?.invoke(fileUrl, iv, mineType)
         }
     }
 

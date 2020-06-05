@@ -38,16 +38,39 @@
         android:text="Crop"
         android:textColor="#FFFFFF" />
 
-
-    <TextView
-        android:id="@+id/content_tv"
+    <RelativeLayout
+        android:id="@+id/content_layer"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginTop="12dp"
-        android:background="@color/XPicker_gray_main"
-        android:padding="5dp"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp" />
+        android:layout_height="match_parent"
+        android:layout_below="@+id/start_crop"
+        android:layout_marginTop="30dp"
+        android:background="#3949AB"
+        android:padding="10dp"
+        android:visibility="gone">
+
+
+        <ImageView
+            android:id="@+id/content_iv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:id="@+id/video_iv"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerInParent="true"
+            android:src="@drawable/preview_video_play" />
+
+
+    </RelativeLayout>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/content_rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/start_crop"
+        android:layout_marginTop="30dp"
+        android:background="#3949AB" />
 
 </RelativeLayout>

@@ -3,6 +3,7 @@ package cn.cheney.xpicker.activity
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.animation.Animation
@@ -26,6 +27,7 @@ import cn.cheney.xpicker.callback.PreviewSelectedCallback
 import cn.cheney.xpicker.core.MediaPhotoCompress
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.util.Logger
+import cn.cheney.xpicker.util.getExternalUri
 import cn.cheney.xpicker.view.LoadingDialog
 import cn.cheney.xpicker.view.photoview.PhotoView
 import com.gyf.immersionbar.BarHide
@@ -121,8 +123,9 @@ class PreviewActivity : AppCompatActivity() {
             val photoView = rootView.findViewById<PhotoView>(R.id.preview_photoView)
             val playIv = rootView.findViewById<ImageView>(R.id.preview_play)
             XPicker.imageLoadListener?.invoke(
-                mediaEntity.localUri!!,
-                photoView
+                Uri.fromFile(File(mediaEntity.localPath!!)),
+                photoView,
+                mediaEntity.mineType
             )
             if (mediaEntity.fileType == XPickerConstant.FILE_TYPE_VIDEO) {
                 playIv.visibility = View.VISIBLE
@@ -278,13 +281,13 @@ class PreviewActivity : AppCompatActivity() {
      * 调用系统播放器播放video
      */
     private fun playVideo(mediaEntity: MediaEntity) {
-        if (null == mediaEntity.localUri) {
+        if (null == mediaEntity.localPath) {
             return
         }
         val intent = Intent(Intent.ACTION_VIEW)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        intent.setDataAndType(mediaEntity.localUri, "video/*")
+        intent.setDataAndType(File(mediaEntity.localPath!!).getExternalUri(this), "video/*")
         startActivity(intent)
     }
 
@@ -298,7 +301,7 @@ class PreviewActivity : AppCompatActivity() {
         } else {
             preview_select_rv.visibility = View.VISIBLE
         }
-        selectAdapter.currentPreviewId = previewMediaList!![index].localUri
+        selectAdapter.currentPreviewId = previewMediaList!![index].localPath
         selectAdapter.selectList = selectList
     }
 

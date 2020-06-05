@@ -4,24 +4,47 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Bundle
+import android.text.TextUtils
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.GridLayoutManager
 import cn.cheney.xpicker.XPicker
+import cn.cheney.xpicker.adapter.GridSpacingItemDecoration
 import cn.cheney.xpicker.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.CropCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.entity.CaptureType
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.entity.MineType
+import cn.cheney.xpicker.util.toPx
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.yanzhenjie.permission.AndPermission
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.File
+
 
 @SuppressLint("SetTextI18n")
 class MainActivity : AppCompatActivity() {
 
+
+    private val demoPhotoAdapter by lazy {
+        DemoPhotoAdapter(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        content_rv.layoutManager = GridLayoutManager(this, 3)
+        content_rv.addItemDecoration(
+            GridSpacingItemDecoration(
+                3,
+                4.toPx(),
+                true
+            )
+        )
+        content_rv.adapter = demoPhotoAdapter
         start_camera.setOnClickListener {
             action(0)
         }
@@ -62,11 +85,9 @@ class MainActivity : AppCompatActivity() {
             .haveCameraItem(true)
             .start(this, selectedCallback = object : SelectedCallback {
                 override fun onSelected(mediaList: List<MediaEntity>?) {
-                    var result = ""
-                    mediaList?.forEach {
-                        result += "localPath=${it.localUri} \n localCompressPath =${it.compressLocalUri} \n"
-                    }
-                    content_tv.text = result
+                    content_rv.visibility = View.VISIBLE
+                    content_layer.visibility = View.GONE
+                    demoPhotoAdapter.mediaList = mediaList
                 }
             })
     }
@@ -76,22 +97,27 @@ class MainActivity : AppCompatActivity() {
             .captureMode(CaptureType.MIXED)
             .start(this, object : CameraSaveCallback {
                 override fun onTakePhotoSuccess(photoUri: Uri) {
-                    content_tv.text = "TakePhoto uri=$photoUri"
+                    content_rv.visibility = View.GONE
+                    content_layer.visibility = View.VISIBLE
+                    video_iv.visibility = View.GONE
+                    Glide.with(this@MainActivity)
+                        .load(photoUri)
+                        .into(content_iv)
                 }
 
                 override fun onTakePhotoFailed(errorCode: String) {
-                    content_tv.text = "TakePhoto  errorCode=$errorCode"
                 }
 
                 override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
-                    content_tv.text = "Video \n" +
-                            " coverUrl=$coverUri \n " +
-                            " videoUri=$videoUri \n" +
-                            " duration=$duration"
+                    content_rv.visibility = View.GONE
+                    content_layer.visibility = View.VISIBLE
+                    video_iv.visibility = View.VISIBLE
+                    Glide.with(this@MainActivity)
+                        .load(coverUri)
+                        .into(content_iv)
                 }
 
                 override fun onVideoFailed(errorCode: String) {
-                    content_tv.text = "Video errorCode=$errorCode"
                 }
 
             })
@@ -99,13 +125,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun startCrop() {
         XPicker.ofCrop()
+            .circleCrop(true)
             .start(this, cropCallback = object : CropCallback {
-                override fun onCrop(mediaList: MediaEntity?) {
-                    var result = ""
-                    result += "localPath=${mediaList?.localUri} \n cropUri =${mediaList?.cropUri} \n"
-                    content_tv.text = result
+                override fun onCrop(mediaEntity: MediaEntity?) {
+                    if (null == mediaEntity || TextUtils.isEmpty(mediaEntity.cropPath)) {
+                        return
+                    }
+                    content_rv.visibility = View.GONE
+                    content_layer.visibility = View.VISIBLE
+                    video_iv.visibility = View.GONE
+                    Glide.with(this@MainActivity)
+                        .load(File(mediaEntity.cropPath!!))
+                        .apply(RequestOptions().circleCrop())
+                        .into(content_iv)
                 }
-
             })
     }
 

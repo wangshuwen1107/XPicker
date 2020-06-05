@@ -10,7 +10,7 @@ class MyApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        XPicker.imageLoadListener = { imageUri, iv ->
+        XPicker.imageLoadListener = { imageUri, iv, mineType ->
             Glide.with(this@MyApp)
                 .load(imageUri)
                 .into(iv)

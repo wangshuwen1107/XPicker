@@ -28,7 +28,7 @@ import cn.cheney.xpicker.core.MediaLoader
 import cn.cheney.xpicker.core.MediaPhotoCompress
 import cn.cheney.xpicker.entity.*
 import cn.cheney.xpicker.util.Logger
-import cn.cheney.xpicker.util.getUir
+import cn.cheney.xpicker.util.getPrefix
 import cn.cheney.xpicker.util.toPx
 import cn.cheney.xpicker.view.FolderListPop
 import cn.cheney.xpicker.view.LoadingDialog
@@ -124,12 +124,13 @@ class PickerActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
             val resultUri: Uri? = UCrop.getOutput(data!!)
-            cropEntity?.cropUri = resultUri
+            cropEntity?.cropPath = resultUri?.path
             cropCallback?.onCrop(cropEntity)
             cropEntity = null
             cropCallback = null
             finish()
         } else if (resultCode == UCrop.RESULT_ERROR) {
+            val cropError = UCrop.getError(data!!)
             cropCallback?.onCrop(cropEntity)
             cropEntity = null
             cropCallback = null
@@ -338,9 +339,10 @@ class PickerActivity : AppCompatActivity() {
     }
 
     private fun goToCrop(mediaEntity: MediaEntity) {
+        val targetFile = File(mediaEntity.localPath!!)
         UCrop.of(
-            mediaEntity.localUri!!,
-            getCropDir(this, "").getUir(this)
+            Uri.fromFile(targetFile),
+            Uri.fromFile(getCropDir(this, targetFile.getPrefix()))
         )
             .withAspectRatio(1f, 1f)
             .withOptions(UCrop.Options().apply {
@@ -356,14 +358,14 @@ class PickerActivity : AppCompatActivity() {
     private fun addToChooseList(mediaEntity: MediaEntity, isChoose: Boolean) {
         //增加
         if (!chooseMediaList.any {
-                it.localUri == mediaEntity.localUri
+                it.localPath == mediaEntity.localPath
             } && isChoose) {
             chooseMediaList.add(mediaEntity)
         }
         //删除
         if (!isChoose) {
             val filterList = chooseMediaList.filter {
-                it.localUri == mediaEntity.localUri
+                it.localPath == mediaEntity.localPath
             }
             if (!filterList.isNullOrEmpty()) {
                 chooseMediaList.remove(filterList[0])
@@ -446,7 +448,7 @@ class PickerActivity : AppCompatActivity() {
             }
             cacheMediaFolder.mediaList.forEach { cacheMediaEntity ->
                 for (newMedia in targetFolders[0].mediaList) {
-                    if (newMedia.localUri == cacheMediaEntity.localUri
+                    if (newMedia.localPath == cacheMediaEntity.localPath
                     ) {
                         newMedia.selectedNum = cacheMediaEntity.selectedNum
                         newMedia.selected = cacheMediaEntity.selected
@@ -465,7 +467,7 @@ class PickerActivity : AppCompatActivity() {
         }
         currentFolder?.mediaList?.forEach { cacheMediaEntity ->
             mediaList.forEach newList@{ newEntity ->
-                if (newEntity.localUri == cacheMediaEntity.localUri) {
+                if (newEntity.localPath == cacheMediaEntity.localPath) {
                     cacheMediaEntity.selected = newEntity.selected
                     cacheMediaEntity.selectedNum = newEntity.selectedNum
                     val index = currentFolder?.mediaList?.indexOf(cacheMediaEntity)
@@ -539,7 +541,7 @@ class PickerActivity : AppCompatActivity() {
         private fun getCropDir(context: Context, prefix: String): File {
             val compressDir = File(
                 context.externalMediaDirs.first().absolutePath
-                        + File.separator + XPickerConstant.CROP_DIR_TAG
+                        + File.separator + if (TextUtils.isEmpty(prefix)) PHOTO_EXTENSION else prefix
             )
             if (!compressDir.exists()) {
                 compressDir.mkdirs()

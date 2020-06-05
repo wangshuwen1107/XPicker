@@ -24,7 +24,7 @@ class PreviewSelectAdapter : RecyclerView.Adapter<PreviewSelectAdapter.MediaSele
             notifyDataSetChanged()
         }
 
-    var currentPreviewId: Uri? = null
+    var currentPreviewId: String? = null
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -43,10 +43,11 @@ class PreviewSelectAdapter : RecyclerView.Adapter<PreviewSelectAdapter.MediaSele
 
     override fun onBindViewHolder(holder: MediaSelectHolder, position: Int) {
         XPicker.imageLoadListener?.invoke(
-            selectList!![position].localUri!!,
-            holder.photoIv
+            Uri.fromFile(File(selectList!![position].localPath!!)),
+            holder.photoIv,
+            selectList!![position].mineType
         )
-        if (selectList!![position].localUri == currentPreviewId) {
+        if (selectList!![position].localPath == currentPreviewId) {
             holder.photoBg.visibility = View.VISIBLE
         } else {
             holder.photoBg.visibility = View.GONE

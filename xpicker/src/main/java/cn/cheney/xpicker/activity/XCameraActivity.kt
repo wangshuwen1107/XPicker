@@ -82,7 +82,7 @@ class XCameraActivity : AppCompatActivity() {
 
 
     private fun initConfig() {
-        val bundle= intent.getBundleExtra(XPickerConstant.REQUEST_BUNDLE_KEY)
+        val bundle = intent.getBundleExtra(XPickerConstant.REQUEST_BUNDLE_KEY)
         xPickerRequest = bundle?.getParcelable(REQUEST_KEY)
         if (null == xPickerRequest) {
             finish()
@@ -220,7 +220,8 @@ class XCameraActivity : AppCompatActivity() {
                             xpicker_camera_photo_preview_iv.visibility = View.VISIBLE
                             XPicker.onImageLoad(
                                 Uri.fromFile(photoFile),
-                                xpicker_camera_photo_preview_iv
+                                xpicker_camera_photo_preview_iv,
+                                XPickerConstant.JPEG
                             )
                             xpicker_camera_capture_layer.done()
                             xpicker_camera_switch_iv.visibility = View.GONE

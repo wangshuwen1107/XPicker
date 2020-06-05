@@ -10,6 +10,7 @@ data class MediaFolder(
     var path: String = "",
     var imageNum: Int = 0,
     var isCheck: Boolean = false,
-    var firstImageUri: Uri?=null,
+    var firstImagePath: String?=null,
+    var firstImageMineType: String?=null,
     var mediaList: ArrayList<MediaEntity> = arrayListOf()
 ) : Parcelable

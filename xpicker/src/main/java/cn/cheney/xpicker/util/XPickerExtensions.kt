@@ -16,11 +16,21 @@ fun Int.toDp(): Int = (this / Resources.getSystem().displayMetrics.density).toIn
 fun Int.toPx(): Int = (this * Resources.getSystem().displayMetrics.density).toInt()
 
 
-fun File.getUir(context: Context): Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-    FileProvider.getUriForFile(context, XPickerConstant.FILE_PROVIDER, this)
-} else {
-    Uri.fromFile(this)
+fun File.getExternalUri(context: Context): Uri =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        FileProvider.getUriForFile(context, XPickerConstant.FILE_PROVIDER, this)
+    } else {
+        Uri.fromFile(this)
+    }
+
+fun File.getPrefix(): String {
+    val index = this.name.lastIndexOf(".")
+    if (index < 0) {
+        return ""
+    }
+    return this.name.substring(index + 1)
 }
+
 
 @SuppressLint("SimpleDateFormat")
 private val msFormat = SimpleDateFormat("mm:ss")
