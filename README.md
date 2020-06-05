@@ -6,8 +6,7 @@
 
 
 ### 展示
-<img src="./art/demo1.jpeg" width="30%" /> <img src="./art/demo2.jpeg" width="30%" /> <img src="./art/demo3.jpeg" width="30%" />
-
+ <img src="./art/demo1.jpeg" width="30%"/>  <img src="./art/demo3.jpeg" width="30%"/>  <img src="./art/demo2.jpeg" width="30%"/> 
 
 
 
@@ -76,18 +75,18 @@ XPicker.imageLoadListener = { imageUri, iv, mineType ->
 #### 3.照相
 
 ```kotlin
- XPicker.ofCamera()
+        XPicker.ofCamera()
             .captureMode(CaptureType.MIXED)
             .start(this, object : CameraSaveCallback {
                 override fun onTakePhotoSuccess(photoUri: Uri) {
-              
+             
                 }
 
                 override fun onTakePhotoFailed(errorCode: String) {
                 }
 
                 override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
-                
+               
                 }
 
                 override fun onVideoFailed(errorCode: String) {
@@ -100,10 +99,13 @@ XPicker.imageLoadListener = { imageUri, iv, mineType ->
 #### 3.图像选择器
 
 ```kotlin
-  XPicker.ofPicker()
+        XPicker.ofPicker()
             .mineType(MineType.TYPE_ALL)
+            .maxPickerNum(3)
+            .haveCameraItem(true)
             .start(this, selectedCallback = object : SelectedCallback {
                 override fun onSelected(mediaList: List<MediaEntity>?) {
+                  
                 }
             })
 
@@ -112,12 +114,14 @@ XPicker.imageLoadListener = { imageUri, iv, mineType ->
 #### 4.头像选择裁剪
 
 ```kotlin
- XPicker.ofCrop()
+        XPicker.ofCrop()
             .circleCrop(true)
             .start(this, cropCallback = object : CropCallback {
                 override fun onCrop(mediaEntity: MediaEntity?) {
+                   
                 }
             })
+
 ```
 
 ### 混淆
