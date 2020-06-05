@@ -9,6 +9,7 @@ import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.entity.MediaFolder
 import cn.cheney.xpicker.entity.MineType
+import cn.cheney.xpicker.util.getUir
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
@@ -159,7 +160,7 @@ class MediaLoader(
                             continue
                         }
                         val mediaEntity = MediaEntity()
-                        mediaEntity.localPath = path
+                        mediaEntity.localUri = File(path).getUir(context = activity)
                         mediaEntity.fileType = fileType
                         mediaEntity.duration = duration
                         mediaEntity.width = w
@@ -176,8 +177,7 @@ class MediaLoader(
                     if (latelyImages.size > 0) {
                         sortFolder(imageFolders)
                         imageFolders.add(0, allImageFolder)
-                        allImageFolder.firstImagePath =
-                            latelyImages[0].localPath!!
+                        allImageFolder.firstImageUri = latelyImages[0].localUri!!
                         val title =
                             if (type == XPickerConstant.FILE_TYPE_VIDEO) "所有音频" else "相机胶卷"
                         allImageFolder.name = title
@@ -265,7 +265,7 @@ class MediaLoader(
         val newFolder = MediaFolder()
         newFolder.name = folderFile.name
         newFolder.path = folderFile.absolutePath
-        newFolder.firstImagePath = path
+        newFolder.firstImageUri = File(path).getUir(activity)
         imageFolders.add(newFolder)
         return newFolder
     }

@@ -3,17 +3,13 @@ package cn.cheney.xpicker.activity
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
@@ -125,7 +121,7 @@ class PreviewActivity : AppCompatActivity() {
             val photoView = rootView.findViewById<PhotoView>(R.id.preview_photoView)
             val playIv = rootView.findViewById<ImageView>(R.id.preview_play)
             XPicker.imageLoadListener?.invoke(
-                Uri.fromFile(File(mediaEntity.localPath!!)),
+                mediaEntity.localUri!!,
                 photoView
             )
             if (mediaEntity.fileType == XPickerConstant.FILE_TYPE_VIDEO) {
@@ -282,20 +278,13 @@ class PreviewActivity : AppCompatActivity() {
      * 调用系统播放器播放video
      */
     private fun playVideo(mediaEntity: MediaEntity) {
-        if (TextUtils.isEmpty(mediaEntity.localPath)) {
+        if (null == mediaEntity.localUri) {
             return
         }
         val intent = Intent(Intent.ACTION_VIEW)
-        val file = File(mediaEntity.localPath!!)
-        val uri: Uri
-        uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            FileProvider.getUriForFile(this, "cn.cheney.xpicker.fileprovider", file)
-        } else {
-            Uri.fromFile(file)
-        }
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        intent.setDataAndType(uri, "video/*")
+        intent.setDataAndType(mediaEntity.localUri, "video/*")
         startActivity(intent)
     }
 
@@ -309,7 +298,7 @@ class PreviewActivity : AppCompatActivity() {
         } else {
             preview_select_rv.visibility = View.VISIBLE
         }
-        selectAdapter.currentPreviewId = previewMediaList!![index].localPath
+        selectAdapter.currentPreviewId = previewMediaList!![index].localUri
         selectAdapter.selectList = selectList
     }
 

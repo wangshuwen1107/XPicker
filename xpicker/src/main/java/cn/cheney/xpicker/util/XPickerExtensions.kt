@@ -1,13 +1,26 @@
 package cn.cheney.xpicker.util
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.res.Resources
+import android.net.Uri
+import android.os.Build
+import androidx.core.content.FileProvider
+import cn.cheney.xpicker.XPickerConstant
+import java.io.File
 import java.text.SimpleDateFormat
 
 
 fun Int.toDp(): Int = (this / Resources.getSystem().displayMetrics.density).toInt()
 
 fun Int.toPx(): Int = (this * Resources.getSystem().displayMetrics.density).toInt()
+
+
+fun File.getUir(context: Context): Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+    FileProvider.getUriForFile(context, XPickerConstant.FILE_PROVIDER, this)
+} else {
+    Uri.fromFile(this)
+}
 
 @SuppressLint("SimpleDateFormat")
 private val msFormat = SimpleDateFormat("mm:ss")

@@ -113,7 +113,7 @@ class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
             }
             //图片加载
             XPicker.imageLoadListener?.invoke(
-                Uri.fromFile(File(mediaEntity.localPath!!)),
+                mediaEntity.localUri!!,
                 holder.photoIv
             )
             //图片选择

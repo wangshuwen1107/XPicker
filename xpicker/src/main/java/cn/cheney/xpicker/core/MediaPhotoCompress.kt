@@ -1,10 +1,10 @@
 package cn.cheney.xpicker.core
 
 import android.content.Context
-import android.text.TextUtils
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.util.Logger
+import cn.cheney.xpicker.util.getUir
 import top.zibin.luban.Luban
 import top.zibin.luban.OnCompressListener
 import java.io.File
@@ -23,7 +23,7 @@ class MediaPhotoCompress {
             return
         }
         mediaList.forEach {
-            if (!TextUtils.isEmpty(it.localPath)
+            if (null != it.localUri
                 && it.fileType == XPickerConstant.FILE_TYPE_IMAGE
                 && XPickerConstant.GIF != it.mineType
             ) {
@@ -36,7 +36,7 @@ class MediaPhotoCompress {
 
     private fun compressSingle(context: Context, index: Int, callback: () -> Unit) {
         Luban.with(context)
-            .load(mediaList[index].localPath!!)
+            .load(mediaList[index].localUri!!)
             .setTargetDir(getCompressDir(context).absolutePath)
             .setRenameListener {
                 File(it!!).name
@@ -45,7 +45,7 @@ class MediaPhotoCompress {
                 override fun onSuccess(file: File?) {
                     Logger.d("Compress Success ${file?.absolutePath}")
                     if (null != file && file.exists()) {
-                        mediaList[index].compressLocalPath = file.absolutePath
+                        mediaList[index].compressLocalUri = file.getUir(context)
                     }
                     if (index == mediaList.size - 1) {
                         callback.invoke()

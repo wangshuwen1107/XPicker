@@ -11,7 +11,8 @@ class XPickerConstant {
         const val PREVIEW_INDEX_KEY = "previewIndex"
         const val PREVIEW_CURRENT_MAX_NUM_KEY = "previewMaxNum"
         const val PREVIEW_ORIGINAL_KEY = "original"
-
+        //FileProvider
+        const val FILE_PROVIDER="cn.cheney.xpicker.fileprovider"
         //FileType
         const val FILE_TYPE_VIDEO = 2
         const val FILE_TYPE_IMAGE = 3

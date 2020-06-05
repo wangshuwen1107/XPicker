@@ -1,7 +1,6 @@
 package cn.cheney.xpicker.adapter
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.entity.MediaFolder
-import java.io.File
 
 
 typealias FolderClickListener = (position: Int, mediaFolder: MediaFolder) -> Unit
@@ -45,7 +43,7 @@ class FolderAdapter : RecyclerView.Adapter<FolderAdapter.FolderViewHolder>() {
     override fun onBindViewHolder(holder: FolderViewHolder, position: Int) {
         val mediaFolder = folderList!![position]
         XPicker.imageLoadListener?.invoke(
-            Uri.fromFile(File(mediaFolder.firstImagePath)),
+            mediaFolder.firstImageUri!!,
             holder.photoIv
         )
         holder.itemView.setOnClickListener {

@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                 override fun onSelected(mediaList: List<MediaEntity>?) {
                     var result = ""
                     mediaList?.forEach {
-                        result += "localPath=${it.localPath} \n localCompressPath =${it.compressLocalPath} \n"
+                        result += "localPath=${it.localUri} \n localCompressPath =${it.compressLocalUri} \n"
                     }
                     content_tv.text = result
                 }
@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
             .start(this, cropCallback = object : CropCallback {
                 override fun onCrop(mediaList: MediaEntity?) {
                     var result = ""
-                    result += "localPath=${mediaList?.localPath} \n cropUri =${mediaList?.cropUri} \n"
+                    result += "localPath=${mediaList?.localUri} \n cropUri =${mediaList?.cropUri} \n"
                     content_tv.text = result
                 }
 
