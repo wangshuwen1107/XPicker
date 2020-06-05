@@ -27,8 +27,8 @@ allprojects {
             url 'https://dl.bintray.com/wenwen/maven'
         }
     }
-
 }
+
 
 task clean(type: Delete) {
     delete rootProject.buildDir
