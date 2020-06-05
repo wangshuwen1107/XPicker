@@ -25,5 +25,6 @@ data class PickerRequest(
     var mineType: Int = 2,
     var supportGif: Boolean = false,
     var haveCameraItem: Boolean = false,
+    var circleCrop: Boolean = false,
     var spanCount: Int = 4
 ) : Parcelable

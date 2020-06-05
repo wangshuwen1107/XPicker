@@ -8,6 +8,7 @@ import android.widget.ImageView
 import cn.cheney.xpicker.activity.PickerActivity
 import cn.cheney.xpicker.activity.XCameraActivity
 import cn.cheney.xpicker.callback.CameraSaveCallback
+import cn.cheney.xpicker.callback.CropCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.entity.ActionType
 import cn.cheney.xpicker.entity.CaptureType
@@ -62,28 +63,33 @@ class XPicker private constructor() {
     fun start(
         context: Context,
         cameraSaveCallback: CameraSaveCallback? = null,
-        mediaSelectedCallback: SelectedCallback? = null
+        selectedCallback: SelectedCallback? = null,
+        cropCallback: CropCallback? = null
     ) {
         when (request.actionType) {
             ActionType.CAMERA.type -> {
                 val intent = Intent(context, XCameraActivity::class.java)
-                intent.putExtra(XPickerConstant.REQUEST_KEY, request)
+                val bundle = Bundle()
+                bundle.putParcelable(XPickerConstant.REQUEST_KEY, request)
+                intent.putExtra(XPickerConstant.REQUEST_BUNDLE_KEY, bundle)
                 context.startActivity(intent)
                 XCameraActivity.cameraSaveCallback = cameraSaveCallback
             }
-            ActionType.PICKER.type-> {
+            ActionType.PICKER.type -> {
                 val intent = Intent(context, PickerActivity::class.java)
-                intent.putExtra(XPickerConstant.REQUEST_KEY, request)
+                val bundle = Bundle()
+                bundle.putParcelable(XPickerConstant.REQUEST_KEY, request)
+                intent.putExtra(XPickerConstant.REQUEST_BUNDLE_KEY, bundle)
                 context.startActivity(intent)
-                PickerActivity.mediaSelectedCallback = mediaSelectedCallback
+                PickerActivity.mediaSelectedCallback = selectedCallback
             }
             ActionType.CROP.type -> {
                 val intent = Intent(context, PickerActivity::class.java)
                 val bundle = Bundle()
                 bundle.putParcelable(XPickerConstant.REQUEST_KEY, request)
-                intent.putExtra("123",bundle)
+                intent.putExtra(XPickerConstant.REQUEST_BUNDLE_KEY, bundle)
                 context.startActivity(intent)
-                PickerActivity.mediaSelectedCallback = mediaSelectedCallback
+                PickerActivity.cropCallback = cropCallback
             }
         }
     }
@@ -107,6 +113,7 @@ class XPicker private constructor() {
         fun ofCrop(): XPicker {
             val xPicker = XPicker()
             xPicker.request = PickerRequest(actionType = ActionType.CROP.type)
+            xPicker.request.mineType = MineType.TYPE_IMAGE_WITHOUT_GIF.type
             return xPicker
         }
 

@@ -48,6 +48,8 @@ class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
 
     var haveCamera = false
 
+    var haveCheck = true
+
     override fun getItemViewType(position: Int): Int {
         if (position == 0 && haveCamera) {
             return CAMERA_TYPE
@@ -116,8 +118,14 @@ class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
             )
             //图片选择
             updateItemCheck(realPos)
-            holder.checkLayer.setOnClickListener {
-                itemCheckListener?.invoke(realPos, mediaEntity, holder)
+            //checkLayer
+            if (haveCheck) {
+                holder.checkLayer.visibility = View.VISIBLE
+                holder.checkLayer.setOnClickListener {
+                    itemCheckListener?.invoke(realPos, mediaEntity, holder)
+                }
+            } else {
+                holder.checkLayer.visibility = View.GONE
             }
             holder.itemView.setOnClickListener {
                 itemClickListener?.invoke(realPos, false)

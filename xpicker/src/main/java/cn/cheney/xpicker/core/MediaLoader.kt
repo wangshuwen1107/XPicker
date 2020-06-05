@@ -60,7 +60,7 @@ class MediaLoader(
         private const val SELECTION_IMAGE_WITHOUT_GIF =
             (MediaStore.Files.FileColumns.MEDIA_TYPE + "="
                     + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
-                    + "AND"
+                    + " AND "
                     + MediaStore.Images.Media.MIME_TYPE + "!='image/gif'")
 
         /**

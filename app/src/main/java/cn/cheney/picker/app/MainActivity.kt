@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.callback.CameraSaveCallback
+import cn.cheney.xpicker.callback.CropCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.entity.CaptureType
 import cn.cheney.xpicker.entity.MediaEntity
@@ -59,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             .mineType(MineType.TYPE_ALL)
             .maxPickerNum(3)
             .haveCameraItem(true)
-            .start(this, mediaSelectedCallback = object : SelectedCallback {
+            .start(this, selectedCallback = object : SelectedCallback {
                 override fun onSelected(mediaList: List<MediaEntity>?) {
                     var result = ""
                     mediaList?.forEach {
@@ -98,14 +99,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun startCrop() {
         XPicker.ofCrop()
-            .start(this, mediaSelectedCallback = object : SelectedCallback {
-                override fun onSelected(mediaList: List<MediaEntity>?) {
+            .start(this, cropCallback = object : CropCallback {
+                override fun onCrop(mediaList: MediaEntity?) {
                     var result = ""
-                    mediaList?.forEach {
-                        result += "localPath=${it.localPath} \n localCompressPath =${it.compressLocalPath} \n"
-                    }
+                    result += "localPath=${mediaList?.localPath} \n cropUri =${mediaList?.cropUri} \n"
                     content_tv.text = result
                 }
+
             })
     }
 

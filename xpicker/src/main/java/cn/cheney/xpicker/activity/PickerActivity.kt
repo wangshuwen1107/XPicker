@@ -14,21 +14,20 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import androidx.annotation.StringDef
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.view.CameraView
 import androidx.recyclerview.widget.GridLayoutManager
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.XPickerConstant
-import cn.cheney.xpicker.entity.PickerRequest
 import cn.cheney.xpicker.adapter.GridSpacingItemDecoration
 import cn.cheney.xpicker.adapter.PhotoAdapter
 import cn.cheney.xpicker.callback.CameraSaveCallback
+import cn.cheney.xpicker.callback.CropCallback
 import cn.cheney.xpicker.callback.PreviewSelectedCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.core.MediaLoader
 import cn.cheney.xpicker.core.MediaPhotoCompress
-import cn.cheney.xpicker.entity.CaptureType
-import cn.cheney.xpicker.entity.MediaEntity
-import cn.cheney.xpicker.entity.MediaFolder
+import cn.cheney.xpicker.entity.*
 import cn.cheney.xpicker.util.Logger
 import cn.cheney.xpicker.util.toPx
 import cn.cheney.xpicker.view.FolderListPop
@@ -58,7 +57,7 @@ class PickerActivity : AppCompatActivity() {
     private lateinit var animationRotateShow: Animation
     private lateinit var animationRotateHide: Animation
     private var folderListPop: FolderListPop? = null
-
+    private var cropEntity: MediaEntity? = null
     private val handler = Handler(Looper.getMainLooper())
 
     /**
@@ -100,7 +99,8 @@ class PickerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.xpicker_activity_picker)
-        xPickerRequest = intent.getBundleExtra("123").getParcelable(XPickerConstant.REQUEST_KEY)
+        val bundle = intent.getBundleExtra(XPickerConstant.REQUEST_BUNDLE_KEY)
+        xPickerRequest = bundle?.getParcelable(XPickerConstant.REQUEST_KEY)
         if (null == xPickerRequest) {
             finish()
             return
@@ -109,9 +109,114 @@ class PickerActivity : AppCompatActivity() {
         animationRotateHide = AnimationUtils.loadAnimation(this, R.anim.picker_folder_arrow_hide)
         initView()
         initListener()
-
         mediaLoader = MediaLoader(this, xPickerRequest!!.mineType)
         loadData()
+    }
+
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        callback(true)
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
+            val resultUri: Uri? = UCrop.getOutput(data!!)
+            cropEntity?.cropUri = resultUri
+            cropCallback?.onCrop(cropEntity)
+            cropEntity = null
+            cropCallback = null
+            finish()
+        } else if (resultCode == UCrop.RESULT_ERROR) {
+            cropCallback?.onCrop(cropEntity)
+            cropEntity = null
+            cropCallback = null
+            finish()
+        }
+    }
+
+    private fun initView() {
+        photoAdapter.haveCheck = xPickerRequest!!.actionType != ActionType.CROP.type
+        picker_photo_rv.adapter = photoAdapter
+        picker_photo_rv.layoutManager = GridLayoutManager(this, xPickerRequest!!.spanCount)
+        picker_photo_rv.addItemDecoration(
+            GridSpacingItemDecoration(
+                xPickerRequest!!.spanCount,
+                2.toPx(),
+                true
+            )
+        )
+        photoAdapter.haveCamera = xPickerRequest?.haveCameraItem ?: false
+        picker_bottom_layer.visibility =
+            if (xPickerRequest!!.actionType == ActionType.CROP.type) View.GONE
+            else View.VISIBLE
+    }
+
+    private fun initListener() {
+        photoAdapter.itemCheckListener = { position, mediaEntity, holder ->
+            if (mediaEntity.selected || maxNum < xPickerRequest!!.maxPickerNum) {
+                mediaEntity.selected = !mediaEntity.selected
+                if (mediaEntity.selected) {
+                    mediaEntity.selectedNum = ++maxNum
+                } else {
+                    if (mediaEntity.selectedNum < maxNum) {
+                        autoDownSomeItem(mediaEntity.selectedNum)
+                    }
+                    maxNum--
+                    mediaEntity.selectedNum = 0
+                }
+                addToChooseList(mediaEntity, mediaEntity.selected)
+                photoAdapter.updateItemCheck(position, true)
+            }
+        }
+
+        photoAdapter.itemClickListener = { position, isCamera ->
+            if (isCamera) {
+                goToCamera()
+            } else {
+                if (xPickerRequest!!.actionType == ActionType.CROP.type) {
+                    cropEntity = currentFolder!!.mediaList[position]
+                    goToCrop(cropEntity!!)
+                } else {
+                    if (!currentFolder?.mediaList.isNullOrEmpty()) {
+                        goToPreview(currentFolder!!.mediaList, position)
+                    }
+                }
+
+            }
+        }
+
+        picker_dir_layer.setOnClickListener {
+            if (folderList.isNullOrEmpty()) {
+                return@setOnClickListener
+            }
+            picker_arrow_down_iv.startAnimation(animationRotateShow)
+            folderListPop = FolderListPop(
+                this,
+                folderList!!,
+                currentChooseFolderName!!
+            )
+            folderListPop!!.showAsDropDown(title_layer)
+            folderListPop!!.folderDismissListener = { folderName ->
+                picker_arrow_down_iv.startAnimation(animationRotateHide)
+                chooseFolder(folderName)
+            }
+        }
+        picker_back_iv.setOnClickListener {
+            callback(true)
+        }
+        picker_done_tv.setOnClickListener {
+            callback(false)
+        }
+        picker_preview_tv.setOnClickListener {
+            goToPreview(chooseMediaList)
+        }
+        picker_original_check_layer.setOnClickListener {
+            isOriginal = !isOriginal
+            updateOriginal()
+        }
     }
 
 
@@ -161,84 +266,6 @@ class PickerActivity : AppCompatActivity() {
             }
 
         })
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        callback(true)
-    }
-
-    private fun initView() {
-//        xPickerRequest!!.actionType ==
-        picker_photo_rv.adapter = photoAdapter
-        picker_photo_rv.layoutManager = GridLayoutManager(this, xPickerRequest!!.spanCount)
-        picker_photo_rv.addItemDecoration(
-            GridSpacingItemDecoration(
-                xPickerRequest!!.spanCount,
-                2.toPx(),
-                true
-            )
-        )
-        photoAdapter.haveCamera = xPickerRequest?.haveCameraItem ?: false
-    }
-
-    private fun initListener() {
-        photoAdapter.itemCheckListener = { position, mediaEntity, holder ->
-            if (mediaEntity.selected || maxNum < xPickerRequest!!.maxPickerNum) {
-                mediaEntity.selected = !mediaEntity.selected
-                if (mediaEntity.selected) {
-                    mediaEntity.selectedNum = ++maxNum
-                } else {
-                    if (mediaEntity.selectedNum < maxNum) {
-                        autoDownSomeItem(mediaEntity.selectedNum)
-                    }
-                    maxNum--
-                    mediaEntity.selectedNum = 0
-                }
-                addToChooseList(mediaEntity, mediaEntity.selected)
-                photoAdapter.updateItemCheck(position, true)
-            }
-        }
-
-        photoAdapter.itemClickListener = { position, isCamera ->
-            if (isCamera) {
-                goToCamera()
-            } else {
-                if (!currentFolder?.mediaList.isNullOrEmpty()) {
-                    goToPreview(currentFolder!!.mediaList, position)
-                }
-            }
-        }
-
-        picker_dir_layer.setOnClickListener {
-            if (folderList.isNullOrEmpty()) {
-                return@setOnClickListener
-            }
-            picker_arrow_down_iv.startAnimation(animationRotateShow)
-            folderListPop = FolderListPop(
-                this,
-                folderList!!,
-                currentChooseFolderName!!
-            )
-            folderListPop!!.showAsDropDown(title_layer)
-            folderListPop!!.folderDismissListener = { folderName ->
-                picker_arrow_down_iv.startAnimation(animationRotateHide)
-                chooseFolder(folderName)
-            }
-        }
-        picker_back_iv.setOnClickListener {
-            callback(true)
-        }
-        picker_done_tv.setOnClickListener {
-            callback(false)
-        }
-        picker_preview_tv.setOnClickListener {
-            goToPreview(chooseMediaList)
-        }
-        picker_original_check_layer.setOnClickListener {
-            isOriginal = !isOriginal
-            updateOriginal()
-        }
     }
 
 
@@ -317,6 +344,7 @@ class PickerActivity : AppCompatActivity() {
         )
             .withAspectRatio(1f, 1f)
             .withOptions(UCrop.Options().apply {
+                setCircleDimmedLayer(xPickerRequest!!.circleCrop)
             })
             .start(this)
     }
@@ -502,6 +530,7 @@ class PickerActivity : AppCompatActivity() {
 
     companion object {
         var mediaSelectedCallback: SelectedCallback? = null
+        var cropCallback: CropCallback? = null
 
         private const val FILENAME = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val PHOTO_EXTENSION = ".jpg"

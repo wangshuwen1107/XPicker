@@ -26,6 +26,7 @@ import androidx.camera.core.VideoCapture
 import androidx.camera.view.CameraView
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
+import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.XPickerConstant.Companion.REQUEST_KEY
 import cn.cheney.xpicker.entity.PickerRequest
 import cn.cheney.xpicker.callback.CameraSaveCallback
@@ -81,7 +82,8 @@ class XCameraActivity : AppCompatActivity() {
 
 
     private fun initConfig() {
-        xPickerRequest = intent.getParcelableExtra<PickerRequest>(REQUEST_KEY)
+        val bundle= intent.getBundleExtra(XPickerConstant.REQUEST_BUNDLE_KEY)
+        xPickerRequest = bundle?.getParcelable(REQUEST_KEY)
         if (null == xPickerRequest) {
             finish()
             return

@@ -1,5 +1,6 @@
 package cn.cheney.xpicker.entity
 
+import android.net.Uri
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 
@@ -11,6 +12,7 @@ data class MediaEntity(
     var localPath: String? = null,
     var compressLocalPath: String? = null,
     var localThumbnailPath: String? = null,
+    var cropUri: Uri? = null,
     var latitude: String? = null,
     var longitude: String? = null,
     var height: Int = 0,
