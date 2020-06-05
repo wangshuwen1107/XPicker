@@ -1,7 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.novoda.bintray-release'
+apply plugin: 'com.github.dcendents.android-maven'
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
@@ -31,18 +32,12 @@ android {
     }
 }
 
-publish {
-    userOrg = 'wenwen'
-    groupId = 'cn.cheney.media'
-    artifactId = 'xpicker'
-    publishVersion = '1.0.0'
-    desc = 'this is a picker lib'
-    website = 'https://github.com/novoda/bintray-release'
-}
 
 tasks.withType(Javadoc).all {
     enabled = false
 }
+
+group='com.github.wangshuwen1107'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
