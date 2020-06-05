@@ -17,6 +17,11 @@ import cn.cheney.xpicker.entity.PickerRequest
 
 typealias ImageLoadListener = (fileUrl: Uri, iv: ImageView, mineType: String?) -> Unit
 
+/**
+ * @author Cheney
+ * @since 2020.6.1
+ *  Builder class to ease Intent setup.
+ */
 class XPicker private constructor() {
 
     private lateinit var request: PickerRequest
@@ -126,6 +131,7 @@ class XPicker private constructor() {
 
 
     companion object {
+
         var imageLoadListener: ImageLoadListener? = null
 
         fun ofPicker(): XPicker {
