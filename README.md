@@ -21,22 +21,12 @@
 #### 1.root project build.gradle
 
 ```gradle
-buildscript {
-   repositories {
-      ...
-   }
-   dependencies {
-       ...
-   }
-}
-
 allprojects {
-   repositories {
-       maven {
-           url 'https://dl.bintray.com/wenwen/maven'
-       }
-   }
-}
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
 ```
 
 
