@@ -2,7 +2,19 @@
 
 提供 简便的照片选择器功能，图片Crop，视频录制，照相
 
-版本 [ ![Download](https://api.bintray.com/packages/wenwen/maven/xpicker/images/download.svg?version=1.0.0) ](https://bintray.com/wenwen/maven/xpicker/1.0.0/link)
+```
+[![](https://jitpack.io/v/wangshuwen1107/xpicker.svg)](https://jitpack.io/#wangshuwen1107/xpicker)
+```
+
+### 展示
+
+[<img src="./art/demo1.jpeg" style="zoom:20%;" />       <img src="./art/demo3.jpeg" style="zoom:20%;" />    ] <img src="./art/demo2.jpeg" style="zoom:20%;" />
+
+### 说明
+
+1.该库仅支持AndroidX
+
+2.minSdkVersion 21
 
 ### 添加依赖和配置
 
