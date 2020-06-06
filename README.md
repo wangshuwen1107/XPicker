@@ -65,18 +65,6 @@ XPicker.imageLoadListener = { imageUri, iv, mineType ->
 
 ```
 
-### ProGuard
-
-```text
- //statusBar Lib
- -keep class com.gyf.immersionbar.* {*;}
- -dontwarn com.gyf.immersionbar.**
- //UCrop
- -dontwarn com.yalantis.ucrop**
- -keep class com.yalantis.ucrop** { *; }
- -keep interface com.yalantis.ucrop** { *; }
-```
-
 ### Thanks
 
 - [Luban](https://github.com/Curzibn/Luban) provide easy compress lib

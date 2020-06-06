@@ -12,7 +12,6 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
     }
@@ -41,7 +40,7 @@ publish {
     userOrg = 'wenwen'
     groupId = 'cn.cheney.media'
     artifactId = 'xpicker'
-    publishVersion = '1.0.0'
+    publishVersion = '1.0.1'
     desc = 'XPicker is  a great way  to selector local image and video for Android'
     website = 'https://github.com/wangshuwen1107/XPicker'
 }
