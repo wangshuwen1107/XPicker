@@ -1,49 +1,35 @@
-## XPicker
+![Image](./art/guide.png)
 
-提供 简便的照片选择器功能，图片Crop，视频录制，照相
+## XPicker
 
 [![](https://jitpack.io/v/wangshuwen1107/xpicker.svg)](https://jitpack.io/#wangshuwen1107/xpicker)
 
+|                  Picker                   |                  Preview                  |                   Crop                    |
+| :---------------------------------------: | :---------------------------------------: | :---------------------------------------: |
+| <img src="./art/demo1.jpeg" width="30%"/> | <img src="./art/demo2.jpeg" width="30%"/> | <img src="./art/demo3.jpeg" width="30%"/> |
 
-### 展示
- <img src="./art/demo1.jpeg" width="30%"/>  <img src="./art/demo3.jpeg" width="30%"/>  <img src="./art/demo2.jpeg" width="30%"/> 
+### XPicker is  a great way  to selector local image and video  for Android
 
+- Please use AndrodX Lib 
+- Select images including Image Video GIF 
+- No delay of the mediaLoader
+- TakePhoto and record video by custom camera 
 
-
-### 说明
-
-1.该库仅支持AndroidX
-
-2.minSdkVersion 21
-
-### 添加依赖和配置
-
-#### 1.root project build.gradle
+### Download
 
 ```gradle
- allprojects {
- 	repositories {
- 		...
- 		maven { url 'https://jitpack.io' }
- 	}
- }
-```
+repositories {
+    jcenter()
+}
 
-
-
-#### 2.module build.gradle
-
-```gradle
 dependencies {
-   implementation 'cn.cheney.media:xpicker:x.x.x'
+    implementation 'com.zhihu.android:matisse:$latest_version'
 }
 ```
 
+### USE
 
-
-### 使用
-
-#### 1.配置ImageLoader
+#### 1. configuration imageLoad
 
 ```kotlin
 XPicker.imageLoadListener = { imageUri, iv, mineType ->
@@ -53,7 +39,7 @@ XPicker.imageLoadListener = { imageUri, iv, mineType ->
       }
 ```
 
-#### 2.申请权限
+#### 2.request permission
 
 ```text
  Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -62,66 +48,40 @@ XPicker.imageLoadListener = { imageUri, iv, mineType ->
  Manifest.permission.READ_EXTERNAL_STORAGE
 ```
 
-#### 3.照相
+#### 3.Action
 
 ```kotlin
-        XPicker.ofCamera()
-            .captureMode(CaptureType.MIXED)
-            .start(this, object : CameraSaveCallback {
-                override fun onTakePhotoSuccess(photoUri: Uri) {
-             
-                }
+ XPicker.ofCamera()
+        .captureMode(CaptureType.MIXED)
+        .start(this,CameraSaveCallback)
 
-                override fun onTakePhotoFailed(errorCode: String) {
-                }
+  XPicker.ofCrop()
+         .circleCrop(true)
+         .start(this,CropCallback)
 
-                override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
-               
-                }
-
-                override fun onVideoFailed(errorCode: String) {
-                }
-
-            })
+  XPicker.ofPicker()
+         .mineType(MineType.TYPE_ALL)
+         .start(this,SelectedCallback)
 
 ```
 
-#### 3.图像选择器
-
-```kotlin
-        XPicker.ofPicker()
-            .mineType(MineType.TYPE_ALL)
-            .maxPickerNum(3)
-            .haveCameraItem(true)
-            .start(this, selectedCallback = object : SelectedCallback {
-                override fun onSelected(mediaList: List<MediaEntity>?) {
-                  
-                }
-            })
-
-```
-
-#### 4.头像选择裁剪
-
-```kotlin
-        XPicker.ofCrop()
-            .circleCrop(true)
-            .start(this, cropCallback = object : CropCallback {
-                override fun onCrop(mediaEntity: MediaEntity?) {
-                   
-                }
-            })
-
-```
-
-### 混淆
+### ProGuard
 
 ```text
+ //statusBar Lib
  -keep class com.gyf.immersionbar.* {*;}
  -dontwarn com.gyf.immersionbar.**
+ //UCrop
  -dontwarn com.yalantis.ucrop**
  -keep class com.yalantis.ucrop** { *; }
  -keep interface com.yalantis.ucrop** { *; }
-
 ```
+
+### Thanks
+
+[Luban](https://github.com/Curzibn/Luban) provide easy compress lib
+
+[uCrop](https://github.com/Yalantis/uCrop) provide an  image cropping experience
+
+[immersionbar](https://github.com/gyf-dev/ImmersionBar) provide an  statusbar experience
 
