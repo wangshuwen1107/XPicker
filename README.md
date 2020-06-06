@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.zhihu.android:matisse:$latest_version'
+    implementation 'cn.cheney.media:xpicker:$latest_version'
 }
 ```
 
@@ -78,11 +78,12 @@ XPicker.imageLoadListener = { imageUri, iv, mineType ->
 ```
 
 ### Thanks
-[Luban](https://github.com/Curzibn/Luban) provide easy compress lib
 
-[uCrop](https://github.com/Yalantis/uCrop) provide an  image cropping experience
+- [Luban](https://github.com/Curzibn/Luban) provide easy compress lib
 
-[immersionbar](https://github.com/gyf-dev/ImmersionBar) provide an  statusbar experience
+- [uCrop](https://github.com/Yalantis/uCrop) provide an  image cropping experience
+
+- [immersionbar](https://github.com/gyf-dev/ImmersionBar) provide an  statusbar experience
 
 ### License
 
