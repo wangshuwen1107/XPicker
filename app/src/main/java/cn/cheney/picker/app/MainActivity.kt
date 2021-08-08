@@ -21,6 +21,8 @@ import cn.cheney.xpicker.util.toPx
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.yanzhenjie.permission.AndPermission
+import com.yanzhenjie.permission.runtime.Permission
+import com.yanzhenjie.permission.runtime.PermissionDef
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
@@ -60,10 +62,10 @@ class MainActivity : AppCompatActivity() {
         AndPermission.with(this)
             .runtime()
             .permission(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.READ_EXTERNAL_STORAGE
+                Permission.READ_EXTERNAL_STORAGE,
+                Permission.WRITE_EXTERNAL_STORAGE,
+                Permission.CAMERA,
+                Permission.RECORD_AUDIO
             )
             .onGranted {
                 when (action) {
