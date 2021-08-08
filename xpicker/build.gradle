@@ -1,7 +1,13 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.novoda.bintray-release'
+
+ext {
+    PUBLISH_GROUP_ID = "io.github.wangshuwen1107"
+    PUBLISH_ARTIFACT_ID = 'XPicker'
+    PUBLISH_VERSION = '1.0.0'
+}
+apply from: "${rootProject.projectDir}/publish-mavencentral.gradle"
 
 android {
     compileSdkVersion 29
@@ -36,14 +42,6 @@ tasks.withType(Javadoc).all {
     enabled = false
 }
 
-publish {
-    userOrg = 'wenwen'
-    groupId = 'cn.cheney.media'
-    artifactId = 'xpicker'
-    publishVersion = '1.0.1'
-    desc = 'XPicker is  a great way  to selector local image and video for Android'
-    website = 'https://github.com/wangshuwen1107/XPicker'
-}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
