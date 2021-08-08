@@ -2,7 +2,6 @@
 
 ## XPicker
 
-[ ![Download](https://api.bintray.com/packages/wenwen/maven/xpicker/images/download.svg) ](https://bintray.com/wenwen/maven/xpicker/_latestVersion)
 
 |            Picker             |            Preview            |             Crop              |
 | :---------------------------: | :---------------------------: | :---------------------------: |
@@ -19,7 +18,7 @@
 
 ```gradle
 repositories {
-    jcenter()
+   maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
 }
 
 dependencies {
