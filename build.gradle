@@ -3,6 +3,7 @@
 buildscript {
     ext.kotlin_version = '1.3.61'
     repositories {
+        mavenCentral()
         maven { url 'https://maven.aliyun.com/nexus/content/repositories/jcenter' }
         maven { url 'https://maven.aliyun.com/nexus/content/groups/public/' }
         maven { url 'https://maven.aliyun.com/nexus/content/repositories/google' }
@@ -15,7 +16,7 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
+        mavenCentral()
         maven { url 'https://maven.aliyun.com/nexus/content/groups/public/' }
         maven { url 'https://maven.aliyun.com/nexus/content/repositories/google' }
         maven { url "https://jitpack.io" }
