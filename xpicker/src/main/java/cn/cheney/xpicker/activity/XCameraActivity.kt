@@ -6,7 +6,7 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.util.Size
+import android.util.Log
 import android.view.Surface
 import android.view.TextureView
 import android.view.TextureView.SurfaceTextureListener
@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.exifinterface.media.ExifInterface
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.XPickerConstant
@@ -37,10 +38,6 @@ import java.util.concurrent.Executors
 class XCameraActivity : AppCompatActivity() {
 
     private var isBackCamera: Boolean = true
-    private var previewSurface: Surface? = null
-    private var previewSurfaceTexture: SurfaceTexture? = null
-    private var previewSurfaceSize: Size? = null
-
     private var videoTextureView: TextureView? = null
     private var hasPauseVideo = false
     private var videoSurface: Surface? = null
@@ -68,8 +65,8 @@ class XCameraActivity : AppCompatActivity() {
         setContentView(R.layout.xpicker_activity_camera)
         initConfig()
         initListener()
-
         camera_preview.bindLifecycle(lifecycle)
+        camera_preview.setFacingBack(isBackCamera)
     }
 
 
@@ -168,10 +165,7 @@ class XCameraActivity : AppCompatActivity() {
                     scanPhotoAlbum(this@XCameraActivity, it)
                 }
                 photoFile?.let {
-                    scanPhotoAlbum(
-                        this@XCameraActivity,
-                        it
-                    )
+                    scanPhotoAlbum(this@XCameraActivity, it)
                 }
                 finish()
                 callbackSuccess()

@@ -13,9 +13,11 @@ import android.text.TextUtils
 import android.util.Log
 import android.util.Size
 import android.view.Surface
+import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.LifecycleObserver
 import cn.cheney.xpicker.entity.CameraError
 import cn.cheney.xpicker.util.XFileUtil
+import cn.cheney.xpicker.util.computeExifOrientation
 import cn.cheney.xpicker.util.getBestOutputSize
 import java.io.File
 import java.io.FileOutputStream
@@ -33,8 +35,6 @@ class Camera2Module : LifecycleObserver {
 
     private val cameraHandler = Handler(cameraThread.looper)
 
-    private var cameraParamsHolder = CameraParamsHolder()
-
     private var currentSession: CameraCaptureSession? = null
 
     private var currentDevice: CameraDevice? = null
@@ -43,6 +43,7 @@ class Camera2Module : LifecycleObserver {
 
     private var previewRequest: CaptureRequest? = null
 
+    var cameraParamsHolder = CameraParamsHolder()
 
     abstract class TakePhotoCallback {
         open fun onSuccess(file: File) {}
@@ -55,24 +56,25 @@ class Camera2Module : LifecycleObserver {
 
     fun init(context: Context) {
         cameraManager = context.applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
     }
 
 
-    fun initCameraSize(facingBack: Boolean, surfaceSize: Size): Size? {
+    fun initCameraSize(facingBack: Boolean, surfaceSize: Size) {
         val cameraId = getCameraId(facingBack)
         if (TextUtils.isEmpty(cameraId)) {
-            return null
+            return
         }
         val characteristics = cameraManager.getCameraCharacteristics(cameraId!!)
         val streamConfigurationMap =
             characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+        cameraParamsHolder.characteristics = characteristics
         val videoOutputSizes = streamConfigurationMap?.getOutputSizes(MediaRecorder::class.java)
         val previewSizes = streamConfigurationMap?.getOutputSizes(SurfaceTexture::class.java)
         val photoSizes = streamConfigurationMap?.getOutputSizes(ImageFormat.JPEG)
         cameraParamsHolder.previewSize = getBestOutputSize(previewSizes, surfaceSize)
         cameraParamsHolder.videoSize = getBestOutputSize(videoOutputSizes, surfaceSize)
         cameraParamsHolder.photoSize = getBestOutputSize(photoSizes, surfaceSize)
-        return cameraParamsHolder.previewSize
     }
 
 
@@ -115,7 +117,7 @@ class Camera2Module : LifecycleObserver {
     }
 
 
-    fun takePhoto(context: Context, callback: TakePhotoCallback) {
+    fun takePhoto(context: Context, orientation: Int, mirrored: Boolean, callback: TakePhotoCallback) {
         if (null == currentSession || null == currentDevice || null == imageReader) {
             mainHandler.post {
                 callback.onFailed(
@@ -129,31 +131,43 @@ class Camera2Module : LifecycleObserver {
         captureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START)
         captureRequestBuilder.addTarget(imageReader!!.surface)
 
+        captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation)
         imageReader?.setOnImageAvailableListener({
-            mainHandler.post {
-                val image = it.acquireLatestImage()
-                val outputFile = XFileUtil.createFile(
-                    context.externalMediaDirs.first(),
-                    XFileUtil.FILENAME, XFileUtil.PHOTO_EXTENSION
+            Log.i(TAG, "takePhoto setOnImageAvailableListener  -- ")
+            val image = it.acquireNextImage()
+            val outputFile = XFileUtil.createFile(
+                context.externalMediaDirs.first(),
+                XFileUtil.FILENAME, XFileUtil.PHOTO_EXTENSION
+            )
+            val buffer = image.planes[0].buffer
+            val bytes = ByteArray(buffer.remaining()).apply { buffer.get(this) }
+            var fos: FileOutputStream? = null
+            try {
+                fos = FileOutputStream(outputFile)
+                fos.write(bytes)
+
+                val exifOrientation = computeExifOrientation(orientation, mirrored)
+                val exif = ExifInterface(outputFile.absolutePath)
+                exif.setAttribute(
+                    ExifInterface.TAG_ORIENTATION, exifOrientation.toString()
                 )
-                val buffer = image.planes[0].buffer
-                val bytes = ByteArray(buffer.remaining()).apply { buffer.get(this) }
-                var fos: FileOutputStream? = null
+                exif.saveAttributes()
+
+                mainHandler.post { callback.onSuccess(outputFile) }
+            } catch (exc: IOException) {
+                callback.onFailed(-1, "")
+            } finally {
+                image.close()
                 try {
-                    fos = FileOutputStream(outputFile)
-                    fos.write(bytes)
-                    callback.onSuccess(outputFile)
-                } catch (exc: IOException) {
-                    callback.onFailed(-1, "")
-                } finally {
                     fos?.close()
+                } catch (exc: IOException) {
+
                 }
             }
         }, cameraHandler)
 
         currentSession?.apply {
             stopRepeating()
-            abortCaptures()
             capture(captureRequestBuilder.build(), object : CameraCaptureSession.CaptureCallback() {
                 override fun onCaptureCompleted(
                     session: CameraCaptureSession,
@@ -164,7 +178,6 @@ class Camera2Module : LifecycleObserver {
                     previewRequest?.let {
                         session.setRepeatingRequest(it, null, cameraHandler)
                     }
-                    imageReader?.setOnImageAvailableListener(null, null)
                 }
 
                 override fun onCaptureFailed(
@@ -191,12 +204,16 @@ class Camera2Module : LifecycleObserver {
         captureRequest.addTarget(surface)
         val targets = mutableListOf(surface)
         cameraParamsHolder.photoSize?.let {
-            imageReader = ImageReader.newInstance(it.width, it.height, ImageFormat.JPEG, 3)
+            imageReader = ImageReader.newInstance(it.width, it.height, ImageFormat.JPEG, 2)
             targets.add(imageReader!!.surface)
         }
         camera.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
 
             override fun onConfigured(session: CameraCaptureSession) {
+                captureRequest.set(
+                    CaptureRequest.CONTROL_AE_MODE,
+                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
+                )
                 previewRequest = captureRequest.build()
                 session.setRepeatingRequest(previewRequest!!, null, cameraHandler)
                 currentDevice = camera
@@ -227,6 +244,7 @@ class Camera2Module : LifecycleObserver {
         var previewSize: Size? = null
         var photoSize: Size? = null
         var videoSize: Size? = null
+        var characteristics: CameraCharacteristics? = null
     }
 
 }

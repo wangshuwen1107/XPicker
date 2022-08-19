@@ -16,7 +16,7 @@
         android:id="@+id/xpicker_camera_photo_preview_iv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/XPicker_black"
+        android:background="@color/XPicker_white"
         android:visibility="gone" />
 
 
