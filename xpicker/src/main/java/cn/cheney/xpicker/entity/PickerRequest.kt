@@ -9,7 +9,7 @@ data class PickerRequest(
     var captureMode: String = CaptureType.ONLY_CAPTURE.type,
     var minRecordTime: Int = 2000,
     var maxRecordTime: Int = 10000,
-    var defaultLensFacing: Int = 1,
+    var backCamera: Boolean = true,
     var actionType: String,
     var maxPickerNum: Int = 1,
     var mineType: Int = 2,

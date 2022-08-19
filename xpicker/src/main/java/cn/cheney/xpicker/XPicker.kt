@@ -46,8 +46,8 @@ class XPicker private constructor() {
     /**
      * set default camera id
      */
-    fun defaultLensFacing(arg: Int): XPicker {
-        request.defaultLensFacing = arg
+    fun defaultBackCamera(backCamera: Boolean): XPicker {
+        request.backCamera = backCamera
         return this
     }
 

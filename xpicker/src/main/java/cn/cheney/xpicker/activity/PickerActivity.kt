@@ -273,7 +273,7 @@ class PickerActivity : AppCompatActivity() {
     private fun goToCamera() {
         xPickerRequest?.apply {
             XPicker.ofCamera()
-                .defaultLensFacing(defaultLensFacing)
+                .defaultBackCamera(true)
                 .maxRecordTime(maxRecordTime)
                 .minRecordTime(minRecordTime)
                 .captureMode(CaptureType.valueOf(captureMode))
@@ -325,13 +325,11 @@ class PickerActivity : AppCompatActivity() {
         PreviewActivity.selectedCallback = object : PreviewSelectedCallback {
             override fun onSelected(mediaList: List<MediaEntity>?, isOrigin: Boolean) {
                 callback(false, assign = true, assignList = mediaList)
-                this@PickerActivity.isOriginal = isOriginal
                 updateOriginal()
             }
 
             override fun onCancel(mediaList: List<MediaEntity>, isOrigin: Boolean) {
                 updateMediaEntity(mediaList)
-                this@PickerActivity.isOriginal = isOriginal
                 updateOriginal()
             }
         }
@@ -463,7 +461,7 @@ class PickerActivity : AppCompatActivity() {
                 }
             }
         }
-        maxNum = currentFolder?.mediaList?.maxBy {
+        maxNum = currentFolder?.mediaList?.maxByOrNull {
             it.selectedNum
         }?.selectedNum ?: 0
     }

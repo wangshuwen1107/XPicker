@@ -1,6 +1,5 @@
 package cn.cheney.picker.app
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Bundle
@@ -22,7 +21,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.yanzhenjie.permission.AndPermission
 import com.yanzhenjie.permission.runtime.Permission
-import com.yanzhenjie.permission.runtime.PermissionDef
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
@@ -97,6 +95,7 @@ class MainActivity : AppCompatActivity() {
     private fun startCamera() {
         XPicker.ofCamera()
             .captureMode(CaptureType.MIXED)
+            .defaultBackCamera(false)
             .start(this, object : CameraSaveCallback {
                 override fun onTakePhotoSuccess(photoUri: Uri) {
                     content_rv.visibility = View.GONE

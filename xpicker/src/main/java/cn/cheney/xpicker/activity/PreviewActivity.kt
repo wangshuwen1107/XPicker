@@ -73,7 +73,7 @@ class PreviewActivity : AppCompatActivity() {
             return
         }
         updateSelectedListData()
-        val maxNumEntity = selectList.maxBy {
+        val maxNumEntity = selectList.maxByOrNull {
             it.selectedNum
         }
         currentSelectMaxNum = maxNumEntity?.selectedNum ?: 0
