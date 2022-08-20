@@ -1,8 +1,7 @@
 package cn.cheney.xpicker.core
 
 import android.content.Context
-import android.graphics.ImageFormat
-import android.graphics.SurfaceTexture
+import android.graphics.*
 import android.hardware.camera2.*
 import android.media.ImageReader
 import android.media.MediaRecorder
@@ -13,15 +12,11 @@ import android.text.TextUtils
 import android.util.Log
 import android.util.Size
 import android.view.Surface
-import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.LifecycleObserver
 import cn.cheney.xpicker.entity.CameraError
 import cn.cheney.xpicker.util.XFileUtil
-import cn.cheney.xpicker.util.computeExifOrientation
 import cn.cheney.xpicker.util.getBestOutputSize
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 
 
 class Camera2Module : LifecycleObserver {
@@ -130,10 +125,9 @@ class Camera2Module : LifecycleObserver {
         val captureRequestBuilder = currentDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
         captureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START)
         captureRequestBuilder.addTarget(imageReader!!.surface)
-
         captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation)
         imageReader?.setOnImageAvailableListener({
-            Log.i(TAG, "takePhoto setOnImageAvailableListener  -- ")
+            Log.i(TAG, "takePhoto setOnImageAvailableListener mirrored=$mirrored orientation=$orientation")
             val image = it.acquireNextImage()
             val outputFile = XFileUtil.createFile(
                 context.externalMediaDirs.first(),
@@ -141,28 +135,17 @@ class Camera2Module : LifecycleObserver {
             )
             val buffer = image.planes[0].buffer
             val bytes = ByteArray(buffer.remaining()).apply { buffer.get(this) }
-            var fos: FileOutputStream? = null
-            try {
-                fos = FileOutputStream(outputFile)
-                fos.write(bytes)
-
-                val exifOrientation = computeExifOrientation(orientation, mirrored)
-                val exif = ExifInterface(outputFile.absolutePath)
-                exif.setAttribute(
-                    ExifInterface.TAG_ORIENTATION, exifOrientation.toString()
-                )
-                exif.saveAttributes()
-
+            var bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            val matrix = Matrix()
+            matrix.postRotate(orientation * 1.0f, bitmap.width * 1.0f / 2, bitmap.height * 1.0f / 2)
+            if (mirrored) {
+                matrix.postScale(-1f, 1f)
+            }
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+            val saveSuccess = XFileUtil.saveBitmapFile(bitmap, outputFile)
+            image.close()
+            if (saveSuccess) {
                 mainHandler.post { callback.onSuccess(outputFile) }
-            } catch (exc: IOException) {
-                callback.onFailed(-1, "")
-            } finally {
-                image.close()
-                try {
-                    fos?.close()
-                } catch (exc: IOException) {
-
-                }
             }
         }, cameraHandler)
 

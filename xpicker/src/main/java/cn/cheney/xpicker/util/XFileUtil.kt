@@ -6,10 +6,7 @@ import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.text.TextUtils
 import android.webkit.MimeTypeMap
-import java.io.BufferedOutputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -49,15 +46,38 @@ object XFileUtil {
         return Pair(File(replace), duration?.toInt() ?: 0)
     }
 
-    fun saveBitmapFile(bitmap: Bitmap, file: File) {
-        try {
-            val bos =
-                BufferedOutputStream(FileOutputStream(file))
+    fun saveBitmapFile(bitmap: Bitmap, file: File): Boolean {
+        var bos: OutputStream? = null
+        return try {
+            bos = FileOutputStream(file)
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos)
             bos.flush()
-            bos.close()
+            true
         } catch (e: IOException) {
             e.printStackTrace()
+            false
+        } finally {
+            try {
+                bos?.close()
+            } catch (e: IOException) {
+
+            }
+        }
+    }
+
+    fun saveBytes(bytes: ByteArray, file: File) {
+        var bos: OutputStream? = null
+        try {
+            bos = FileOutputStream(file)
+            bos.write(bytes)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            try {
+                bos?.close()
+            } catch (e: IOException) {
+
+            }
         }
     }
 

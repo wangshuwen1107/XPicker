@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
     private fun startCamera() {
         XPicker.ofCamera()
             .captureMode(CaptureType.MIXED)
-            .defaultBackCamera(false)
+            .defaultBackCamera(true)
             .start(this, object : CameraSaveCallback {
                 override fun onTakePhotoSuccess(photoUri: Uri) {
                     content_rv.visibility = View.GONE
