@@ -3,6 +3,7 @@ package cn.cheney.xpicker.core
 import android.content.Context
 import android.graphics.*
 import android.hardware.camera2.*
+import android.hardware.camera2.params.MeteringRectangle
 import android.media.ImageReader
 import android.media.MediaRecorder
 import android.os.Handler
@@ -16,6 +17,7 @@ import androidx.lifecycle.LifecycleObserver
 import cn.cheney.xpicker.entity.CameraError
 import cn.cheney.xpicker.util.XFileUtil
 import cn.cheney.xpicker.util.getBestOutputSize
+import cn.cheney.xpicker.util.toDp
 import java.io.File
 
 
@@ -70,6 +72,7 @@ class Camera2Module : LifecycleObserver {
         cameraParamsHolder.previewSize = getBestOutputSize(previewSizes, surfaceSize)
         cameraParamsHolder.videoSize = getBestOutputSize(videoOutputSizes, surfaceSize)
         cameraParamsHolder.photoSize = getBestOutputSize(photoSizes, surfaceSize)
+        cameraParamsHolder.surfaceSize = surfaceSize
     }
 
 
@@ -193,10 +196,12 @@ class Camera2Module : LifecycleObserver {
         camera.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
 
             override fun onConfigured(session: CameraCaptureSession) {
-                captureRequest.set(
-                    CaptureRequest.CONTROL_AE_MODE,
-                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
-                )
+//                captureRequest.set(
+//                    CaptureRequest.CONTROL_AE_MODE,
+//                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
+//                )
+                captureRequest.set(CaptureRequest.CONTROL_AF_REGIONS, arrayOf(MeteringRectangle(getFocusRect(captureRequest), 1000)))
+                captureRequest.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO)
                 previewRequest = captureRequest.build()
                 session.setRepeatingRequest(previewRequest!!, null, cameraHandler)
                 currentDevice = camera
@@ -223,7 +228,48 @@ class Camera2Module : LifecycleObserver {
     }
 
 
+    private fun getFocusRect(builder: CaptureRequest.Builder): Rect? {
+        val previewSize = cameraParamsHolder.previewSize
+        val surfaceSize = cameraParamsHolder.surfaceSize
+        if (null == previewSize || null == surfaceSize) {
+            return null
+        }
+
+        val screenW = surfaceSize.width //获取屏幕长度
+        val screenH = surfaceSize.height//获取屏幕宽度
+
+        val x = screenW / 2
+        val y = screenH / 2
+
+        val realPreviewWidth = previewSize.height
+        val realPreviewHeight = previewSize.width
+
+        //根据预览像素与拍照最大像素的比例，调整手指点击的对焦区域的位置
+        val focusX = realPreviewWidth.toFloat() / screenW * x
+        val focusY = realPreviewHeight.toFloat() / screenH * y
+        Log.i(TAG, " focusX =$focusX, focusY = $focusY")
+
+        //获取SCALER_CROP_REGION，也就是拍照最大像素的Rect
+        val totalPicSize = builder.get(CaptureRequest.SCALER_CROP_REGION)!!
+
+        //计算出摄像头剪裁区域偏移量
+        val cutDx = (totalPicSize.height() - previewSize.height) / 2
+        Log.i(TAG, "cutDx=$cutDx")
+
+        val width = 10.toDp()
+        val height = 0.toDp()
+        //返回最终对焦区域Rect
+        return Rect(
+            focusY.toInt(),
+            focusX.toInt() + cutDx,
+            (focusY + height).toInt(),
+            (focusX + cutDx + width).toInt()
+        )
+    }
+
+
     class CameraParamsHolder {
+        var surfaceSize: Size? = null
         var previewSize: Size? = null
         var photoSize: Size? = null
         var videoSize: Size? = null

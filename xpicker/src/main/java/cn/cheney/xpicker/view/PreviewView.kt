@@ -105,14 +105,12 @@ class PreviewView @JvmOverloads constructor(
         cameraEngine.initCameraSize(facingBack, previewSurfaceSize!!)
         cameraEngine.cameraParamsHolder.previewSize?.let { previewSize ->
             previewSurfaceTexture?.setDefaultBufferSize(previewSize.width, previewSize.height)
-            setAspectRatio(previewSize.width, previewSize.height)
+//            setAspectRatio(previewSize.width, previewSize.height)
         }
         cameraEngine.startPreview(facingBack, previewSurface!!) {
             isPreviewIng.set(false)
         }
         cameraEngine.cameraParamsHolder.characteristics?.let {
-            Log.i("Camera2Module", "startPreview back=${it.get(CameraCharacteristics.LENS_FACING) !=
-                    CameraCharacteristics.LENS_FACING_FRONT}")
             relativeOrientation.characteristics = it
         }
 
