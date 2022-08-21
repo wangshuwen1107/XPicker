@@ -13,6 +13,14 @@
         android:layout_height="match_parent" />
 
     <ImageView
+        android:id="@+id/camera_focus_iv"
+        android:visibility="gone"
+        android:src="@drawable/picker_foucs_rect"
+        android:layout_width="100dp"
+        android:layout_height="100dp"/>
+
+
+    <ImageView
         android:id="@+id/xpicker_camera_photo_preview_iv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

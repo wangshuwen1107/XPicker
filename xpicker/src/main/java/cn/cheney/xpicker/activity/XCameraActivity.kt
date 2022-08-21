@@ -6,7 +6,6 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.Surface
 import android.view.TextureView
 import android.view.TextureView.SurfaceTextureListener
@@ -15,7 +14,6 @@ import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.exifinterface.media.ExifInterface
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.XPickerConstant
@@ -23,11 +21,14 @@ import cn.cheney.xpicker.XPickerConstant.Companion.REQUEST_KEY
 import cn.cheney.xpicker.entity.PickerRequest
 import cn.cheney.xpicker.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.CaptureListener
-import cn.cheney.xpicker.core.Camera2Module
+import cn.cheney.xpicker.camera.Camera2Module
+import cn.cheney.xpicker.camera.CameraThreadManager
+import cn.cheney.xpicker.camera.TakePhotoCallback
 import cn.cheney.xpicker.core.XMediaPlayer
 import cn.cheney.xpicker.entity.CaptureType
 import cn.cheney.xpicker.util.XFileUtil
 import cn.cheney.xpicker.util.XFileUtil.scanPhotoAlbum
+import cn.cheney.xpicker.view.PreviewView
 import kotlinx.android.synthetic.main.xpicker_activity_camera.*
 import java.io.File
 import java.util.*
@@ -138,15 +139,23 @@ class XCameraActivity : AppCompatActivity() {
             }
 
             override fun onError() {
-                safeUiThreadRun {
-                    Toast.makeText(
-                        this@XCameraActivity,
-                        getString(R.string.media_play_error), Toast.LENGTH_SHORT
-                    ).show()
-                    actionCancel()
-                }
+                showToast(getString(R.string.media_play_error))
+                actionCancel()
             }
         })
+        camera_preview.listener = object : PreviewView.GestureListener {
+            override fun onClick(x: Float, y: Float) {
+                camera_focus_iv.x = x - camera_focus_iv.width / 2
+                camera_focus_iv.y = y - camera_focus_iv.height / 2
+                camera_focus_iv.visibility = View.VISIBLE
+                camera_preview.autoFocus(x, y)
+                CameraThreadManager.mainHandler.postDelayed({
+                    camera_focus_iv.visibility = View.GONE
+                }, 2000)
+            }
+
+
+        }
         //动作
         xpicker_camera_capture_layer.setListener(object : CaptureListener() {
             override fun cancel() {
@@ -178,11 +187,7 @@ class XCameraActivity : AppCompatActivity() {
             override fun recordShort(time: Long) {
                 recordTime = time
                 super.recordShort(time)
-                Toast.makeText(
-                    this@XCameraActivity,
-                    getString(R.string.camera_recorder_too_short),
-                    Toast.LENGTH_SHORT
-                ).show()
+                showToast(getString(R.string.camera_recorder_too_short))
 //                xpicker_camera_preview.stopRecording()
                 xpicker_camera_capture_layer.reset()
             }
@@ -332,7 +337,7 @@ class XCameraActivity : AppCompatActivity() {
 
 
     private fun takePhoto() {
-        camera_preview.takePhoto(object : Camera2Module.TakePhotoCallback() {
+        camera_preview.takePhoto(object : TakePhotoCallback() {
             override fun onSuccess(file: File) {
                 safeUiThreadRun {
                     this@XCameraActivity.photoFile = file
@@ -350,17 +355,17 @@ class XCameraActivity : AppCompatActivity() {
             }
 
             override fun onFailed(errorCode: Int, errorMsg: String) {
-                safeUiThreadRun {
-                    Toast.makeText(
-                        this@XCameraActivity,
-                        getString(R.string.camera_take_photo_error),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+                showToast(getString(R.string.camera_take_photo_error))
             }
         })
     }
 
+
+    private fun showToast(text: String) {
+        safeUiThreadRun {
+            Toast.makeText(this@XCameraActivity, text, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     private fun safeUiThreadRun(block: () -> Unit) {
         if (isFinishing || isDestroyed) return

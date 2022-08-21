@@ -2,6 +2,9 @@ package cn.cheney.xpicker.util
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.Image
 import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.text.TextUtils
@@ -16,7 +19,6 @@ object XFileUtil {
     const val PHOTO_EXTENSION = ".jpg"
     const val VIDEO_EXTENSION = ".mp4"
 
-    /** Helper function used to create a timestamped file */
     fun createFile(baseFolder: File, format: String, extension: String) =
         File(
             baseFolder, SimpleDateFormat(format, Locale.CHINA)
@@ -65,20 +67,22 @@ object XFileUtil {
         }
     }
 
-    fun saveBytes(bytes: ByteArray, file: File) {
-        var bos: OutputStream? = null
-        try {
-            bos = FileOutputStream(file)
-            bos.write(bytes)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } finally {
-            try {
-                bos?.close()
-            } catch (e: IOException) {
-
-            }
+    fun saveImage(context: Context, image: Image, orientation: Int, mirrored: Boolean):File? {
+        val outputFile = createFile(context.externalMediaDirs.first(), FILENAME, PHOTO_EXTENSION)
+        val buffer = image.planes[0].buffer
+        val bytes = ByteArray(buffer.remaining()).apply { buffer.get(this) }
+        var bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        val matrix = Matrix()
+        matrix.postRotate(orientation * 1.0f, bitmap.width * 1.0f / 2, bitmap.height * 1.0f / 2)
+        if (mirrored) {
+            matrix.postScale(-1f, 1f)
         }
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        image.close()
+        if (saveBitmapFile(bitmap, outputFile)){
+            return  outputFile
+        }
+        return null
     }
 
     fun scanPhotoAlbum(context: Context, dataFile: File?) {
