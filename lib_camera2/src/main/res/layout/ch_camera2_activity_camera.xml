@@ -29,13 +29,18 @@
         android:background="@color/ch_camera2_white"
         android:visibility="gone" />
 
-
-    <RelativeLayout
-        android:id="@+id/camera_video_layer"
+    <com.cheney.camera2.view.VideoPlayView
+        android:id="@+id/camera_video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/ch_camera2_black"
         android:visibility="gone" />
+
+<!--    <RelativeLayout-->
+<!--        android:id="@+id/camera_video_layer"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:background="@color/ch_camera2_black"-->
+<!--        android:visibility="gone" />-->
 
 
     <ImageView

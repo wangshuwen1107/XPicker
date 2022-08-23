@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.util.AttributeSet
-import android.util.Log
 import android.util.Size
 import android.view.MotionEvent
 import androidx.lifecycle.Lifecycle
@@ -31,7 +30,7 @@ class PreviewView @JvmOverloads constructor(
     private var mSurfaceTexture: SurfaceTexture? = null
     private var viewSize: Size? = null
 
-    private val cameraEngine = Camera2Module()
+    private val camera2Module = Camera2Module()
     private var relativeOrientation: OrientationWatcher
 
     private var mDownTime: Long = 0
@@ -45,7 +44,7 @@ class PreviewView @JvmOverloads constructor(
     }
 
     init {
-        cameraEngine.init(getContext())
+        camera2Module.init(getContext())
         relativeOrientation = OrientationWatcher(getContext())
         relativeOrientation.enable()
         surfaceTextureListener = object : SurfaceTextureListener {
@@ -70,7 +69,7 @@ class PreviewView @JvmOverloads constructor(
                 mSurfaceTexture = null
                 viewSize = null
                 isPreviewIng.set(false)
-                cameraEngine.closeDevice()
+                camera2Module.closeDevice()
                 return true
             }
 
@@ -106,6 +105,17 @@ class PreviewView @JvmOverloads constructor(
         lifecycle.addObserver(this)
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private fun resume() {
+        startPreview()
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private fun destroy() {
+        relativeOrientation.disable()
+        lifecycleWk.get()?.removeObserver(this)
+    }
+
 
     fun setFacingBack(facingBack: Boolean) {
         this.facingBack = facingBack
@@ -114,7 +124,7 @@ class PreviewView @JvmOverloads constructor(
     }
 
     fun takePhoto(callback: TakePhotoCallback) {
-        cameraEngine.takePhoto(relativeOrientation.value, callback)
+        camera2Module.takePhoto(relativeOrientation.value, callback)
     }
 
     fun focus(focusPointX: Float, focusPointY: Float, focusViewSize: Int, callback: ((Boolean) -> Unit)?) {
@@ -126,23 +136,11 @@ class PreviewView @JvmOverloads constructor(
             callback?.invoke(false)
             return
         }
-        //聚焦矩阵   设置比曝光小一点  整体是聚焦视图的1/3
+        //聚焦矩阵
         val afRectF = getFocusRect(focusPointX, focusPointY, focusViewSize)
-        //曝光矩阵   整体是聚焦视图的1/2
+        //曝光矩阵
         val aeRectF = getFocusRect(focusPointX, focusPointY, focusViewSize)
-        cameraEngine.focus(afRectF, aeRectF, callback)
-    }
-
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    private fun resume() {
-        startPreview()
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    private fun destroy() {
-        relativeOrientation.disable()
-        lifecycleWk.get()?.removeObserver(this)
+        camera2Module.focus(afRectF, aeRectF, callback)
     }
 
 
@@ -161,15 +159,15 @@ class PreviewView @JvmOverloads constructor(
             return
         }
         isPreviewIng.set(true)
-        cameraEngine.initCameraSize(facingBack, viewSize!!)
-        cameraEngine.cameraParamsHolder.previewSize?.let { previewSize ->
+        camera2Module.initCameraSize(facingBack, viewSize!!)
+        camera2Module.cameraParamsHolder.previewSize?.let { previewSize ->
             mSurfaceTexture?.setDefaultBufferSize(previewSize.width, previewSize.height)
             setAspectRatio(previewSize.width, previewSize.height)
         }
-        cameraEngine.startPreview(facingBack, mSurfaceTexture!!) {
+        camera2Module.startPreview(facingBack, mSurfaceTexture!!) {
             isPreviewIng.set(false)
         }
-        cameraEngine.cameraParamsHolder.characteristics?.let {
+        camera2Module.cameraParamsHolder.characteristics?.let {
             relativeOrientation.characteristics = it
         }
     }

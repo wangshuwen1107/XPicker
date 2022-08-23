@@ -31,6 +31,9 @@ class Camera2Module : LifecycleObserver {
         camera2Session = Camera2Session(context)
     }
 
+    /**
+     * 初始化相机参数配置
+     */
     fun initCameraSize(facingBack: Boolean, surfaceSize: Size) {
         val cameraId = getCameraId(facingBack)
         if (TextUtils.isEmpty(cameraId)) {
@@ -54,7 +57,9 @@ class Camera2Module : LifecycleObserver {
 
     }
 
-
+    /**
+     * 开启预览
+     */
     fun startPreview(
         facingBack: Boolean,
         surfaceTexture: SurfaceTexture,
@@ -87,15 +92,23 @@ class Camera2Module : LifecycleObserver {
         }, CameraThreadManager.cameraHandler)
     }
 
-
+    /**
+     * 关闭相机
+     */
     fun closeDevice() {
         camera2Session.stopPreviewSession()
     }
 
+    /**
+     * 照相
+     */
     fun takePhoto(orientation: Int, callback: TakePhotoCallback) {
         camera2Session.sendTakePhotoRequest(orientation, cameraParamsHolder.isFront, callback)
     }
 
+    /**
+     * 聚焦
+     */
     fun focus(afRect: RectF, aeRect: RectF, callback: ((Boolean) -> Unit)?) {
         val surfaceSize = cameraParamsHolder.surfaceSize
         if (null == surfaceSize) {
@@ -109,6 +122,7 @@ class Camera2Module : LifecycleObserver {
         Log.i(TAG, "autoFocus 聚焦原始矩形=$afRect  曝光原始矩形=$aeRect")
         camera2Session.sendFocusRequest(transformAFRect, transformAERect, callback)
     }
+
 
     private fun getCameraId(facingBack: Boolean): String? {
         return cameraManager.cameraIdList.firstOrNull {

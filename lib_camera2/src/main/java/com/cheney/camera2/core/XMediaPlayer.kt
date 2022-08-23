@@ -81,7 +81,7 @@ class XMediaPlayer constructor(private var mContext: Context?) {
         }
     }
 
-    var mOnErrorListener =
+    private var mOnErrorListener =
         MediaPlayer.OnErrorListener { mp, what, extra ->
             if (null != mMediaListener) {
                 mMediaListener!!.onError()
