@@ -1,0 +1,10 @@
+<resources>
+
+    <style name="CH_Camera2_FullTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimaryDark">@color/ch_camera2_gray_main</item>
+        <item name="colorPrimary">@color/ch_camera2_white</item>
+        <item name="colorAccent">@color/ch_camera2_white</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+</resources>

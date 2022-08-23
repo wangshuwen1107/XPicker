@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/camera_rootview"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cheney.camera2.activity.XCameraActivity">
+
+    <com.cheney.camera2.view.PreviewView
+        android:id="@+id/camera_preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ImageView
+        android:id="@+id/camera_focus_iv"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:src="@drawable/ch_camera2_focus_rect"
+        android:visibility="gone"
+        tools:layout_centerInParent="true"
+        tools:visibility="visible" />
+
+
+    <ImageView
+        android:id="@+id/camera_photo_preview_iv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/ch_camera2_white"
+        android:visibility="gone" />
+
+
+    <RelativeLayout
+        android:id="@+id/camera_video_layer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/ch_camera2_black"
+        android:visibility="gone" />
+
+
+    <ImageView
+        android:id="@+id/camera_back_iv"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:padding="8dp"
+        android:src="@drawable/ch_camera2_record_back" />
+
+
+    <ImageView
+        android:id="@+id/camera_switch_iv"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:padding="8dp"
+        android:src="@drawable/ch_camera2_record_camera" />
+
+
+    <com.cheney.camera2.view.CaptureLayer
+        android:id="@+id/camera_capture_layer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+
+</RelativeLayout>

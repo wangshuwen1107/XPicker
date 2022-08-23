@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/common_capture_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:ignore="MissingDefaultResource">
+
+    <TextView
+        android:id="@+id/capture_tip_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/capture_btn_layer"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="2dp"
+        android:textColor="@color/ch_camera2_white"
+        android:textSize="12sp" />
+
+    <FrameLayout
+        android:id="@+id/capture_btn_layer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true">
+
+    </FrameLayout>
+
+
+    <LinearLayout
+        android:id="@+id/xpicker_capture_done_layer"
+        android:layout_width="wrap_content"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/xpicker_capture_cancel_iv"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/ch_camera2_media_record_cancel" />
+
+        <ImageView
+            android:id="@+id/xpicker_capture_done_iv"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="110dp"
+            android:src="@drawable/ch_camera2_media_record_done" />
+
+    </LinearLayout>
+
+
+</RelativeLayout>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ch_camera2_black">#000000</color>
+    <color name="ch_camera2_white">#FFFFFF</color>
+    <color name="ch_camera2_gray_main">#3E3C3C</color>
+    <color name="ch_camera2_green">#1AAD19</color>
+
+</resources>

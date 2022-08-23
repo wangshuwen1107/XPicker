@@ -10,15 +10,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.adapter.GridSpacingItemDecoration
-import cn.cheney.xpicker.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.CropCallback
 import cn.cheney.xpicker.callback.SelectedCallback
-import cn.cheney.xpicker.entity.CaptureType
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.entity.MineType
 import cn.cheney.xpicker.util.toPx
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.cheney.camera2.callback.CameraSaveCallback
+import com.cheney.camera2.entity.CaptureType
 import com.yanzhenjie.permission.AndPermission
 import com.yanzhenjie.permission.runtime.Permission
 import kotlinx.android.synthetic.main.activity_main.*
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
     private fun startCamera() {
         XPicker.ofCamera()
             .captureMode(CaptureType.MIXED)
-            .defaultBackCamera(true)
+            .defaultBackCamera(false)
             .start(this, object : CameraSaveCallback {
                 override fun onTakePhotoSuccess(photoUri: Uri) {
                     content_rv.visibility = View.GONE

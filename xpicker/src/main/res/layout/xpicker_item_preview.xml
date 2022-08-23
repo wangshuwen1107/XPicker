@@ -17,6 +17,6 @@
         android:scaleType="centerCrop"
         android:visibility="gone"
         android:layout_centerInParent="true"
-        android:src="@drawable/preview_video_play" />
+        android:src="@drawable/ch_camera2_preview_video_play" />
 
 </RelativeLayout>

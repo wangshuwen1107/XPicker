@@ -1,3 +1,5 @@
 rootProject.name='XPicker'
 include ':app'
 include ':xpicker'
+include ':lib_camera2'
+include ':camera2'

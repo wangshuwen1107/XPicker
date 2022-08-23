@@ -6,21 +6,20 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.ImageView
 import cn.cheney.xpicker.activity.PickerActivity
-import cn.cheney.xpicker.activity.XCameraActivity
-import cn.cheney.xpicker.callback.CameraSaveCallback
+import com.cheney.camera2.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.CropCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.entity.ActionType
-import cn.cheney.xpicker.entity.CaptureType
 import cn.cheney.xpicker.entity.MineType
 import cn.cheney.xpicker.entity.PickerRequest
+import com.cheney.camera2.activity.XCameraActivity
 
 typealias ImageLoadListener = (fileUrl: Uri, iv: ImageView, mineType: String?) -> Unit
 
 /**
  * @author Cheney
  * @since 2020.6.1
- *  Builder class to ease Intent setup.
+ * Builder class to ease Intent setup.
  */
 class XPicker private constructor() {
 
@@ -55,7 +54,7 @@ class XPicker private constructor() {
      * set a captureType to camera
      * @see CaptureType
      */
-    fun captureMode(arg: CaptureType): XPicker {
+    fun captureMode(arg: com.cheney.camera2.entity.CaptureType): XPicker {
         request.captureMode = arg.type
         return this
     }
@@ -104,9 +103,7 @@ class XPicker private constructor() {
         when (request.actionType) {
             ActionType.CAMERA.type -> {
                 val intent = Intent(context, XCameraActivity::class.java)
-                val bundle = Bundle()
-                bundle.putParcelable(XPickerConstant.REQUEST_KEY, request)
-                intent.putExtra(XPickerConstant.REQUEST_BUNDLE_KEY, bundle)
+                intent.putExtra(XCameraActivity.KEY_REQUEST, request.toCameraRequest())
                 context.startActivity(intent)
                 XCameraActivity.cameraSaveCallback = cameraSaveCallback
             }

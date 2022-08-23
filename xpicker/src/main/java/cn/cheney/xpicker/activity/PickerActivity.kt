@@ -20,7 +20,7 @@ import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.adapter.GridSpacingItemDecoration
 import cn.cheney.xpicker.adapter.PhotoAdapter
-import cn.cheney.xpicker.callback.CameraSaveCallback
+import com.cheney.camera2.callback.CameraSaveCallback
 import cn.cheney.xpicker.callback.CropCallback
 import cn.cheney.xpicker.callback.PreviewSelectedCallback
 import cn.cheney.xpicker.callback.SelectedCallback
@@ -32,6 +32,7 @@ import cn.cheney.xpicker.util.getPrefix
 import cn.cheney.xpicker.util.toPx
 import cn.cheney.xpicker.view.FolderListPop
 import cn.cheney.xpicker.view.LoadingDialog
+import com.cheney.camera2.entity.CaptureType
 import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.xpicker_activity_picker.*
 import java.io.File
@@ -279,7 +280,7 @@ class PickerActivity : AppCompatActivity() {
                 .captureMode(CaptureType.valueOf(captureMode))
                 .start(this@PickerActivity, cameraSaveCallback = object : CameraSaveCallback {
                     override fun onTakePhotoSuccess(photoUri: Uri) {
-                        handler.postDelayed(Runnable {
+                        handler.postDelayed({
                             loadData()
                         }, 300)
                     }
@@ -292,7 +293,7 @@ class PickerActivity : AppCompatActivity() {
                         videoUri: Uri,
                         duration: Int?
                     ) {
-                        handler.postDelayed(Runnable {
+                        handler.postDelayed({
                             loadData()
                         }, 300)
                     }

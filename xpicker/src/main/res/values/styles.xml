@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="XPicker_FullTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="CH_Camera2_FullTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimaryDark">@color/XPicker_gray_main</item>
         <item name="colorPrimary">@color/XPicker_white</item>
         <item name="colorAccent">@color/XPicker_white</item>

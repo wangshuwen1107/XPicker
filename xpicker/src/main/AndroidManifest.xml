@@ -19,8 +19,8 @@
         android:supportsRtl="true">
 
         <activity
-            android:theme="@style/XPicker_FullTheme"
-            android:name=".activity.XCameraActivity"
+            android:theme="@style/CH_Camera2_FullTheme"
+            android:name="com.cheney.camera2.activity.XCameraActivity"
             android:screenOrientation="portrait">
         </activity>
 
