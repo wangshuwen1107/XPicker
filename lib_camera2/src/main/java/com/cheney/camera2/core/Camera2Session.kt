@@ -5,28 +5,32 @@ import android.graphics.ImageFormat
 import android.graphics.Rect
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
-import android.hardware.camera2.params.MeteringRectangle
 import android.media.ImageReader
 import android.util.Size
 import android.view.Surface
 import com.cheney.camera2.callback.TakePhotoCallback
+import com.cheney.camera2.callback.VideoRecordCallback
 import com.cheney.camera2.entity.CameraError
 import com.cheney.camera2.util.FileUtil
 import java.io.File
 
 
-class Camera2Session(private var context: Context) : BaseSession(), ImageReader.OnImageAvailableListener {
-
-    private var currentDevice: CameraDevice? = null
-    private var imageReader: ImageReader? = null
-
-    private var mPreviewBuilder: CaptureRequest.Builder? = null
-    private var mCaptureBuilder: CaptureRequest.Builder? = null
+abstract class Camera2Session(private var context: Context) : BaseSession(),
+    ImageReader.OnImageAvailableListener {
 
     private var currentSession: CameraCaptureSession? = null
-    private var surface: Surface? = null
+
+    private var mPreviewBuilder: CaptureRequest.Builder? = null
+    private var previewSurface: Surface? = null
+
+    private var imageReader: ImageReader? = null
+
+    private var videoRecorderBuilder: CaptureRequest.Builder? = null
+    private var videoRecorder = XVideoRecorder(context)
 
     private var takePhotoRequest: TakePhotoRequest? = null
+
+    private var photoSize: Size? = null
 
     inner class TakePhotoRequest {
         var mirrored: Boolean = false
@@ -34,16 +38,23 @@ class Camera2Session(private var context: Context) : BaseSession(), ImageReader.
         var callback: TakePhotoCallback? = null
     }
 
-    fun startPreviewSession(camera: CameraDevice, surfaceTexture: SurfaceTexture, photoSize: Size) {
-        this.currentDevice = camera
-        this.surface = Surface(surfaceTexture)
-        val targets = mutableListOf(surface)
-        createImageReader(photoSize)
-        targets.add(imageReader!!.surface)
-        camera.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
+    fun setPreviewSurface(surfaceTexture: SurfaceTexture) {
+        previewSurface = Surface(surfaceTexture)
+    }
+
+    @Synchronized
+    fun startPreviewSession(photoSize: Size) {
+        this.photoSize = photoSize
+        imageReader = ImageReader.newInstance(photoSize.width, photoSize.height, ImageFormat.JPEG, 2)
+        imageReader!!.setOnImageAvailableListener(this, CameraThreadManager.cameraHandler)
+        val targets = mutableListOf(previewSurface, imageReader!!.surface)
+        stopPreview()
+        getCameraDevice()?.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
             override fun onConfigured(session: CameraCaptureSession) {
-                currentSession = session
-                sendPreviewRequest()
+                synchronized(this@Camera2Session) {
+                    currentSession = session
+                    sendPreviewRequest()
+                }
             }
 
             override fun onConfigureFailed(session: CameraCaptureSession) {
@@ -53,65 +64,81 @@ class Camera2Session(private var context: Context) : BaseSession(), ImageReader.
     }
 
 
-    fun stopPreviewSession() {
-        currentDevice?.close()
-        currentDevice = null
-        currentSession?.close()
-        currentSession = null
+    @Synchronized
+    fun startVideoRecorder(videoSize: Size, rotation: Int) {
+        CameraThreadManager.cameraHandler.post {
+            stopPreview()
+            videoRecorder.init(videoSize, rotation)
+            videoRecorder.getRecorderSurface()
+            val targets = mutableListOf(previewSurface, videoRecorder.getRecorderSurface())
+            getCameraDevice()?.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
+                override fun onConfigured(session: CameraCaptureSession) {
+                    synchronized(this@Camera2Session) {
+                        currentSession = session
+                        sendVideoPreviewRequest()
+                        videoRecorder.start()
 
-        imageReader?.setOnImageAvailableListener(null, CameraThreadManager.cameraHandler)
-        imageReader = null
+                    }
+                }
 
-        mPreviewBuilder = null
-        mCaptureBuilder = null
+                override fun onConfigureFailed(session: CameraCaptureSession) {
+
+                }
+            }, CameraThreadManager.cameraHandler)
+        }
     }
 
+
+    fun stopVideoRecorder(callback: VideoRecordCallback?) {
+        CameraThreadManager.cameraHandler.post {
+            stopPreview()
+            videoRecorder.stop(callback)
+            photoSize?.let { startPreviewSession(it) }
+        }
+    }
+
+    @Synchronized
     fun sendFocusRequest(afRect: Rect, aeRect: Rect, callback: ((Boolean) -> Unit)?) {
-        if (null == mPreviewBuilder || null == currentSession) {
+        if (null == currentSession) {
             callback?.invoke(false)
             return
         }
-        mPreviewBuilder?.apply {
-            set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO)
-            set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_START)
-            //聚焦区域
-            set(CaptureRequest.CONTROL_AF_REGIONS, arrayOf(MeteringRectangle(afRect, 1000)))
-            //曝光区域
-            set(CaptureRequest.CONTROL_AE_REGIONS, arrayOf(MeteringRectangle(aeRect, 1000)))
-            currentSession?.let {
-                setRepeatingPreview(this, it)
-                capture(this, it) { success ->
-                    callback?.invoke(success)
-                }
+        var temp = videoRecorderBuilder
+        if (null == temp) {
+            temp = mPreviewBuilder
+        }
+        if (null == temp) {
+            callback?.invoke(false)
+            return
+        }
+        temp.apply {
+            setFocusRequest(this, afRect, aeRect)
+            setRepeatingPreview(this, currentSession!!)
+            capture(this, currentSession!!) { success ->
+                callback?.invoke(success)
             }
         }
     }
 
+
+    @Synchronized
     fun sendTakePhotoRequest(orientation: Int, mirrored: Boolean, callback: TakePhotoCallback) {
-        if (null == currentSession) {
+        if (null == currentSession || null == imageReader) {
             callbackTakePhoto(null)
             return
         }
         currentSession!!.stopRepeating()
         currentSession!!.abortCaptures()
-
-        this.takePhotoRequest = TakePhotoRequest().apply {
+        takePhotoRequest = TakePhotoRequest().apply {
             this.mirrored = mirrored
             this.callback = callback
             this.orientation = orientation
         }
-        //构建拍照的request
-        val builder = getCaptureRequestBuilder()
+        val builder = createCaptureRequest(imageReader!!.surface, orientation)
         builder?.apply {
-            set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START)
-            set(CaptureRequest.JPEG_ORIENTATION, orientation)
-            imageReader?.surface?.let {
-                addTarget(it)
-            }
             capture(this, currentSession!!) {
-                if (it) {
-                    sendPreviewRequest()
-                } else {
+                sendPreviewRequest()
+                if (!it) {
                     callbackTakePhoto(null)
                 }
             }
@@ -119,23 +146,58 @@ class Camera2Session(private var context: Context) : BaseSession(), ImageReader.
     }
 
 
+    fun release() {
+        currentSession?.close()
+        currentSession = null
+        imageReader?.setOnImageAvailableListener(null, CameraThreadManager.cameraHandler)
+        imageReader = null
+        mPreviewBuilder = null
+        videoRecorderBuilder = null
+    }
+
+
+    @Synchronized
+    private fun stopPreview() {
+        currentSession?.close()
+        currentSession = null
+        mPreviewBuilder = null
+        videoRecorderBuilder = null
+    }
+
+
+    @Synchronized
+    private fun sendPreviewRequest() {
+        if (null == previewSurface || null == currentSession) return
+        mPreviewBuilder = createPreviewRequest(previewSurface!!)
+        mPreviewBuilder?.let {
+            setRepeatingPreview(it, currentSession!!)
+        }
+    }
+
+
+    @Synchronized
+    private fun sendVideoPreviewRequest() {
+        if (null == previewSurface || null == currentSession) return
+        videoRecorderBuilder =
+            createVideoRequest(previewSurface!!, videoRecorder.getRecorderSurface())
+        videoRecorderBuilder?.apply {
+            setRepeatingPreview(this, currentSession!!)
+        }
+    }
+
     override fun onImageAvailable(reader: ImageReader?) {
         if (null == takePhotoRequest || null == reader) {
             return
         }
-        val outputFile =
-            FileUtil.saveImage(
-                context, reader.acquireLatestImage(),
-                takePhotoRequest!!.orientation,
-                takePhotoRequest!!.mirrored
-            )
+        val outputFile = FileUtil.saveImage(
+            context, reader.acquireLatestImage(),
+            takePhotoRequest!!.orientation,
+            takePhotoRequest!!.mirrored
+        )
         callbackTakePhoto(outputFile)
     }
 
 
-    /**
-     * 回调拍照后的文件
-     */
     private fun callbackTakePhoto(outputFile: File?) {
         CameraThreadManager.mainHandler.post {
             val callback = takePhotoRequest!!.callback
@@ -150,53 +212,6 @@ class Camera2Session(private var context: Context) : BaseSession(), ImageReader.
                 null
             }
         }
-    }
-
-    /**
-     * 发送预览请求
-     */
-    private fun sendPreviewRequest() {
-        val builder = getPreviewRequestBuilder()
-        builder?.apply {
-            set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-            set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE)
-            set(
-                CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
-                CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_IDLE
-            )
-            set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
-            surface?.let {
-                addTarget(it)
-            }
-            currentSession?.let {
-                setRepeatingPreview(builder, it)
-            }
-        }
-    }
-
-
-    private fun createImageReader(photoSize: Size) {
-        if (null == imageReader) {
-            this.imageReader = ImageReader.newInstance(
-                photoSize.width,
-                photoSize.height, ImageFormat.JPEG, 2
-            )
-            imageReader?.setOnImageAvailableListener(this, CameraThreadManager.cameraHandler)
-        }
-    }
-
-    private fun getCaptureRequestBuilder(): CaptureRequest.Builder? {
-        if (null == mCaptureBuilder) {
-            mCaptureBuilder = currentDevice?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-        }
-        return mCaptureBuilder
-    }
-
-    private fun getPreviewRequestBuilder(): CaptureRequest.Builder? {
-        if (null == mPreviewBuilder) {
-            mPreviewBuilder = currentDevice?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-        }
-        return mPreviewBuilder
     }
 
 

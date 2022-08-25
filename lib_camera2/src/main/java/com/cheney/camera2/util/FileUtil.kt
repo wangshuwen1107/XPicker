@@ -98,7 +98,7 @@ object FileUtil {
         }
     }
 
-    private fun createFile(baseFolder: File, format: String, extension: String) =
+    fun createFile(baseFolder: File, format: String, extension: String) =
         File(
             baseFolder, SimpleDateFormat(format, Locale.CHINA)
                 .format(System.currentTimeMillis()) + extension

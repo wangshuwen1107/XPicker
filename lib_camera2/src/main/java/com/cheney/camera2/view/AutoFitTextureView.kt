@@ -16,11 +16,8 @@ open class AutoFitTextureView @JvmOverloads constructor(
 
     fun setAspectRatio(targetWidth: Int, targetHeight: Int) {
         post {
-            // 相机选择的预览尺寸
-            val cameraHeight: Int = targetWidth
-            val cameraWidth: Int = targetHeight
             // 计算出将相机的尺寸 => View 的尺寸需要的缩放倍数
-            val ratioPreview = cameraWidth.toFloat() / cameraHeight
+            val ratioPreview = targetWidth.toFloat() / targetHeight
             val ratioView = width.toFloat() / height
             val scaleX: Float
             val scaleY: Float

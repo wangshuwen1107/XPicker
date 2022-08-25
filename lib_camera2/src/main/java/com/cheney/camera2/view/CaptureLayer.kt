@@ -13,7 +13,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.cheney.camera2.R
-import com.cheney.camera2.callback.CaptureListener
+import com.cheney.camera2.callback.CaptureUIListener
 import com.cheney.camera2.entity.CaptureType
 
 class CaptureLayer @JvmOverloads constructor(
@@ -28,7 +28,7 @@ class CaptureLayer @JvmOverloads constructor(
     private lateinit var cancelIv: ImageView
     private lateinit var captureBtn: CaptureButton
     private lateinit var tipTxt: TextView
-    private var listener: CaptureListener? = null
+    private var listener: CaptureUIListener? = null
 
     init {
         initView()
@@ -57,7 +57,7 @@ class CaptureLayer @JvmOverloads constructor(
     private fun addCaptureBtn() {
         val screenWidth = Resources.getSystem().displayMetrics.widthPixels
         captureBtn = CaptureButton(context, (screenWidth / 4.5f).toInt())
-        captureBtn.setCaptureLisenter(object : CaptureListener() {
+        captureBtn.setCaptureLisenter(object : CaptureUIListener() {
             override fun takePictures() {
                 listener?.takePictures()
             }
@@ -121,7 +121,7 @@ class CaptureLayer @JvmOverloads constructor(
         doneAnimation.start()
     }
 
-    fun setListener(listener: CaptureListener?) {
+    fun setListener(listener: CaptureUIListener?) {
         this.listener = listener
     }
 

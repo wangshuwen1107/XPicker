@@ -27,10 +27,9 @@ public class CoordinateTransformer {
     public Rect toCameraSpace(RectF source) {
         RectF result = new RectF();
         mPreviewToCameraTransform.mapRect(result, source);
-
-        Rect resultrect = new Rect();
-        result.round(resultrect);
-        return resultrect;
+        Rect resultRect = new Rect();
+        result.round(resultRect);
+        return resultRect;
     }
 
     private Matrix previewToCameraTransform(boolean mirrorX, int sensorOrientation,

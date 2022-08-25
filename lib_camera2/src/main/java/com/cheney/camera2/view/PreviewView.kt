@@ -11,6 +11,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.cheney.camera2.core.Camera2Module
 import com.cheney.camera2.callback.TakePhotoCallback
+import com.cheney.camera2.callback.VideoRecordCallback
 import com.cheney.camera2.util.OrientationWatcher
 import com.cheney.camera2.util.inRange
 import com.cheney.camera2.util.isUsable
@@ -69,7 +70,7 @@ class PreviewView @JvmOverloads constructor(
                 mSurfaceTexture = null
                 viewSize = null
                 isPreviewIng.set(false)
-                camera2Module.closeDevice()
+                camera2Module.release()
                 return true
             }
 
@@ -112,6 +113,7 @@ class PreviewView @JvmOverloads constructor(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     private fun destroy() {
+        camera2Module.release()
         relativeOrientation.disable()
         lifecycleWk.get()?.removeObserver(this)
     }
@@ -125,6 +127,14 @@ class PreviewView @JvmOverloads constructor(
 
     fun takePhoto(callback: TakePhotoCallback) {
         camera2Module.takePhoto(relativeOrientation.value, callback)
+    }
+
+    fun startVideoRecorder() {
+        camera2Module.startVideoRecorder(relativeOrientation.value)
+    }
+
+    fun stopVideoRecorder(callback: VideoRecordCallback?) {
+        camera2Module.stopVideoRecorder(callback)
     }
 
     fun focus(focusPointX: Float, focusPointY: Float, focusViewSize: Int, callback: ((Boolean) -> Unit)?) {
@@ -162,7 +172,7 @@ class PreviewView @JvmOverloads constructor(
         camera2Module.initCameraSize(facingBack, viewSize!!)
         camera2Module.cameraParamsHolder.previewSize?.let { previewSize ->
             mSurfaceTexture?.setDefaultBufferSize(previewSize.width, previewSize.height)
-            setAspectRatio(previewSize.width, previewSize.height)
+            setAspectRatio(previewSize.height, previewSize.width)
         }
         camera2Module.startPreview(facingBack, mSurfaceTexture!!) {
             isPreviewIng.set(false)

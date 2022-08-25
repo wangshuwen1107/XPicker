@@ -12,7 +12,7 @@ import android.os.CountDownTimer;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.cheney.camera2.callback.CaptureListener;
+import com.cheney.camera2.callback.CaptureUIListener;
 import com.cheney.camera2.entity.CaptureType;
 
 
@@ -58,7 +58,7 @@ public class CaptureButton extends View {
     private RectF rectF;
 
     private LongPressRunnable longPressRunnable;    //长按后处理的逻辑Runnable
-    private CaptureListener captureLisenter;        //按钮回调接口
+    private CaptureUIListener captureLisenter;        //按钮回调接口
     private RecordCountDownTimer timer;             //计时器
 
     public CaptureButton(Context context) {
@@ -196,13 +196,13 @@ public class CaptureButton extends View {
     private void recordEnd() {
 
         try {
+            resetRecordAnim();  //重制按钮状态
             if (captureLisenter != null) {
                 if (recorded_time < min_duration)
                     captureLisenter.recordShort(recorded_time);//回调录制时间过短
                 else
                     captureLisenter.recordEnd(recorded_time);  //回调录制结束
             }
-            resetRecordAnim();  //重制按钮状态
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -366,7 +366,7 @@ public class CaptureButton extends View {
     }
 
     //设置回调接口
-    public void setCaptureLisenter(CaptureListener captureLisenter) {
+    public void setCaptureLisenter(CaptureUIListener captureLisenter) {
         this.captureLisenter = captureLisenter;
     }
 

@@ -9,8 +9,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cheney.camera2.R
 import com.cheney.camera2.callback.CameraSaveCallback
-import com.cheney.camera2.callback.CaptureListener
+import com.cheney.camera2.callback.CaptureUIListener
 import com.cheney.camera2.callback.TakePhotoCallback
+import com.cheney.camera2.callback.VideoRecordCallback
 import com.cheney.camera2.core.CameraThreadManager
 import com.cheney.camera2.entity.CameraRequest
 import com.cheney.camera2.entity.CaptureType
@@ -34,7 +35,6 @@ class XCameraActivity : AppCompatActivity() {
 
     private var photoFile: File? = null
     private var cameraRequest: CameraRequest? = null
-
 
     private val goneFocusViewRunnable: Runnable = object : Runnable {
         override fun run() {
@@ -98,14 +98,14 @@ class XCameraActivity : AppCompatActivity() {
         }
         //视频播放出错
         camera_video_view.playErrorListener = {
-            showToast(getString(R.string.media_play_error))
             safeUiThreadRun {
+                showToast(getString(R.string.media_play_error))
                 stopVideo()
                 actionCancel()
             }
         }
         //动作
-        camera_capture_layer.setListener(object : CaptureListener() {
+        camera_capture_layer.setListener(object : CaptureUIListener() {
             override fun cancel() {
                 delCacheFile()
                 stopVideo()
@@ -113,18 +113,7 @@ class XCameraActivity : AppCompatActivity() {
             }
 
             override fun ok() {
-                videoFile?.let {
-                    //获取封面和时间
-                    val coverAndDuration = FileUtil.getVideoAndDuration(it.absolutePath)
-                    coverUri =
-                        if (coverAndDuration?.first == null) null else Uri.fromFile(coverAndDuration.first)
-                    duration = coverAndDuration?.second
-                    //添加到系统相册
-                    scanPhotoAlbum(this@XCameraActivity, it)
-                }
-                photoFile?.let {
-                    scanPhotoAlbum(this@XCameraActivity, it)
-                }
+                saveFileToSystemPhoto()
                 finish()
                 callbackSuccess()
             }
@@ -133,16 +122,18 @@ class XCameraActivity : AppCompatActivity() {
                 takePhoto()
             }
 
+            override fun recordStart() {
+                startRecorderVideo()
+            }
 
             override fun recordShort(time: Long) {
                 camera_capture_layer.reset()
                 showToast(getString(R.string.camera_recorder_too_short))
-//                xpicker_camera_preview.stopRecording()
-
+                stopRecorderVideo(false)
             }
 
             override fun recordEnd(time: Long) {
-//                xpicker_camera_preview.stopRecording()
+                stopRecorderVideo(true)
             }
 
         })
@@ -173,7 +164,6 @@ class XCameraActivity : AppCompatActivity() {
                 } else {
                     cameraSaveCallback?.onVideoSuccess(coverUri, videoUri!!, duration)
                 }
-
             }
         }
         cameraRequest = null
@@ -240,9 +230,10 @@ class XCameraActivity : AppCompatActivity() {
             override fun onSuccess(file: File) {
                 safeUiThreadRun {
                     this@XCameraActivity.photoFile = file
-                    camera_photo_preview_iv.visibility = View.VISIBLE
                     val photoBitmap = BitmapFactory.decodeFile(file.absolutePath)
                     camera_photo_preview_iv.setImageBitmap(photoBitmap)
+                    camera_photo_preview_iv.visibility = View.VISIBLE
+
                     camera_capture_layer.done()
                     camera_switch_iv.visibility = View.GONE
                     camera_back_iv.visibility = View.GONE
@@ -250,11 +241,36 @@ class XCameraActivity : AppCompatActivity() {
             }
 
             override fun onFailed(errorCode: Int, errorMsg: String) {
-                showToast(getString(R.string.camera_take_photo_error))
+                safeUiThreadRun { showToast(getString(R.string.camera_take_photo_error)) }
             }
         })
     }
 
+    private fun startRecorderVideo() {
+        camera_switch_iv.visibility = View.GONE
+        camera_back_iv.visibility = View.GONE
+        camera_preview.startVideoRecorder()
+    }
+
+    private fun stopRecorderVideo(needCallback: Boolean) {
+        camera_preview.stopVideoRecorder(if (needCallback) object : VideoRecordCallback {
+            override fun onSuccess(file: File) {
+                safeUiThreadRun {
+                    videoFile = file
+                    videoUri = Uri.fromFile(file)
+                    camera_capture_layer.done()
+                    playVideo()
+                }
+            }
+
+            override fun onFailed() {
+                safeUiThreadRun {
+                    camera_capture_layer.reset()
+                    showToast(getString(R.string.camera_recorder_error))
+                }
+            }
+        } else null)
+    }
 
     private fun playVideo() {
         camera_switch_iv.visibility = View.GONE
@@ -273,10 +289,24 @@ class XCameraActivity : AppCompatActivity() {
         camera_video_view.stopVideo()
     }
 
-    private fun showToast(text: String) {
-        safeUiThreadRun {
-            Toast.makeText(this@XCameraActivity, text, Toast.LENGTH_SHORT).show()
+    private fun saveFileToSystemPhoto() {
+        videoFile?.let {
+            //获取封面和时间
+            val coverAndDuration = FileUtil.getVideoAndDuration(it.absolutePath)
+            coverUri =
+                if (coverAndDuration?.first == null) null else Uri.fromFile(coverAndDuration.first)
+            duration = coverAndDuration?.second
+            //添加到系统相册
+            scanPhotoAlbum(this@XCameraActivity, it)
         }
+        photoFile?.let {
+            scanPhotoAlbum(this@XCameraActivity, it)
+        }
+    }
+
+
+    private fun showToast(text: String) {
+        Toast.makeText(this@XCameraActivity, text, Toast.LENGTH_SHORT).show()
     }
 
     private fun safeUiThreadRun(block: () -> Unit) {

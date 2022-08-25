@@ -1,6 +1,6 @@
 package com.cheney.camera2.callback
 
-abstract class CaptureListener {
+abstract class CaptureUIListener {
     open fun takePictures() {}
 
     open fun recordShort(time: Long) {}
