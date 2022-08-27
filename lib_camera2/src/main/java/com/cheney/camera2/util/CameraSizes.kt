@@ -3,7 +3,6 @@ package com.cheney.camera2.util
 import android.graphics.Point
 import android.util.Size
 import android.view.Display
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -11,10 +10,9 @@ class SmartSize(width: Int, height: Int) {
     var size = Size(width, height)
     var long = max(size.width, size.height)
     var short = min(size.width, size.height)
+
     override fun toString() = "SmartSize(${long}x${short})"
 }
-
-val SIZE_1080P: SmartSize = SmartSize(1920, 1080)
 
 fun getDisplaySmartSize(display: Display): SmartSize {
     val outPoint = Point()
@@ -22,26 +20,21 @@ fun getDisplaySmartSize(display: Display): SmartSize {
     return SmartSize(outPoint.x, outPoint.y)
 }
 
-fun getBestOutputSize(allSizes: Array<Size>?, surfaceSize: Size): Size {
-    if (allSizes.isNullOrEmpty()) {
-        return SIZE_1080P.size
-    }
-    var diff = Int.MAX_VALUE
-    var diffMinIndex = 0
+fun getBestOutputSize(allSizes: Array<Size>, surfaceSize: Size, ratioBlock: (Int, Int) -> Boolean): Size {
     val surfaceSmartSize = SmartSize(surfaceSize.width, surfaceSize.height)
-    val validSizes = allSizes.map { SmartSize(it.width, it.height) }
-    validSizes.forEachIndexed { index, it ->
-        val currentDiff = abs(it.long - surfaceSmartSize.long) + abs(it.short - surfaceSmartSize.short)
-        if (currentDiff == 0) {
-            diffMinIndex = index
-            return@forEachIndexed
-        }
-        if (currentDiff <= diff) {
-            diff = currentDiff
-            diffMinIndex = index
-        }
+    val smartAllSize = allSizes.sortedWith(compareBy { it.height * it.width })
+        .map { SmartSize(it.width, it.height) }
+        .reversed()
+
+    var ratioAllSize = smartAllSize.filter { ratioBlock(it.short, it.long) }
+    //没有对应尺寸的
+    if (ratioAllSize.isNullOrEmpty()) {
+        ratioAllSize = smartAllSize
     }
-    return validSizes[diffMinIndex].size
+    val beatSize =
+        ratioAllSize.firstOrNull { it.long <= surfaceSmartSize.long && it.short <= surfaceSmartSize.short }
+            ?: return ratioAllSize[0].size
+    return beatSize.size
 }
 
 fun Size?.isUsable(): Boolean {

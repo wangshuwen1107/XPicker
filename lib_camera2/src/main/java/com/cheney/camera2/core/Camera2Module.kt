@@ -48,20 +48,25 @@ class Camera2Module : LifecycleObserver {
         }
         val characteristics = cameraManager.getCameraCharacteristics(cameraId!!)
         val streamConfigurationMap =
-            characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+            characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
         cameraParamsHolder.characteristics = characteristics
-        val videoOutputSizes = streamConfigurationMap?.getOutputSizes(MediaRecorder::class.java)
-        val previewSizes = streamConfigurationMap?.getOutputSizes(SurfaceTexture::class.java)
-        val photoSizes = streamConfigurationMap?.getOutputSizes(ImageFormat.JPEG)
-        cameraParamsHolder.previewSize = getBestOutputSize(previewSizes, surfaceSize)
-        cameraParamsHolder.videoSize = getBestOutputSize(videoOutputSizes, surfaceSize)
-        cameraParamsHolder.photoSize = getBestOutputSize(photoSizes, surfaceSize)
+        val videoOutputSizes = streamConfigurationMap.getOutputSizes(MediaRecorder::class.java)
+        val previewSizes = streamConfigurationMap.getOutputSizes(SurfaceTexture::class.java)
+        val photoSizes = streamConfigurationMap.getOutputSizes(ImageFormat.JPEG)
+        cameraParamsHolder.previewSize = getBestOutputSize(previewSizes, surfaceSize) { width, height ->
+            return@getBestOutputSize width * 4 == height * 3
+        }
+        cameraParamsHolder.videoSize = getBestOutputSize(videoOutputSizes, surfaceSize) { width, height ->
+            return@getBestOutputSize width * 16 == height * 9
+        }
+        cameraParamsHolder.photoSize = getBestOutputSize(photoSizes, surfaceSize) { width, height ->
+            return@getBestOutputSize width * 4 == height * 3
+        }
         cameraParamsHolder.surfaceSize = surfaceSize
         cameraParamsHolder.isFront = !facingBack
         Log.i(TAG, "surfaceSize =${surfaceSize} ")
         Log.i(TAG, "previewSize =${cameraParamsHolder.previewSize} ")
         Log.i(TAG, "photoSize =${cameraParamsHolder.photoSize} ")
-
     }
 
     /**

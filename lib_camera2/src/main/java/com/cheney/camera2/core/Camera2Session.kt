@@ -20,12 +20,13 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
 
     private var currentSession: CameraCaptureSession? = null
 
-    private var mPreviewBuilder: CaptureRequest.Builder? = null
+    private var previewBuilder: CaptureRequest.Builder? = null
+    private var videoRecorderBuilder: CaptureRequest.Builder? = null
+
     private var previewSurface: Surface? = null
 
     private var imageReader: ImageReader? = null
 
-    private var videoRecorderBuilder: CaptureRequest.Builder? = null
     private var videoRecorder = XVideoRecorder(context)
 
     private var takePhotoRequest: TakePhotoRequest? = null
@@ -105,7 +106,7 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
         }
         var temp = videoRecorderBuilder
         if (null == temp) {
-            temp = mPreviewBuilder
+            temp = previewBuilder
         }
         if (null == temp) {
             callback?.invoke(false)
@@ -151,7 +152,7 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
         currentSession = null
         imageReader?.setOnImageAvailableListener(null, CameraThreadManager.cameraHandler)
         imageReader = null
-        mPreviewBuilder = null
+        previewBuilder = null
         videoRecorderBuilder = null
     }
 
@@ -160,7 +161,7 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
     private fun stopPreview() {
         currentSession?.close()
         currentSession = null
-        mPreviewBuilder = null
+        previewBuilder = null
         videoRecorderBuilder = null
     }
 
@@ -168,8 +169,8 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
     @Synchronized
     private fun sendPreviewRequest() {
         if (null == previewSurface || null == currentSession) return
-        mPreviewBuilder = createPreviewRequest(previewSurface!!)
-        mPreviewBuilder?.let {
+        previewBuilder = createPreviewRequest(previewSurface!!)
+        previewBuilder?.let {
             setRepeatingPreview(it, currentSession!!)
         }
     }

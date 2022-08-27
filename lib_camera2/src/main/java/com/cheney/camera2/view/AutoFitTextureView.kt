@@ -13,33 +13,28 @@ open class AutoFitTextureView @JvmOverloads constructor(
     defStyle: Int = 0
 ) : TextureView(context, attrs, defStyle) {
 
+    private var aspectRatio = 0f
 
     fun setAspectRatio(targetWidth: Int, targetHeight: Int) {
-        post {
-            // 计算出将相机的尺寸 => View 的尺寸需要的缩放倍数
-            val ratioPreview = targetWidth.toFloat() / targetHeight
-            val ratioView = width.toFloat() / height
-            val scaleX: Float
-            val scaleY: Float
-            if (ratioView < ratioPreview) {
-                scaleX = ratioPreview / ratioView
-                scaleY = 1f
-            } else {
-                scaleX = 1f
-                scaleY = ratioView / ratioPreview
-            }
-            // 计算出 View 的偏移量
-            val scaledWidth = width * scaleX
-            val scaledHeight = height * scaleY
-            val dx = (width - scaledWidth) / 2
-            val dy = (height - scaledHeight) / 2
-            val matrix = Matrix()
-            matrix.postScale(scaleX, scaleY)
-            matrix.postTranslate(dx, dy)
-            setTransform(matrix)
-//            Log.d("Camera2Module", "$width x $height")
-        }
+        aspectRatio = targetWidth.toFloat() / targetHeight
+        requestLayout()
+    }
 
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        val width = MeasureSpec.getSize(widthMeasureSpec)
+        val height = MeasureSpec.getSize(heightMeasureSpec)
+        if (aspectRatio == 0f) {
+            setMeasuredDimension(width, height)
+        } else {
+            val newWidth: Int
+            val newHeight: Int
+            val myViewRatio = width / height
+            //说明目标的高度小-> 高度全屏 宽度缩放
+            newWidth = width
+            newHeight = (width / aspectRatio).roundToInt()
+            setMeasuredDimension(newWidth, newHeight)
+        }
     }
 
 

@@ -62,6 +62,7 @@ class VideoPlayView @JvmOverloads constructor(
                 if (null == mediaPlayer) {
                     return
                 }
+
                 setAspectRatio(mediaPlayer.videoWidth, mediaPlayer.videoHeight)
             }
 

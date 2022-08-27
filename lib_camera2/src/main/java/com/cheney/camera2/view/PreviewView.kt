@@ -19,6 +19,7 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 
+
 class PreviewView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -38,10 +39,11 @@ class PreviewView @JvmOverloads constructor(
     private var mTouchTime: Long = 0
     private var mDownX = 0f
     private var mDownY = 0f
-    var listener: GestureListener? = null
+    var listener: PreviewUiListener? = null
 
-    interface GestureListener {
+    interface PreviewUiListener {
         fun onClick(x: Float, y: Float)
+        fun onResize(previewWidth: Int, previewHeight: Int)
     }
 
     init {
@@ -118,6 +120,9 @@ class PreviewView @JvmOverloads constructor(
         lifecycleWk.get()?.removeObserver(this)
     }
 
+    fun resizeListener() {
+
+    }
 
     fun setFacingBack(facingBack: Boolean) {
         this.facingBack = facingBack
@@ -172,7 +177,7 @@ class PreviewView @JvmOverloads constructor(
         camera2Module.initCameraSize(facingBack, viewSize!!)
         camera2Module.cameraParamsHolder.previewSize?.let { previewSize ->
             mSurfaceTexture?.setDefaultBufferSize(previewSize.width, previewSize.height)
-            setAspectRatio(previewSize.height, previewSize.width)
+            listener?.onResize(previewSize.height, previewSize.width)
         }
         camera2Module.startPreview(facingBack, mSurfaceTexture!!) {
             isPreviewIng.set(false)

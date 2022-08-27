@@ -5,10 +5,12 @@
     android:id="@+id/camera_rootview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/ch_camera2_black"
     tools:context="com.cheney.camera2.activity.XCameraActivity">
 
     <com.cheney.camera2.view.PreviewView
         android:id="@+id/camera_preview"
+        android:layout_centerInParent="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -35,12 +37,12 @@
         android:layout_height="match_parent"
         android:visibility="gone" />
 
-<!--    <RelativeLayout-->
-<!--        android:id="@+id/camera_video_layer"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:background="@color/ch_camera2_black"-->
-<!--        android:visibility="gone" />-->
+    <!--    <RelativeLayout-->
+    <!--        android:id="@+id/camera_video_layer"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="match_parent"-->
+    <!--        android:background="@color/ch_camera2_black"-->
+    <!--        android:visibility="gone" />-->
 
 
     <ImageView
@@ -68,6 +70,6 @@
         android:id="@+id/camera_capture_layer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignBottom="@+id/camera_preview" />
 
 </RelativeLayout>

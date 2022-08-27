@@ -82,9 +82,13 @@ class XCameraActivity : AppCompatActivity() {
 
     private fun initListener() {
         //聚焦
-        camera_preview.listener = object : PreviewView.GestureListener {
+        camera_preview.listener = object : PreviewView.PreviewUiListener {
             override fun onClick(x: Float, y: Float) {
                 focus(x, y)
+            }
+
+            override fun onResize(previewWidth: Int, previewHeight: Int) {
+
             }
         }
         //切换摄像头
