@@ -19,6 +19,7 @@ import com.cheney.camera2.util.FileUtil
 import com.cheney.camera2.util.FileUtil.scanPhotoAlbum
 import com.cheney.camera2.util.inRange
 import com.cheney.camera2.view.PreviewView
+import com.gyf.immersionbar.ImmersionBar
 import kotlinx.android.synthetic.main.ch_camera2_activity_camera.*
 import java.io.File
 import java.util.*
@@ -47,6 +48,11 @@ class XCameraActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.ch_camera2_activity_camera)
+        ImmersionBar.with(this)
+            .transparentStatusBar()
+            .fitsSystemWindows(false)
+            .transparentNavigationBar()
+            .init()
         initConfig()
         initListener()
     }
@@ -85,10 +91,6 @@ class XCameraActivity : AppCompatActivity() {
         camera_preview.listener = object : PreviewView.PreviewUiListener {
             override fun onClick(x: Float, y: Float) {
                 focus(x, y)
-            }
-
-            override fun onResize(previewWidth: Int, previewHeight: Int) {
-
             }
         }
         //切换摄像头
@@ -257,6 +259,8 @@ class XCameraActivity : AppCompatActivity() {
     }
 
     private fun stopRecorderVideo(needCallback: Boolean) {
+        //提前打开预览模式
+        camera_video_layer.visibility = View.VISIBLE
         camera_preview.stopVideoRecorder(if (needCallback) object : VideoRecordCallback {
             override fun onSuccess(file: File) {
                 safeUiThreadRun {
@@ -279,8 +283,8 @@ class XCameraActivity : AppCompatActivity() {
     private fun playVideo() {
         camera_switch_iv.visibility = View.GONE
         camera_back_iv.visibility = View.GONE
+        camera_video_layer.visibility = View.VISIBLE
 
-        camera_video_view.visibility = View.VISIBLE
         camera_video_view.playVideo(videoUri!!)
     }
 
@@ -288,8 +292,8 @@ class XCameraActivity : AppCompatActivity() {
     private fun stopVideo() {
         camera_switch_iv.visibility = View.VISIBLE
         camera_back_iv.visibility = View.VISIBLE
+        camera_video_layer.visibility = View.GONE
 
-        camera_video_view.visibility = View.GONE
         camera_video_view.stopVideo()
     }
 

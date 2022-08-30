@@ -20,21 +20,20 @@ fun getDisplaySmartSize(display: Display): SmartSize {
     return SmartSize(outPoint.x, outPoint.y)
 }
 
-fun getBestOutputSize(allSizes: Array<Size>, surfaceSize: Size, ratioBlock: (Int, Int) -> Boolean): Size {
+fun getBestOutputSize(allSizes: Array<Size>, surfaceSize: Size): Size {
     val surfaceSmartSize = SmartSize(surfaceSize.width, surfaceSize.height)
     val smartAllSize = allSizes.sortedWith(compareBy { it.height * it.width })
         .map { SmartSize(it.width, it.height) }
         .reversed()
-
-    var ratioAllSize = smartAllSize.filter { ratioBlock(it.short, it.long) }
-    //没有对应尺寸的
-    if (ratioAllSize.isNullOrEmpty()) {
-        ratioAllSize = smartAllSize
+    //取对应比例&&小于viewSize的
+    var beatSize = smartAllSize.filter { surfaceSize.height / surfaceSize.width == it.long / it.short }
+        .firstOrNull { it.long <= surfaceSmartSize.long && it.short <= surfaceSmartSize.short }
+    //降级小于viewSize
+    if (null == beatSize) {
+        beatSize =
+            smartAllSize.firstOrNull { it.long <= surfaceSmartSize.long && it.short <= surfaceSmartSize.short }
     }
-    val beatSize =
-        ratioAllSize.firstOrNull { it.long <= surfaceSmartSize.long && it.short <= surfaceSmartSize.short }
-            ?: return ratioAllSize[0].size
-    return beatSize.size
+    return beatSize?.size ?: smartAllSize[0].size
 }
 
 fun Size?.isUsable(): Boolean {

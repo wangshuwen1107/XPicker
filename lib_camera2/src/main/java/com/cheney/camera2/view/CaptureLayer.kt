@@ -2,7 +2,6 @@ package com.cheney.camera2.view
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Resources
 import android.util.AttributeSet
 import android.view.View
 import android.view.View.OnClickListener
@@ -23,7 +22,6 @@ class CaptureLayer @JvmOverloads constructor(
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
     private lateinit var doneLayer: LinearLayout
-    private lateinit var captureBtnLayer: FrameLayout
     private lateinit var doneIv: ImageView
     private lateinit var cancelIv: ImageView
     private lateinit var captureBtn: CaptureButton
@@ -37,7 +35,7 @@ class CaptureLayer @JvmOverloads constructor(
     private fun initView() {
         val rootView =
             View.inflate(context, R.layout.ch_camera2_layer_record_capture, null)
-        captureBtnLayer = rootView.findViewById(R.id.capture_btn_layer)
+        captureBtn = rootView.findViewById(R.id.capture_btn_layer)
         doneLayer = rootView.findViewById(R.id.xpicker_capture_done_layer)
         doneIv = rootView.findViewById(R.id.xpicker_capture_done_iv)
         cancelIv = rootView.findViewById(R.id.xpicker_capture_cancel_iv)
@@ -55,9 +53,7 @@ class CaptureLayer @JvmOverloads constructor(
 
     @SuppressLint("SetTextI18n")
     private fun addCaptureBtn() {
-        val screenWidth = Resources.getSystem().displayMetrics.widthPixels
-        captureBtn = CaptureButton(context, (screenWidth / 4.5f).toInt())
-        captureBtn.setCaptureLisenter(object : CaptureUIListener() {
+        captureBtn.setCaptureListener(object : CaptureUIListener() {
             override fun takePictures() {
                 listener?.takePictures()
             }
@@ -85,7 +81,6 @@ class CaptureLayer @JvmOverloads constructor(
                 listener?.recordZoom(zoom)
             }
         })
-        captureBtnLayer.addView(captureBtn)
     }
 
 

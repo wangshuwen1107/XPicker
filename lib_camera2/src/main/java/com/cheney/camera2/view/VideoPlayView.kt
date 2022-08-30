@@ -6,6 +6,7 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.util.AttributeSet
 import android.view.Surface
+import android.view.View
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -62,8 +63,8 @@ class VideoPlayView @JvmOverloads constructor(
                 if (null == mediaPlayer) {
                     return
                 }
-
                 setAspectRatio(mediaPlayer.videoWidth, mediaPlayer.videoHeight)
+                visibility = View.VISIBLE
             }
 
             override fun onCompleted() {
@@ -93,6 +94,7 @@ class VideoPlayView @JvmOverloads constructor(
             hasPauseVideo = true
             xMediaPlayer.stop()
         }
+        visibility = View.GONE
     }
 
     private fun playInner() {

@@ -24,7 +24,9 @@ class XVideoRecorder constructor(private var mContext: Context) {
     }
 
     fun init(videoSize: Size, rotation: Int) {
-        initMediaRecorder()
+        if (null == mMediaRecorder) {
+            mMediaRecorder = MediaRecorder()
+        }
         try {
             mMediaRecorder?.apply {
                 recorderFile = FileUtil.createFile(
@@ -78,9 +80,14 @@ class XVideoRecorder constructor(private var mContext: Context) {
         }
     }
 
-    fun getRecorderSurface(): Surface {
-        initMediaRecorder()
-        return mMediaRecorder!!.surface
+    fun getRecorderSurface(): Surface? {
+        var surface:Surface?= null
+        try {
+            surface = mMediaRecorder?.surface
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
+        return surface
     }
 
     private fun callbackResult(callback: VideoRecordCallback?) {
@@ -90,11 +97,5 @@ class XVideoRecorder constructor(private var mContext: Context) {
             callback?.onFailed()
         }
         recorderFile = null
-    }
-
-    private fun initMediaRecorder() {
-        if (null == mMediaRecorder) {
-            mMediaRecorder = MediaRecorder()
-        }
     }
 }

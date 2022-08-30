@@ -53,15 +53,9 @@ class Camera2Module : LifecycleObserver {
         val videoOutputSizes = streamConfigurationMap.getOutputSizes(MediaRecorder::class.java)
         val previewSizes = streamConfigurationMap.getOutputSizes(SurfaceTexture::class.java)
         val photoSizes = streamConfigurationMap.getOutputSizes(ImageFormat.JPEG)
-        cameraParamsHolder.previewSize = getBestOutputSize(previewSizes, surfaceSize) { width, height ->
-            return@getBestOutputSize width * 4 == height * 3
-        }
-        cameraParamsHolder.videoSize = getBestOutputSize(videoOutputSizes, surfaceSize) { width, height ->
-            return@getBestOutputSize width * 16 == height * 9
-        }
-        cameraParamsHolder.photoSize = getBestOutputSize(photoSizes, surfaceSize) { width, height ->
-            return@getBestOutputSize width * 4 == height * 3
-        }
+        cameraParamsHolder.previewSize = getBestOutputSize(previewSizes, surfaceSize)
+        cameraParamsHolder.videoSize = getBestOutputSize(videoOutputSizes, surfaceSize)
+        cameraParamsHolder.photoSize = getBestOutputSize(photoSizes, surfaceSize)
         cameraParamsHolder.surfaceSize = surfaceSize
         cameraParamsHolder.isFront = !facingBack
         Log.i(TAG, "surfaceSize =${surfaceSize} ")

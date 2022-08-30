@@ -4,35 +4,31 @@
     android:id="@+id/common_capture_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingBottom="20dp"
     tools:ignore="MissingDefaultResource">
 
     <TextView
         android:id="@+id/capture_tip_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/capture_btn_layer"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="2dp"
         android:textColor="@color/ch_camera2_white"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        tools:text="录制tips" />
 
-    <FrameLayout
+    <com.cheney.camera2.view.CaptureButton
         android:id="@+id/capture_btn_layer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true">
-
-    </FrameLayout>
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_below="@+id/capture_tip_txt"
+        android:layout_centerHorizontal="true" />
 
 
     <LinearLayout
         android:id="@+id/xpicker_capture_done_layer"
         android:layout_width="wrap_content"
-        android:layout_height="80dp"
-        android:layout_alignParentBottom="true"
+        android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp"
         android:orientation="horizontal">
 
         <ImageView

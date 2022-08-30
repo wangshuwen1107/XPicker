@@ -27,12 +27,9 @@ open class AutoFitTextureView @JvmOverloads constructor(
         if (aspectRatio == 0f) {
             setMeasuredDimension(width, height)
         } else {
-            val newWidth: Int
-            val newHeight: Int
-            val myViewRatio = width / height
             //说明目标的高度小-> 高度全屏 宽度缩放
-            newWidth = width
-            newHeight = (width / aspectRatio).roundToInt()
+            val newWidth: Int = width
+            val newHeight: Int = (width / aspectRatio).roundToInt()
             setMeasuredDimension(newWidth, newHeight)
         }
     }

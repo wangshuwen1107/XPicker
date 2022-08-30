@@ -43,7 +43,6 @@ class PreviewView @JvmOverloads constructor(
 
     interface PreviewUiListener {
         fun onClick(x: Float, y: Float)
-        fun onResize(previewWidth: Int, previewHeight: Int)
     }
 
     init {
@@ -120,9 +119,6 @@ class PreviewView @JvmOverloads constructor(
         lifecycleWk.get()?.removeObserver(this)
     }
 
-    fun resizeListener() {
-
-    }
 
     fun setFacingBack(facingBack: Boolean) {
         this.facingBack = facingBack
@@ -177,7 +173,7 @@ class PreviewView @JvmOverloads constructor(
         camera2Module.initCameraSize(facingBack, viewSize!!)
         camera2Module.cameraParamsHolder.previewSize?.let { previewSize ->
             mSurfaceTexture?.setDefaultBufferSize(previewSize.width, previewSize.height)
-            listener?.onResize(previewSize.height, previewSize.width)
+            setAspectRatio(previewSize.height, previewSize.width)
         }
         camera2Module.startPreview(facingBack, mSurfaceTexture!!) {
             isPreviewIng.set(false)

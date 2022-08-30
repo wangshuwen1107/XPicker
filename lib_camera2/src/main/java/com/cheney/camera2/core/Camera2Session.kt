@@ -70,13 +70,13 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
         CameraThreadManager.cameraHandler.post {
             stopPreview()
             videoRecorder.init(videoSize, rotation)
-            videoRecorder.getRecorderSurface()
-            val targets = mutableListOf(previewSurface, videoRecorder.getRecorderSurface())
+            val recorderSurface = videoRecorder.getRecorderSurface() ?: return@post
+            val targets = mutableListOf(previewSurface, recorderSurface)
             getCameraDevice()?.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
                 override fun onConfigured(session: CameraCaptureSession) {
                     synchronized(this@Camera2Session) {
                         currentSession = session
-                        sendVideoPreviewRequest()
+                        sendVideoPreviewRequest(recorderSurface)
                         videoRecorder.start()
 
                     }
@@ -177,10 +177,10 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
 
 
     @Synchronized
-    private fun sendVideoPreviewRequest() {
+    private fun sendVideoPreviewRequest(videoSurface: Surface) {
         if (null == previewSurface || null == currentSession) return
         videoRecorderBuilder =
-            createVideoRequest(previewSurface!!, videoRecorder.getRecorderSurface())
+            createVideoRequest(previewSurface!!, videoSurface)
         videoRecorderBuilder?.apply {
             setRepeatingPreview(this, currentSession!!)
         }
