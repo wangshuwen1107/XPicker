@@ -6,7 +6,6 @@ import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
 import androidx.core.content.FileProvider
-import cn.cheney.xpicker.XPickerConstant
 import java.io.File
 import java.text.SimpleDateFormat
 
@@ -18,7 +17,7 @@ fun Int.toPx(): Int = (this * Resources.getSystem().displayMetrics.density).toIn
 
 fun File.getExternalUri(context: Context): Uri =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        FileProvider.getUriForFile(context, XPickerConstant.FILE_PROVIDER, this)
+        FileProvider.getUriForFile(context, context.applicationInfo.processName, this)
     } else {
         Uri.fromFile(this)
     }

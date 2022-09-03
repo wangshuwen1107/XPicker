@@ -1,17 +1,18 @@
 package cn.cheney.xpicker.core
 
 import android.database.Cursor
+import android.media.MediaMetadataRetriever
 import android.provider.MediaStore
 import android.text.TextUtils
 import androidx.fragment.app.FragmentActivity
 import androidx.loader.content.CursorLoader
-import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.entity.MediaFolder
 import cn.cheney.xpicker.entity.MineType
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.concurrent.thread
 
 class MediaLoader(
     var activity: FragmentActivity,
@@ -95,49 +96,42 @@ class MediaLoader(
             val allImageFolder = MediaFolder()
             val latelyImages: ArrayList<MediaEntity> =
                 ArrayList()
+            val mmr = MediaMetadataRetriever()
             if (data != null) {
                 val count = data.count
                 if (count > 0) {
                     data.moveToFirst()
                     do {
-                        val path = data.getString(
-                            data.getColumnIndexOrThrow(
-                                IMAGE_PROJECTION[1]
-                            )
-                        )
+                        val path = data.getString(data.getColumnIndex(IMAGE_PROJECTION[1]))
                         if (TextUtils.isEmpty(path) || !File(path).exists()) {
                             continue
                         }
-                        val mimeType = data.getString(
-                            data.getColumnIndexOrThrow(
-                                IMAGE_PROJECTION[6]
-                            )
-                        )
+                        val mimeType = data.getString(data.getColumnIndex(IMAGE_PROJECTION[6]))
                         val eqImg = mimeType.startsWith(IMAGE)
-                        val duration = if (eqImg) 0 else data.getInt(
-                            data.getColumnIndexOrThrow(VIDEO_PROJECTION[7])
-                        )
-                        val w = if (eqImg) data.getInt(
-                            data.getColumnIndexOrThrow(IMAGE_PROJECTION[4])
+                        val width = if (eqImg) data.getInt(
+                            data.getColumnIndex(IMAGE_PROJECTION[4])
                         ) else 0
-                        val h = if (eqImg) data.getInt(
-                            data.getColumnIndexOrThrow(IMAGE_PROJECTION[5])
+                        val height = if (eqImg) data.getInt(
+                            data.getColumnIndex(IMAGE_PROJECTION[5])
                         ) else 0
                         var fileType = 0
+                        var duration = 0
                         if (mimeType.startsWith(IMAGE)) {
-                            fileType = XPickerConstant.FILE_TYPE_IMAGE
+                            fileType = MediaEntity.FILE_TYPE_IMAGE
                         } else if (mimeType.startsWith(VIDEO)) {
-                            fileType = XPickerConstant.FILE_TYPE_VIDEO
+                            mmr.setDataSource(path)
+                            duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toInt() ?: 0
+                            fileType = MediaEntity.FILE_TYPE_VIDEO
                         }
-                        if (fileType == XPickerConstant.FILE_TYPE_VIDEO && duration < 700) {
+                        if (fileType == MediaEntity.FILE_TYPE_VIDEO && duration < 700) {
                             continue
                         }
                         val mediaEntity = MediaEntity()
                         mediaEntity.localPath = path
                         mediaEntity.fileType = fileType
                         mediaEntity.duration = duration
-                        mediaEntity.width = w
-                        mediaEntity.height = h
+                        mediaEntity.width = width
+                        mediaEntity.height = height
                         mediaEntity.mineType = mimeType
                         val folder = getImageFolder(path, imageFolders) ?: continue
                         val mediaList = folder.mediaList
@@ -153,7 +147,7 @@ class MediaLoader(
                         allImageFolder.firstImagePath = latelyImages[0].localPath
                         allImageFolder.firstImageMineType = latelyImages[0].mineType
                         val title =
-                            if (type == XPickerConstant.FILE_TYPE_VIDEO) "所有音频" else "相机胶卷"
+                            if (type == MediaEntity.FILE_TYPE_VIDEO) "所有音频" else "相机胶卷"
                         allImageFolder.name = title
                         allImageFolder.mediaList = latelyImages
                     }
@@ -162,7 +156,7 @@ class MediaLoader(
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-            imageLoadListener.loadComplete(imageFolders)
+            activity.runOnUiThread {  imageLoadListener.loadComplete(imageFolders) }
         }
     }
 
@@ -210,7 +204,7 @@ class MediaLoader(
                     MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
                 )
         }
-        loader!!.registerListener(type) { _, data -> onLoadComplete(data, imageLoadListener) }
+        loader!!.registerListener(type) { _, data -> thread { onLoadComplete(data, imageLoadListener) } }
         loader.startLoading()
     }
 

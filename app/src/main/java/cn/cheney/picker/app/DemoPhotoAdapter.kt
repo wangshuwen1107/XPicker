@@ -43,7 +43,7 @@ class DemoPhotoAdapter(var context: Context) :
 
     override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
         val mediaEntity = mediaList!![position]
-        if (mediaEntity.fileType == XPickerConstant.FILE_TYPE_VIDEO) {
+        if (mediaEntity.fileType == MediaEntity.FILE_TYPE_VIDEO) {
             holder.videoLayer.visibility = View.VISIBLE
             holder.videoDurationTv.text = "${timeParse(mediaEntity.duration.toLong())}"
             holder.gifMarkIv.visibility = View.GONE

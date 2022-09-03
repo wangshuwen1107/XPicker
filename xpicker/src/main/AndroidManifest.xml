@@ -41,17 +41,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="cn.cheney.xpicker.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths_public">
-            </meta-data>
-        </provider>
-
     </application>
 
 </manifest>

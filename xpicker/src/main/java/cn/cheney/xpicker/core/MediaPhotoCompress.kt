@@ -1,6 +1,7 @@
 package cn.cheney.xpicker.core
 
 import android.content.Context
+import android.net.Uri
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.util.Logger
@@ -24,7 +25,7 @@ class MediaPhotoCompress {
         }
         mediaList.forEach {
             if (null != it.localPath
-                && it.fileType == XPickerConstant.FILE_TYPE_IMAGE
+                && it.fileType == MediaEntity.FILE_TYPE_IMAGE
                 && XPickerConstant.GIF != it.mineType
             ) {
                 this.mediaList.add(it)
@@ -45,7 +46,7 @@ class MediaPhotoCompress {
                 override fun onSuccess(file: File?) {
                     Logger.d("Compress Success ${file?.absolutePath}")
                     if (null != file && file.exists()) {
-                        mediaList[index].compressLocalUri = file.getExternalUri(context)
+                        mediaList[index].compressLocalUri = Uri.fromFile(file)
                     }
                     if (index == mediaList.size - 1) {
                         callback.invoke()

@@ -127,7 +127,7 @@ class PreviewActivity : AppCompatActivity() {
                 photoView,
                 mediaEntity.mineType
             )
-            if (mediaEntity.fileType == XPickerConstant.FILE_TYPE_VIDEO) {
+            if (mediaEntity.fileType == MediaEntity.FILE_TYPE_VIDEO) {
                 playIv.visibility = View.VISIBLE
                 playIv.setOnClickListener {
                     playVideo(mediaEntity)
@@ -275,7 +275,8 @@ class PreviewActivity : AppCompatActivity() {
         val intent = Intent(Intent.ACTION_VIEW)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        intent.setDataAndType(File(mediaEntity.localPath!!).getExternalUri(this), "video/*")
+        val url = File(mediaEntity.localPath!!).getExternalUri(this)
+        intent.setDataAndType(url, "video/*")
         startActivity(intent)
     }
 

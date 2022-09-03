@@ -99,7 +99,7 @@ class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
             }
             val mediaEntity = mediaList!![realPos]
             //底部文件类型图标
-            if (mediaEntity.fileType == XPickerConstant.FILE_TYPE_VIDEO) {
+            if (mediaEntity.fileType == MediaEntity.FILE_TYPE_VIDEO) {
                 holder.videoLayer.visibility = View.VISIBLE
                 holder.videoDurationTv.text = "${timeParse(mediaEntity.duration.toLong())}"
                 holder.gifMarkIv.visibility = View.GONE

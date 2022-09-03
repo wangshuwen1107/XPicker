@@ -18,4 +18,10 @@ data class MediaEntity(
     var width: Int = 0,
     var selected: Boolean = false,
     var selectedNum: Int = 0
-) : Parcelable
+) : Parcelable {
+    companion object {
+        //FileType
+        const val FILE_TYPE_VIDEO = 1
+        const val FILE_TYPE_IMAGE = 2
+    }
+}

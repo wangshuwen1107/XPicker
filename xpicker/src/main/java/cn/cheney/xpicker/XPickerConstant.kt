@@ -1,6 +1,5 @@
 package cn.cheney.xpicker
 
-import androidx.annotation.StringDef
 
 class XPickerConstant {
 
@@ -11,14 +10,6 @@ class XPickerConstant {
         const val PREVIEW_INDEX_KEY = "previewIndex"
         const val PREVIEW_CURRENT_MAX_NUM_KEY = "previewMaxNum"
         const val PREVIEW_ORIGINAL_KEY = "original"
-
-        //FileProvider
-        const val FILE_PROVIDER = "cn.cheney.xpicker.fileprovider"
-
-        //FileType
-        const val FILE_TYPE_VIDEO = 1
-        const val FILE_TYPE_IMAGE = 2
-
         //dir
         const val COMPRESS_DIR_TAG = "luban"
         const val CROP_DIR_TAG = "crop"
