@@ -58,12 +58,14 @@ class VideoPlayView @JvmOverloads constructor(
             override fun onSurfaceTextureUpdated(surface: SurfaceTexture?) {
             }
         }
+
         xMediaPlayer.setMediaListener(object : XMediaPlayer.MediaListener {
             override fun onPrepared(mediaPlayer: MediaPlayer?) {
                 if (null == mediaPlayer) {
                     return
                 }
                 setAspectRatio(mediaPlayer.videoWidth, mediaPlayer.videoHeight)
+                mediaPlayer.start()
                 visibility = View.VISIBLE
             }
 
@@ -90,6 +92,11 @@ class VideoPlayView @JvmOverloads constructor(
 
 
     fun stopVideo() {
+        pauseInner()
+        this.videoUri = null
+    }
+
+    private fun pauseInner() {
         if (xMediaPlayer.isPlaying()) {
             hasPauseVideo = true
             xMediaPlayer.stop()
@@ -97,9 +104,10 @@ class VideoPlayView @JvmOverloads constructor(
         visibility = View.GONE
     }
 
+
     private fun playInner() {
         if (null != videoUri && null != videoSurface) {
-            xMediaPlayer.play(videoSurface, videoUri)
+            xMediaPlayer.setup(videoSurface, videoUri)
         }
     }
 
@@ -114,7 +122,7 @@ class VideoPlayView @JvmOverloads constructor(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private fun pause() {
-        stopVideo()
+        pauseInner()
     }
 
 

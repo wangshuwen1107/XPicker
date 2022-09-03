@@ -12,6 +12,7 @@ import com.cheney.camera2.callback.TakePhotoCallback
 import com.cheney.camera2.callback.VideoRecordCallback
 import com.cheney.camera2.entity.CameraError
 import com.cheney.camera2.util.FileUtil
+import com.cheney.camera2.util.Logger
 import java.io.File
 
 
@@ -21,9 +22,10 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
     private var currentSession: CameraCaptureSession? = null
 
     private var previewBuilder: CaptureRequest.Builder? = null
+
     private var videoRecorderBuilder: CaptureRequest.Builder? = null
 
-    private var previewSurface: Surface? = null
+    private var previewSurfaceTexture: SurfaceTexture? = null
 
     private var imageReader: ImageReader? = null
 
@@ -40,53 +42,90 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
     }
 
     fun setPreviewSurface(surfaceTexture: SurfaceTexture) {
-        previewSurface = Surface(surfaceTexture)
+        previewSurfaceTexture = surfaceTexture
     }
 
     @Synchronized
-    fun startPreviewSession(photoSize: Size) {
+    fun startPreviewSession(photoSize: Size, callback: ((Boolean) -> Unit)? = null) {
+        val cameraDevice = getCameraDevice()
+        if (null == cameraDevice || null == previewSurfaceTexture) {
+            Logger.e(
+                "startPreviewSession cameraDevice=$cameraDevice " +
+                        "previewSurfaceTexture=$previewSurfaceTexture "
+            )
+            callback?.invoke(false)
+            return
+        }
         this.photoSize = photoSize
-        imageReader = ImageReader.newInstance(photoSize.width, photoSize.height, ImageFormat.JPEG, 2)
+        imageReader = ImageReader.newInstance(
+            photoSize.width,
+            photoSize.height,
+            ImageFormat.JPEG,
+            2
+        )
         imageReader!!.setOnImageAvailableListener(this, CameraThreadManager.cameraHandler)
-        val targets = mutableListOf(previewSurface, imageReader!!.surface)
+        val targets = mutableListOf(Surface(previewSurfaceTexture), imageReader!!.surface)
         stopPreview()
-        getCameraDevice()?.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
+        cameraDevice.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
             override fun onConfigured(session: CameraCaptureSession) {
                 synchronized(this@Camera2Session) {
                     currentSession = session
-                    sendPreviewRequest()
+                    val success = sendPreviewRequest()
+                    CameraThreadManager.mainHandler.post { callback?.invoke(success) }
+
                 }
             }
 
             override fun onConfigureFailed(session: CameraCaptureSession) {
-
+                Logger.e("startPreviewSession create session failed ")
+                CameraThreadManager.mainHandler.post { callback?.invoke(false) }
             }
         }, CameraThreadManager.cameraHandler)
     }
 
 
     @Synchronized
-    fun startVideoRecorder(videoSize: Size, rotation: Int) {
-        CameraThreadManager.cameraHandler.post {
-            stopPreview()
-            videoRecorder.init(videoSize, rotation)
-            val recorderSurface = videoRecorder.getRecorderSurface() ?: return@post
-            val targets = mutableListOf(previewSurface, recorderSurface)
-            getCameraDevice()?.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
+    fun startVideoRecorder(videoSize: Size, rotation: Int, callback: ((Boolean) -> Unit)? = null) {
+        val cameraDevice = getCameraDevice()
+        if (null == cameraDevice || null == previewSurfaceTexture) {
+            Logger.e(
+                "startVideoRecorder cameraDevice=$cameraDevice " +
+                        "previewSurfaceTexture=$previewSurfaceTexture "
+            )
+            callback?.invoke(false)
+            return
+        }
+        videoRecorder.setUp(videoSize, rotation)
+        val recorderSurface = videoRecorder.getRecorderSurface()
+        if (null == recorderSurface) {
+            Logger.e(
+                "startVideoRecorder videoRecorder getSurface NULL"
+            )
+            callback?.invoke(false)
+            return
+        }
+        stopPreview()
+        previewSurfaceTexture!!.setDefaultBufferSize(videoSize.width, videoSize.height)
+        val targets = mutableListOf(Surface(previewSurfaceTexture), recorderSurface)
+        cameraDevice.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
                 override fun onConfigured(session: CameraCaptureSession) {
                     synchronized(this@Camera2Session) {
                         currentSession = session
-                        sendVideoPreviewRequest(recorderSurface)
+                        val previewSuccess = sendVideoPreviewRequest(recorderSurface)
+                        if (!previewSuccess) {
+                            CameraThreadManager.mainHandler.post { callback?.invoke(false) }
+                            return
+                        }
                         videoRecorder.start()
-
                     }
                 }
 
                 override fun onConfigureFailed(session: CameraCaptureSession) {
-
+                    Logger.e("startVideoRecorder create session failed ")
+                    CameraThreadManager.mainHandler.post { callback?.invoke(false) }
                 }
-            }, CameraThreadManager.cameraHandler)
-        }
+            }, CameraThreadManager.cameraHandler
+        )
     }
 
 
@@ -97,6 +136,7 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
             photoSize?.let { startPreviewSession(it) }
         }
     }
+
 
     @Synchronized
     fun sendFocusRequest(afRect: Rect, aeRect: Rect, callback: ((Boolean) -> Unit)?) {
@@ -154,6 +194,7 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
         imageReader = null
         previewBuilder = null
         videoRecorderBuilder = null
+        previewSurfaceTexture = null
     }
 
 
@@ -167,23 +208,19 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
 
 
     @Synchronized
-    private fun sendPreviewRequest() {
-        if (null == previewSurface || null == currentSession) return
-        previewBuilder = createPreviewRequest(previewSurface!!)
-        previewBuilder?.let {
-            setRepeatingPreview(it, currentSession!!)
-        }
+    private fun sendPreviewRequest(): Boolean {
+        if (null == previewSurfaceTexture || null == currentSession) return false
+        previewBuilder = createPreviewRequest(Surface(previewSurfaceTexture))
+        return setRepeatingPreview(previewBuilder!!, currentSession!!)
     }
 
 
     @Synchronized
-    private fun sendVideoPreviewRequest(videoSurface: Surface) {
-        if (null == previewSurface || null == currentSession) return
+    private fun sendVideoPreviewRequest(videoSurface: Surface): Boolean {
+        if (null == previewSurfaceTexture || null == currentSession) return false
         videoRecorderBuilder =
-            createVideoRequest(previewSurface!!, videoSurface)
-        videoRecorderBuilder?.apply {
-            setRepeatingPreview(this, currentSession!!)
-        }
+            createVideoRequest(Surface(previewSurfaceTexture), videoSurface)
+        return setRepeatingPreview(videoRecorderBuilder!!, currentSession!!)
     }
 
     override fun onImageAvailable(reader: ImageReader?) {

@@ -16,7 +16,7 @@ abstract class BaseSession {
     fun setRepeatingPreview(
         previewBuilder: CaptureRequest.Builder,
         session: CameraCaptureSession
-    ) {
+    ):Boolean {
         try {
             session.stopRepeating()
             session.abortCaptures()
@@ -25,10 +25,12 @@ abstract class BaseSession {
                 null,
                 CameraThreadManager.cameraHandler
             )
-
+            return true
         } catch (e: Exception) {
             e.printStackTrace()
+            return false
         }
+
     }
 
     /**

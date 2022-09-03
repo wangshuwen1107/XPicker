@@ -11,6 +11,7 @@ import androidx.lifecycle.LifecycleObserver
 import com.cheney.camera2.callback.TakePhotoCallback
 import com.cheney.camera2.callback.VideoRecordCallback
 import com.cheney.camera2.util.CoordinateTransformer
+import com.cheney.camera2.util.Logger
 import com.cheney.camera2.util.getBestOutputSize
 
 
@@ -23,10 +24,6 @@ class Camera2Module : LifecycleObserver {
     private var cameraDevice: CameraDevice? = null
 
     var cameraParamsHolder = CameraParamsHolder()
-
-    companion object {
-        private const val TAG = "Camera2Module"
-    }
 
     fun init(context: Context) {
         cameraManager =
@@ -58,15 +55,20 @@ class Camera2Module : LifecycleObserver {
         cameraParamsHolder.photoSize = getBestOutputSize(photoSizes, surfaceSize)
         cameraParamsHolder.surfaceSize = surfaceSize
         cameraParamsHolder.isFront = !facingBack
-        Log.i(TAG, "surfaceSize =${surfaceSize} ")
-        Log.i(TAG, "previewSize =${cameraParamsHolder.previewSize} ")
-        Log.i(TAG, "photoSize =${cameraParamsHolder.photoSize} ")
+        Logger.d("surfaceSize =${surfaceSize} ")
+        Logger.d("previewSize =${cameraParamsHolder.previewSize} ")
+        Logger.d("videoSize =${cameraParamsHolder.videoSize} ")
+        Logger.d("photoSize =${cameraParamsHolder.photoSize} ")
     }
 
     /**
      * 开启预览
      */
-    fun startPreview(facingBack: Boolean, surfaceTexture: SurfaceTexture, errorCallback: () -> Unit) {
+    fun startPreview(
+        facingBack: Boolean,
+        surfaceTexture: SurfaceTexture,
+        errorCallback: () -> Unit
+    ) {
         val cameraId = getCameraId(facingBack)
         if (TextUtils.isEmpty(cameraId)) {
             errorCallback()
@@ -75,7 +77,7 @@ class Camera2Module : LifecycleObserver {
         val photoSize = cameraParamsHolder.photoSize
         if (null == photoSize) {
             errorCallback()
-            Log.e(TAG, "startPreview but size not init please call initCameraSize")
+            Logger.e("startPreview but size not init please call initCameraSize")
             return
         }
         camera2Session.setPreviewSurface(surfaceTexture)
@@ -83,7 +85,11 @@ class Camera2Module : LifecycleObserver {
         cameraManager.openCamera(cameraId!!, object : CameraDevice.StateCallback() {
             override fun onOpened(camera: CameraDevice) {
                 cameraDevice = camera
-                camera2Session.startPreviewSession(photoSize)
+                camera2Session.startPreviewSession(photoSize) {
+                    if (!it) {
+                        errorCallback.invoke()
+                    }
+                }
             }
 
             override fun onDisconnected(camera: CameraDevice) {
@@ -109,7 +115,7 @@ class Camera2Module : LifecycleObserver {
     fun startVideoRecorder(orientation: Int) {
         val videoSize = cameraParamsHolder.videoSize
         if (null == videoSize || null == cameraDevice) {
-            Log.e(TAG, "startVideoRecorder but size not init please call initCameraSize")
+            Logger.e("startVideoRecorder but size not init please call initCameraSize")
             return
         }
         camera2Session.startVideoRecorder(videoSize, orientation)
@@ -134,7 +140,7 @@ class Camera2Module : LifecycleObserver {
         val transformer = CoordinateTransformer(cameraParamsHolder.characteristics!!, previewRect)
         val transformAFRect = transformer.toCameraSpace(afRect)
         val transformAERect = transformer.toCameraSpace(afRect)
-        Log.i(TAG, "autoFocus 聚焦原始矩形=$afRect  曝光原始矩形=$aeRect")
+        Logger.d("autoFocus 聚焦原始矩形=$afRect  曝光原始矩形=$aeRect")
         camera2Session.sendFocusRequest(transformAFRect, transformAERect, callback)
     }
 
@@ -142,7 +148,7 @@ class Camera2Module : LifecycleObserver {
     /**
      * 关闭相机
      */
-    fun closeDevice() {
+    private fun closeDevice() {
         cameraDevice?.close()
         cameraDevice = null
     }

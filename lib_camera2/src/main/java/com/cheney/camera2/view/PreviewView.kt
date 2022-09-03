@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.util.AttributeSet
+import android.util.Log
 import android.util.Size
 import android.view.MotionEvent
 import androidx.lifecycle.Lifecycle

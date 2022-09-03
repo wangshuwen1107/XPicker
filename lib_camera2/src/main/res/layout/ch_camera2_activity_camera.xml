@@ -66,11 +66,6 @@
         android:gravity="center"
         android:visibility="gone">
 
-        <com.cheney.camera2.view.VideoPlayView
-            android:id="@+id/camera_video_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
     </RelativeLayout>
 
     <com.cheney.camera2.view.CaptureLayer

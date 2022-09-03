@@ -24,7 +24,7 @@ class XMediaPlayer constructor(private var mContext: Context?) {
         mMediaListener = listener
     }
 
-    fun play(surface: Surface?, uri: Uri?): MediaPlayer? {
+    fun setup(surface: Surface?, uri: Uri?): MediaPlayer? {
         if (null == uri) {
             return null
         }
@@ -56,6 +56,7 @@ class XMediaPlayer constructor(private var mContext: Context?) {
         } else mMediaPlayer!!.isPlaying
     }
 
+
     fun stop() {
         if (null == mMediaPlayer) {
             return
@@ -69,22 +70,27 @@ class XMediaPlayer constructor(private var mContext: Context?) {
     }
 
     private val mOnPrepareListener = OnPreparedListener { mp ->
-        mMediaPlayer!!.start()
-        if (null != mMediaListener) {
-            mMediaListener!!.onPrepared(mp)
+        CameraThreadManager.mainHandler.post {
+            if (null != mMediaListener) {
+                mMediaListener!!.onPrepared(mp)
+            }
         }
     }
 
     private var onCompletionListener = OnCompletionListener {
-        if (null != mMediaListener) {
-            mMediaListener!!.onCompleted()
+        CameraThreadManager.mainHandler.post {
+            if (null != mMediaListener) {
+                mMediaListener!!.onCompleted()
+            }
         }
     }
 
     private var mOnErrorListener =
         MediaPlayer.OnErrorListener { mp, what, extra ->
-            if (null != mMediaListener) {
-                mMediaListener!!.onError()
+            CameraThreadManager.mainHandler.post {
+                if (null != mMediaListener) {
+                    mMediaListener!!.onError()
+                }
             }
             true
         }

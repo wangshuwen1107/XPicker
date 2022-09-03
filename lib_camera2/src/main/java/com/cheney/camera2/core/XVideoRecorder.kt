@@ -23,7 +23,7 @@ class XVideoRecorder constructor(private var mContext: Context) {
         private const val DEFAULT_FRAME_RATE = 30
     }
 
-    fun init(videoSize: Size, rotation: Int) {
+    fun setUp(videoSize: Size, rotation: Int) {
         if (null == mMediaRecorder) {
             mMediaRecorder = MediaRecorder()
         }

@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cheney.camera2.R
@@ -19,6 +20,7 @@ import com.cheney.camera2.util.FileUtil
 import com.cheney.camera2.util.FileUtil.scanPhotoAlbum
 import com.cheney.camera2.util.inRange
 import com.cheney.camera2.view.PreviewView
+import com.cheney.camera2.view.VideoPlayView
 import com.gyf.immersionbar.ImmersionBar
 import kotlinx.android.synthetic.main.ch_camera2_activity_camera.*
 import java.io.File
@@ -71,8 +73,6 @@ class XCameraActivity : AppCompatActivity() {
 
         camera_preview.bindLifecycle(lifecycle)
         camera_preview.setFacingBack(isBackCamera)
-
-        camera_video_view.bindLifecycle(lifecycle)
     }
 
     override fun onDestroy() {
@@ -101,14 +101,6 @@ class XCameraActivity : AppCompatActivity() {
         camera_back_iv.setOnClickListener {
             finish()
             callbackFailed("USER_CANCEL")
-        }
-        //视频播放出错
-        camera_video_view.playErrorListener = {
-            safeUiThreadRun {
-                showToast(getString(R.string.media_play_error))
-                stopVideo()
-                actionCancel()
-            }
         }
         //动作
         camera_capture_layer.setListener(object : CaptureUIListener() {
@@ -285,16 +277,27 @@ class XCameraActivity : AppCompatActivity() {
         camera_back_iv.visibility = View.GONE
         camera_video_layer.visibility = View.VISIBLE
 
-        camera_video_view.playVideo(videoUri!!)
+        val videoView = VideoPlayView(this)
+        camera_video_layer.addView(
+            videoView, ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+        videoView.bindLifecycle(lifecycle)
+        videoView.playVideo(videoUri!!)
+        videoView.playErrorListener = {
+            showToast(getString(R.string.media_play_error))
+            stopVideo()
+            actionCancel()
+        }
     }
-
 
     private fun stopVideo() {
         camera_switch_iv.visibility = View.VISIBLE
         camera_back_iv.visibility = View.VISIBLE
         camera_video_layer.visibility = View.GONE
-
-        camera_video_view.stopVideo()
+        camera_video_layer.removeAllViews()
     }
 
     private fun saveFileToSystemPhoto() {
