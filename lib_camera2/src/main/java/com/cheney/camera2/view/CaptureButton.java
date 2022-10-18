@@ -134,6 +134,8 @@ public class CaptureButton extends View {
                 center_Y - recordingStrokeRadius,
                 center_X + recordingStrokeRadius,
                 center_Y + recordingStrokeRadius);
+
+        invalidate();
     }
 
     @Override

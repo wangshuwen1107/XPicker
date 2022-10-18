@@ -5,7 +5,6 @@ import android.net.Uri
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.util.Logger
-import cn.cheney.xpicker.util.getExternalUri
 import top.zibin.luban.Luban
 import top.zibin.luban.OnCompressListener
 import java.io.File

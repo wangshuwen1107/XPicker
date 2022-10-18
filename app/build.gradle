@@ -49,7 +49,12 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:1.1.0"
     implementation 'com.yanzhenjie:permission:2.0.3'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
-    implementation project(path: ':xpicker')
-    implementation project(path: ':lib_camera2')
-//    implementation 'io.github.wangshuwen1107:xpicker:1.0.2'
+
+    if(debug == "true"){
+        implementation project(path: ':xpicker')
+        implementation project(path: ':lib_camera2')
+    }else {
+        implementation "io.github.wangshuwen1107:camera2:$sdkVersion"
+        implementation "io.github.wangshuwen1107:xpicker:$sdkVersion"
+    }
 }

@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
-import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.XPickerConstant.Companion.PREVIEW_CURRENT_MAX_NUM_KEY
 import cn.cheney.xpicker.XPickerConstant.Companion.PREVIEW_DATA_KEY
 import cn.cheney.xpicker.XPickerConstant.Companion.PREVIEW_INDEX_KEY
