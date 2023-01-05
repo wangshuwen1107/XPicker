@@ -251,8 +251,6 @@ class XCameraActivity : AppCompatActivity() {
     }
 
     private fun stopRecorderVideo(needCallback: Boolean) {
-        //提前打开预览模式
-        camera_video_layer.visibility = View.VISIBLE
         camera_preview.stopVideoRecorder(if (needCallback) object : VideoRecordCallback {
             override fun onSuccess(file: File) {
                 safeUiThreadRun {

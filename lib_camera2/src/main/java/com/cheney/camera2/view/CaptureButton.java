@@ -173,7 +173,7 @@ public class CaptureButton extends View {
                     //判断按钮状态是否为可录制状态
                     if ((button_state.equals(CaptureType.ONLY_RECORDER.getType())
                             || button_state.equals(CaptureType.MIXED.getType())))
-                        postDelayed(longPressRunnable, 500);    //同时延长500启动长按后处理的逻辑Runnable
+                        postDelayed(longPressRunnable, 200);    //同时延长500启动长按后处理的逻辑Runnable
                     break;
                 case MotionEvent.ACTION_MOVE:
                     if (captureListener != null
