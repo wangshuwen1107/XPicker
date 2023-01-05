@@ -3,6 +3,7 @@ package cn.cheney.xpicker.activity
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -288,11 +289,7 @@ class PickerActivity : AppCompatActivity() {
                     override fun onTakePhotoFailed(errorCode: String) {
                     }
 
-                    override fun onVideoSuccess(
-                        coverUri: Uri?,
-                        videoUri: Uri,
-                        duration: Int?
-                    ) {
+                    override fun onVideoSuccess(cover: Bitmap?, videoUri: Uri, duration: Int?) {
                         handler.postDelayed({
                             loadData()
                         }, 300)

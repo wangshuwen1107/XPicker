@@ -1,6 +1,7 @@
 package com.cheney.camera2.activity
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
@@ -32,7 +33,7 @@ class XCameraActivity : AppCompatActivity() {
     private var isBackCamera: Boolean = true
 
     private var videoUri: Uri? = null
-    private var coverUri: Uri? = null
+    private var coverBitmap: Bitmap? = null
     private var duration: Int? = null
     private var videoFile: File? = null
 
@@ -127,11 +128,11 @@ class XCameraActivity : AppCompatActivity() {
             override fun recordShort(time: Long) {
                 camera_capture_layer.reset()
                 showToast(getString(R.string.camera_recorder_too_short))
-                stopRecorderVideo(false)
+                stopRecorderVideo(true)
             }
 
             override fun recordEnd(time: Long) {
-                stopRecorderVideo(true)
+                stopRecorderVideo(false)
             }
 
         })
@@ -151,7 +152,7 @@ class XCameraActivity : AppCompatActivity() {
                 if (null == videoUri) {
                     callbackFailed("VIDEO_FILE_EMPTY")
                 } else {
-                    cameraSaveCallback?.onVideoSuccess(coverUri, videoUri!!, duration)
+                    cameraSaveCallback?.onVideoSuccess(coverBitmap, videoUri!!, duration)
                 }
             }
             CaptureType.MIXED -> {
@@ -160,7 +161,7 @@ class XCameraActivity : AppCompatActivity() {
                 } else if (null != photoFile) {
                     cameraSaveCallback?.onTakePhotoSuccess(Uri.fromFile(photoFile!!))
                 } else {
-                    cameraSaveCallback?.onVideoSuccess(coverUri, videoUri!!, duration)
+                    cameraSaveCallback?.onVideoSuccess(coverBitmap, videoUri!!, duration)
                 }
             }
         }
@@ -185,9 +186,9 @@ class XCameraActivity : AppCompatActivity() {
 
 
     private fun delCacheFile() {
-        videoFile?.deleteOnExit()
+        videoFile?.delete()
         videoFile = null
-        photoFile?.deleteOnExit()
+        photoFile?.delete()
         photoFile = null
     }
 
@@ -250,14 +251,19 @@ class XCameraActivity : AppCompatActivity() {
         camera_preview.startVideoRecorder()
     }
 
-    private fun stopRecorderVideo(needCallback: Boolean) {
-        camera_preview.stopVideoRecorder(if (needCallback) object : VideoRecordCallback {
+    private fun stopRecorderVideo(stopByShort: Boolean) {
+        camera_preview.stopVideoRecorder(object : VideoRecordCallback {
             override fun onSuccess(file: File) {
+                if (stopByShort) {
+                    file.delete()
+                }
                 safeUiThreadRun {
-                    videoFile = file
-                    videoUri = Uri.fromFile(file)
-                    camera_capture_layer.done()
-                    playVideo()
+                    if (!stopByShort) {
+                        videoFile = file
+                        videoUri = Uri.fromFile(file)
+                        camera_capture_layer.done()
+                        playVideo()
+                    }
                 }
             }
 
@@ -267,7 +273,7 @@ class XCameraActivity : AppCompatActivity() {
                     showToast(getString(R.string.camera_recorder_error))
                 }
             }
-        } else null)
+        })
     }
 
     private fun playVideo() {
@@ -302,8 +308,7 @@ class XCameraActivity : AppCompatActivity() {
         videoFile?.let {
             //获取封面和时间
             val coverAndDuration = FileUtil.getVideoAndDuration(it.absolutePath)
-            coverUri =
-                if (coverAndDuration?.first == null) null else Uri.fromFile(coverAndDuration.first)
+            coverBitmap = coverAndDuration?.first
             duration = coverAndDuration?.second
             //添加到系统相册
             scanPhotoAlbum(this@XCameraActivity, it)
