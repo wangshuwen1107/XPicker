@@ -1,6 +1,7 @@
 package cn.cheney.picker.app
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
@@ -109,14 +110,15 @@ class MainActivity : AppCompatActivity() {
                 override fun onTakePhotoFailed(errorCode: String) {
                 }
 
-                override fun onVideoSuccess(coverUri: Uri?, videoUri: Uri, duration: Int?) {
+                override fun onVideoSuccess(cover: Bitmap?, videoUri: Uri, duration: Int?) {
                     content_rv.visibility = View.GONE
                     content_layer.visibility = View.VISIBLE
                     video_iv.visibility = View.VISIBLE
                     Glide.with(this@MainActivity)
-                        .load(coverUri)
+                        .load(cover)
                         .into(content_iv)
                 }
+
 
                 override fun onVideoFailed(errorCode: String) {
                 }

@@ -19,7 +19,7 @@ object FileUtil {
     const val PHOTO_EXTENSION = ".jpg"
     const val VIDEO_EXTENSION = ".mp4"
 
-    fun getVideoAndDuration(videoPath: String): Pair<File?, Int>? {
+    fun getVideoAndDuration(videoPath: String): Pair<Bitmap?, Int>? {
         if (TextUtils.isEmpty(videoPath)) {
             return null
         }
@@ -35,11 +35,11 @@ object FileUtil {
         if (null == bitmap) {
             return Pair(null, duration?.toInt() ?: 0)
         }
-        saveBitmapFile(
-            bitmap,
-            File(replace)
-        )
-        return Pair(File(replace), duration?.toInt() ?: 0)
+//        saveBitmapFile(
+//            bitmap,
+//            File(replace)
+//        )
+        return Pair(bitmap, duration?.toInt() ?: 0)
     }
 
 

@@ -61,6 +61,7 @@ class XVideoRecorder constructor(private var mContext: Context) {
         } catch (e: Exception) {
             e.printStackTrace()
             isRecording.set(false)
+            deleteFile()
         }
     }
 
@@ -81,21 +82,27 @@ class XVideoRecorder constructor(private var mContext: Context) {
     }
 
     fun getRecorderSurface(): Surface? {
-        var surface:Surface?= null
+        var surface: Surface? = null
         try {
             surface = mMediaRecorder?.surface
-        }catch (e:Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
         }
         return surface
     }
 
     private fun callbackResult(callback: VideoRecordCallback?) {
-        if (null != recorderFile && isRecording.get()) {
+        if (recorderFile?.exists() == true && isRecording.get()) {
             callback?.onSuccess(recorderFile!!)
         } else {
+            deleteFile()
             callback?.onFailed()
         }
+        recorderFile = null
+    }
+
+    private fun deleteFile() {
+        recorderFile?.delete()
         recorderFile = null
     }
 }
