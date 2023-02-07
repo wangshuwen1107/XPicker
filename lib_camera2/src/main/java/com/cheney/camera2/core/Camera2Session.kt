@@ -37,7 +37,6 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
 
     inner class TakePhotoRequest {
         var mirrored: Boolean = false
-        var orientation: Int = 0
         var callback: TakePhotoCallback? = null
     }
 
@@ -173,13 +172,12 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
         takePhotoRequest = TakePhotoRequest().apply {
             this.mirrored = mirrored
             this.callback = callback
-            this.orientation = orientation
         }
         val builder = createCaptureRequest(imageReader!!.surface, orientation)
         builder?.apply {
-            capture(this, currentSession!!) {
+            capture(this, currentSession!!) {success->
                 sendPreviewRequest()
-                if (!it) {
+                if (!success) {
                     callbackTakePhoto(null)
                 }
             }
@@ -227,12 +225,9 @@ abstract class Camera2Session(private var context: Context) : BaseSession(),
         if (null == takePhotoRequest || null == reader) {
             return
         }
-        val outputFile = FileUtil.saveImage(
-            context, reader.acquireLatestImage(),
-            takePhotoRequest!!.orientation,
-            takePhotoRequest!!.mirrored
-        )
-        callbackTakePhoto(outputFile)
+        val file = FileUtil.saveImage(context,reader.acquireLatestImage(),
+            takePhotoRequest!!.mirrored)
+        callbackTakePhoto(file)
     }
 
 

@@ -2,7 +2,6 @@ package cn.cheney.xpicker
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.widget.ImageView
 import cn.cheney.xpicker.activity.PickerActivity
@@ -13,8 +12,9 @@ import cn.cheney.xpicker.entity.ActionType
 import cn.cheney.xpicker.entity.MineType
 import cn.cheney.xpicker.entity.PickerRequest
 import com.cheney.camera2.activity.XCameraActivity
+import java.io.File
 
-typealias ImageLoadListener = (fileUrl: Uri, iv: ImageView, mineType: String?) -> Unit
+typealias ImageLoadListener = (file: File, iv: ImageView, mineType: String?) -> Unit
 
 /**
  * @author Cheney
@@ -109,17 +109,14 @@ class XPicker private constructor() {
             }
             ActionType.PICKER.type -> {
                 val intent = Intent(context, PickerActivity::class.java)
-                val bundle = Bundle()
-                bundle.putParcelable(XPickerConstant.REQUEST_KEY, request)
-                intent.putExtra(XPickerConstant.REQUEST_BUNDLE_KEY, bundle)
+                intent.putExtra(XPickerConstant.REQUEST_KEY, request)
                 context.startActivity(intent)
                 PickerActivity.mediaSelectedCallback = selectedCallback
             }
             ActionType.CROP.type -> {
                 val intent = Intent(context, PickerActivity::class.java)
                 val bundle = Bundle()
-                bundle.putParcelable(XPickerConstant.REQUEST_KEY, request)
-                intent.putExtra(XPickerConstant.REQUEST_BUNDLE_KEY, bundle)
+                intent.putExtra(XPickerConstant.REQUEST_KEY, request)
                 context.startActivity(intent)
                 PickerActivity.cropCallback = cropCallback
             }
@@ -150,8 +147,8 @@ class XPicker private constructor() {
             return xPicker
         }
 
-        fun onImageLoad(fileUrl: Uri, iv: ImageView, mineType: String) {
-            imageLoadListener?.invoke(fileUrl, iv, mineType)
+        fun onImageLoad(file: File, iv: ImageView, mineType: String?) {
+            imageLoadListener?.invoke(file, iv, mineType)
         }
     }
 

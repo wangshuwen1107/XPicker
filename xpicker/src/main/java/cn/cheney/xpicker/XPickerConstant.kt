@@ -1,7 +1,7 @@
 package cn.cheney.xpicker
 
 
-class XPickerConstant {
+ class XPickerConstant {
 
     companion object {
         const val REQUEST_KEY = "pickerRequest"

@@ -32,7 +32,6 @@ class XCameraActivity : AppCompatActivity() {
 
     private var isBackCamera: Boolean = true
 
-    private var videoUri: Uri? = null
     private var coverBitmap: Bitmap? = null
     private var duration: Int? = null
     private var videoFile: File? = null
@@ -145,23 +144,23 @@ class XCameraActivity : AppCompatActivity() {
                 if (null == photoFile) {
                     callbackFailed("PHOTO_FILE_EMPTY")
                 } else {
-                    cameraSaveCallback?.onTakePhotoSuccess(Uri.fromFile(photoFile!!))
+                    cameraSaveCallback?.onTakePhotoSuccess(photoFile!!)
                 }
             }
             CaptureType.ONLY_RECORDER -> {
-                if (null == videoUri) {
+                if (null == videoFile) {
                     callbackFailed("VIDEO_FILE_EMPTY")
                 } else {
-                    cameraSaveCallback?.onVideoSuccess(coverBitmap, videoUri!!, duration)
+                    cameraSaveCallback?.onVideoSuccess(coverBitmap, videoFile!!, duration)
                 }
             }
             CaptureType.MIXED -> {
-                if (null == photoFile && null == videoUri) {
+                if (null == photoFile && null == videoFile) {
                     callbackFailed("BOTH_FILE_EMPTY")
                 } else if (null != photoFile) {
-                    cameraSaveCallback?.onTakePhotoSuccess(Uri.fromFile(photoFile!!))
+                    cameraSaveCallback?.onTakePhotoSuccess(photoFile!!)
                 } else {
-                    cameraSaveCallback?.onVideoSuccess(coverBitmap, videoUri!!, duration)
+                    cameraSaveCallback?.onVideoSuccess(coverBitmap, videoFile!!, duration)
                 }
             }
         }
@@ -226,13 +225,12 @@ class XCameraActivity : AppCompatActivity() {
 
     private fun takePhoto() {
         camera_preview.takePhoto(object : TakePhotoCallback() {
-            override fun onSuccess(file: File) {
+            override fun onSuccess(photoFile: File) {
                 safeUiThreadRun {
-                    this@XCameraActivity.photoFile = file
-                    val photoBitmap = BitmapFactory.decodeFile(file.absolutePath)
+                    this@XCameraActivity.photoFile = photoFile
+                    val photoBitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
                     camera_photo_preview_iv.setImageBitmap(photoBitmap)
                     camera_photo_preview_iv.visibility = View.VISIBLE
-
                     camera_capture_layer.done()
                     camera_switch_iv.visibility = View.GONE
                     camera_back_iv.visibility = View.GONE
@@ -260,9 +258,8 @@ class XCameraActivity : AppCompatActivity() {
                 safeUiThreadRun {
                     if (!stopByShort) {
                         videoFile = file
-                        videoUri = Uri.fromFile(file)
                         camera_capture_layer.done()
-                        playVideo()
+                        playVideo(Uri.fromFile(videoFile))
                     }
                 }
             }
@@ -276,7 +273,7 @@ class XCameraActivity : AppCompatActivity() {
         })
     }
 
-    private fun playVideo() {
+    private fun playVideo(videoUri: Uri) {
         camera_switch_iv.visibility = View.GONE
         camera_back_iv.visibility = View.GONE
         camera_video_layer.visibility = View.VISIBLE
@@ -289,7 +286,7 @@ class XCameraActivity : AppCompatActivity() {
             )
         )
         videoView.bindLifecycle(lifecycle)
-        videoView.playVideo(videoUri!!)
+        videoView.playVideo(videoUri)
         videoView.playErrorListener = {
             showToast(getString(R.string.media_play_error))
             stopVideo()
@@ -314,7 +311,7 @@ class XCameraActivity : AppCompatActivity() {
             scanPhotoAlbum(this@XCameraActivity, it)
         }
         photoFile?.let {
-            scanPhotoAlbum(this@XCameraActivity, it)
+            scanPhotoAlbum(this@XCameraActivity, photoFile)
         }
     }
 

@@ -1,6 +1,5 @@
 package cn.cheney.xpicker.adapter
 
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,9 +40,8 @@ class PreviewSelectAdapter : RecyclerView.Adapter<PreviewSelectAdapter.MediaSele
     }
 
     override fun onBindViewHolder(holder: MediaSelectHolder, position: Int) {
-        XPicker.imageLoadListener?.invoke(
-            Uri.fromFile(File(selectList!![position].localPath!!)),
-            holder.photoIv,
+        XPicker.onImageLoad(
+            File(selectList!![position].localPath!!), holder.photoIv,
             selectList!![position].mineType
         )
         if (selectList!![position].localPath == currentPreviewId) {

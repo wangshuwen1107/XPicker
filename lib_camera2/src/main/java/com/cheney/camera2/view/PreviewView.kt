@@ -174,7 +174,7 @@ class PreviewView @JvmOverloads constructor(
         camera2Module.initCameraSize(facingBack, viewSize!!)
         camera2Module.cameraParamsHolder.previewSize?.let { previewSize ->
             mSurfaceTexture?.setDefaultBufferSize(previewSize.width, previewSize.height)
-            setAspectRatio(previewSize.height, previewSize.width)
+            //setAspectRatio(previewSize.height, previewSize.width)
         }
         camera2Module.startPreview(facingBack, mSurfaceTexture!!) {
             isPreviewIng.set(false)

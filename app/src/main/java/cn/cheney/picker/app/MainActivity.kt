@@ -2,7 +2,6 @@ package cn.cheney.picker.app
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
@@ -81,7 +80,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startPicker() {
         XPicker.ofPicker()
-            .mineType(MineType.TYPE_ALL)
+            .mineType(MineType.TYPE_IMAGE)
             .maxPickerNum(3)
             .haveCameraItem(true)
             .start(this, selectedCallback = object : SelectedCallback {
@@ -98,19 +97,19 @@ class MainActivity : AppCompatActivity() {
             .captureMode(CaptureType.MIXED)
             .defaultBackCamera(false)
             .start(this, object : CameraSaveCallback {
-                override fun onTakePhotoSuccess(photoUri: Uri) {
+                override fun onTakePhotoSuccess(photoFile: File) {
                     content_rv.visibility = View.GONE
                     content_layer.visibility = View.VISIBLE
                     video_iv.visibility = View.GONE
                     Glide.with(this@MainActivity)
-                        .load(photoUri)
+                        .load(photoFile)
                         .into(content_iv)
                 }
 
                 override fun onTakePhotoFailed(errorCode: String) {
                 }
 
-                override fun onVideoSuccess(cover: Bitmap?, videoUri: Uri, duration: Int?) {
+                override fun onVideoSuccess(cover: Bitmap?, videoFile: File, duration: Int?) {
                     content_rv.visibility = View.GONE
                     content_layer.visibility = View.VISIBLE
                     video_iv.visibility = View.VISIBLE

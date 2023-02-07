@@ -29,11 +29,7 @@ class XVideoRecorder constructor(private var mContext: Context) {
         }
         try {
             mMediaRecorder?.apply {
-                recorderFile = FileUtil.createFile(
-                    mContext.externalMediaDirs.first(),
-                    FileUtil.FILENAME,
-                    FileUtil.VIDEO_EXTENSION
-                )
+                recorderFile = FileUtil.createVideoFile(mContext)
                 setAudioSource(MediaRecorder.AudioSource.MIC)
                 setVideoSource(MediaRecorder.VideoSource.SURFACE)
                 setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)

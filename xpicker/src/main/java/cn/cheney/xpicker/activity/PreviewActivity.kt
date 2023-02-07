@@ -121,11 +121,7 @@ class PreviewActivity : AppCompatActivity() {
             val rootView = View.inflate(this, R.layout.xpicker_item_preview, null)
             val photoView = rootView.findViewById<PhotoView>(R.id.preview_photoView)
             val playIv = rootView.findViewById<ImageView>(R.id.preview_play)
-            XPicker.imageLoadListener?.invoke(
-                Uri.fromFile(File(mediaEntity.localPath!!)),
-                photoView,
-                mediaEntity.mineType
-            )
+            XPicker.onImageLoad(File(mediaEntity.localPath!!), photoView, mediaEntity.mineType)
             if (mediaEntity.fileType == MediaEntity.FILE_TYPE_VIDEO) {
                 playIv.visibility = View.VISIBLE
                 playIv.setOnClickListener {

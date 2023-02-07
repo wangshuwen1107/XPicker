@@ -2,6 +2,7 @@ package com.cheney.camera2.util
 
 import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
+import android.util.Log
 import android.view.OrientationEventListener
 import android.view.Surface
 

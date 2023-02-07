@@ -101,8 +101,7 @@ class PickerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.xpicker_activity_picker)
-        val bundle = intent.getBundleExtra(XPickerConstant.REQUEST_BUNDLE_KEY)
-        xPickerRequest = bundle?.getParcelable(XPickerConstant.REQUEST_KEY)
+        xPickerRequest= intent.getParcelableExtra(XPickerConstant.REQUEST_KEY)
         if (null == xPickerRequest) {
             finish()
             return
@@ -280,7 +279,8 @@ class PickerActivity : AppCompatActivity() {
                 .minRecordTime(minRecordTime)
                 .captureMode(CaptureType.valueOf(captureMode))
                 .start(this@PickerActivity, cameraSaveCallback = object : CameraSaveCallback {
-                    override fun onTakePhotoSuccess(photoUri: Uri) {
+
+                    override fun onTakePhotoSuccess(photoFile: File) {
                         handler.postDelayed({
                             loadData()
                         }, 300)
@@ -289,7 +289,7 @@ class PickerActivity : AppCompatActivity() {
                     override fun onTakePhotoFailed(errorCode: String) {
                     }
 
-                    override fun onVideoSuccess(cover: Bitmap?, videoUri: Uri, duration: Int?) {
+                    override fun onVideoSuccess(cover: Bitmap?, videoFile: File, duration: Int?) {
                         handler.postDelayed({
                             loadData()
                         }, 300)

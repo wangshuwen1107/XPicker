@@ -112,11 +112,7 @@ class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
                 holder.videoLayer.visibility = View.GONE
             }
             //图片加载
-            XPicker.imageLoadListener?.invoke(
-                Uri.fromFile(File(mediaEntity.localPath!!)),
-                holder.photoIv,
-                mediaEntity.mineType
-            )
+            XPicker.onImageLoad(File(mediaEntity.localPath!!), holder.photoIv, mediaEntity.mineType)
             //图片选择
             updateItemCheck(realPos)
             //checkLayer

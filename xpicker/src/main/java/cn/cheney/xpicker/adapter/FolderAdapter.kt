@@ -44,8 +44,8 @@ class FolderAdapter : RecyclerView.Adapter<FolderAdapter.FolderViewHolder>() {
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: FolderViewHolder, position: Int) {
         val mediaFolder = folderList!![position]
-        XPicker.imageLoadListener?.invoke(
-            Uri.fromFile(File(mediaFolder.firstImagePath!!)),
+        XPicker.onImageLoad(
+            File(mediaFolder.firstImagePath!!),
             holder.photoIv, mediaFolder.firstImageMineType
         )
         holder.itemView.setOnClickListener {

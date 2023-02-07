@@ -5,6 +5,7 @@ import android.graphics.Matrix
 import android.util.AttributeSet
 import android.util.Log
 import android.view.TextureView
+import com.cheney.camera2.util.Logger
 import kotlin.math.roundToInt
 
 open class AutoFitTextureView @JvmOverloads constructor(
@@ -30,6 +31,7 @@ open class AutoFitTextureView @JvmOverloads constructor(
             //说明目标的高度小-> 高度全屏 宽度缩放
             val newWidth: Int = width
             val newHeight: Int = (width / aspectRatio).roundToInt()
+            Logger.d("aspectRatio=$aspectRatio newWidth=$newWidth newHeight=$newHeight")
             setMeasuredDimension(newWidth, newHeight)
         }
     }
