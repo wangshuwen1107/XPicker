@@ -4,12 +4,10 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.JavascriptInterface
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import cn.cheney.xpicker.R
-import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.util.timeParse

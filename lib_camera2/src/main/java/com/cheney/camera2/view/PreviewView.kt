@@ -51,24 +51,19 @@ class PreviewView @JvmOverloads constructor(
         relativeOrientation = OrientationWatcher(getContext())
         relativeOrientation.enable()
         surfaceTextureListener = object : SurfaceTextureListener {
-            override fun onSurfaceTextureAvailable(
-                surfaceTexture: SurfaceTexture?,
-                width: Int,
-                height: Int
-            ) {
+            override fun onSurfaceTextureAvailable( surfaceTexture: SurfaceTexture,
+                                                    width: Int,
+                                                    height: Int) {
                 this@PreviewView.mSurfaceTexture = surfaceTexture
                 viewSize = Size(width, height)
                 startPreview()
             }
 
-            override fun onSurfaceTextureSizeChanged(
-                surface: SurfaceTexture?,
-                width: Int,
-                height: Int
-            ) {
+            override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture, p1: Int, p2: Int) {
+                TODO("Not yet implemented")
             }
 
-            override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean {
+            override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
                 mSurfaceTexture = null
                 viewSize = null
                 isPreviewIng.set(false)
@@ -76,8 +71,11 @@ class PreviewView @JvmOverloads constructor(
                 return true
             }
 
-            override fun onSurfaceTextureUpdated(surface: SurfaceTexture?) {
+            override fun onSurfaceTextureUpdated(p0: SurfaceTexture) {
+                TODO("Not yet implemented")
             }
+
+
         }
     }
 

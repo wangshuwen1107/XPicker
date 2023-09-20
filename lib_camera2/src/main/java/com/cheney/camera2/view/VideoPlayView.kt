@@ -34,7 +34,7 @@ class VideoPlayView @JvmOverloads constructor(
     init {
         surfaceTextureListener = object : SurfaceTextureListener {
             override fun onSurfaceTextureAvailable(
-                surfaceTexture: SurfaceTexture?,
+                surfaceTexture: SurfaceTexture,
                 width: Int,
                 height: Int
             ) {
@@ -43,19 +43,19 @@ class VideoPlayView @JvmOverloads constructor(
             }
 
             override fun onSurfaceTextureSizeChanged(
-                surface: SurfaceTexture?,
+                surface: SurfaceTexture,
                 width: Int,
                 height: Int
             ) {
             }
 
-            override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean {
+            override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
                 videoSurface = null
                 stopVideo()
                 return true
             }
 
-            override fun onSurfaceTextureUpdated(surface: SurfaceTexture?) {
+            override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
             }
         }
 

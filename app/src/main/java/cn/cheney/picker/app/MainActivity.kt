@@ -1,9 +1,9 @@
 package cn.cheney.picker.app
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
+import android.graphics.*
 import android.os.Bundle
-import android.text.TextUtils
+import android.text.*
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -55,6 +55,7 @@ class MainActivity : AppCompatActivity() {
             action(2)
         }
     }
+
 
     private fun action(action: Int) {
         AndPermission.with(this)
