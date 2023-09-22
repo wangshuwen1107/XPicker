@@ -53,7 +53,7 @@ dependencies {
         implementation project(path: ':xpicker')
         implementation project(path: ':lib_camera2')
     }else {
-        implementation "io.github.wangshuwen1107:camera2:+"
-        implementation "io.github.wangshuwen1107:xpicker:+"
+        implementation "io.github.wangshuwen1107:camera2:$sdkVersion"
+        implementation "io.github.wangshuwen1107:xpicker:$sdkVersion"
     }
 }

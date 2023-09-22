@@ -3,6 +3,12 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.github.dcendents.android-maven'
 
+ext {
+    PUBLISH_GROUP_ID = "io.github.wangshuwen1107"
+    PUBLISH_ARTIFACT_ID = 'camera2'
+    PUBLISH_VERSION = "$sdkVersion"
+}
+apply from: "${rootProject.projectDir}/publish-mavencentral.gradle"
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
