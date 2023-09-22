@@ -10,13 +10,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import cn.cheney.xpicker.XPicker
 import cn.cheney.xpicker.adapter.GridSpacingItemDecoration
-import cn.cheney.xpicker.callback.CropCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.entity.MineType
 import cn.cheney.xpicker.util.toPx
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.cheney.camera2.callback.CameraSaveCallback
 import com.cheney.camera2.entity.CaptureType
 import com.yanzhenjie.permission.AndPermission
@@ -51,9 +49,6 @@ class MainActivity : AppCompatActivity() {
         start_picker.setOnClickListener {
             action(1)
         }
-        start_crop.setOnClickListener {
-            action(2)
-        }
     }
 
 
@@ -70,7 +65,6 @@ class MainActivity : AppCompatActivity() {
                 when (action) {
                     0 -> startCamera()
                     1 -> startPicker()
-                    2 -> startCrop()
                 }
             }
             .onDenied {
@@ -126,23 +120,5 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
-    private fun startCrop() {
-        XPicker.ofCrop()
-            .circleCrop(true)
-            .start(this, cropCallback = object : CropCallback {
-                override fun onCrop(mediaEntity: MediaEntity?) {
-                    if (null == mediaEntity || TextUtils.isEmpty(mediaEntity.cropPath)) {
-                        return
-                    }
-                    content_rv.visibility = View.GONE
-                    content_layer.visibility = View.VISIBLE
-                    video_iv.visibility = View.GONE
-                    Glide.with(this@MainActivity)
-                        .load(File(mediaEntity.cropPath!!))
-                        .apply(RequestOptions().circleCrop())
-                        .into(content_iv)
-                }
-            })
-    }
 
 }

@@ -1,11 +1,9 @@
 package cn.cheney.xpicker.activity
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -22,22 +20,18 @@ import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.adapter.GridSpacingItemDecoration
 import cn.cheney.xpicker.adapter.PhotoAdapter
 import com.cheney.camera2.callback.CameraSaveCallback
-import cn.cheney.xpicker.callback.CropCallback
 import cn.cheney.xpicker.callback.PreviewSelectedCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.core.MediaLoader
 import cn.cheney.xpicker.core.MediaPhotoCompress
 import cn.cheney.xpicker.entity.*
 import cn.cheney.xpicker.util.Logger
-import cn.cheney.xpicker.util.getPrefix
 import cn.cheney.xpicker.util.toPx
 import cn.cheney.xpicker.view.FolderListPop
 import cn.cheney.xpicker.view.LoadingDialog
 import com.cheney.camera2.entity.CaptureType
-import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.xpicker_activity_picker.*
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
@@ -59,7 +53,6 @@ class PickerActivity : AppCompatActivity() {
     private lateinit var animationRotateShow: Animation
     private lateinit var animationRotateHide: Animation
     private var folderListPop: FolderListPop? = null
-    private var cropEntity: MediaEntity? = null
     private val handler = Handler(Looper.getMainLooper())
 
     /**
@@ -101,7 +94,7 @@ class PickerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.xpicker_activity_picker)
-        xPickerRequest= intent.getParcelableExtra(XPickerConstant.REQUEST_KEY)
+        xPickerRequest = intent.getParcelableExtra(XPickerConstant.REQUEST_KEY)
         if (null == xPickerRequest) {
             finish()
             return
@@ -123,24 +116,10 @@ class PickerActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
-            val resultUri: Uri? = UCrop.getOutput(data!!)
-            cropEntity?.cropPath = resultUri?.path
-            cropCallback?.onCrop(cropEntity)
-            cropEntity = null
-            cropCallback = null
-            finish()
-        } else if (resultCode == UCrop.RESULT_ERROR) {
-            val cropError = UCrop.getError(data!!)
-            cropCallback?.onCrop(cropEntity)
-            cropEntity = null
-            cropCallback = null
-            finish()
-        }
     }
 
     private fun initView() {
-        photoAdapter.haveCheck = xPickerRequest!!.actionType != ActionType.CROP.type
+        photoAdapter.haveCheck = true
         picker_photo_rv.adapter = photoAdapter
         picker_photo_rv.layoutManager = GridLayoutManager(this, xPickerRequest!!.spanCount)
         picker_photo_rv.addItemDecoration(
@@ -151,9 +130,7 @@ class PickerActivity : AppCompatActivity() {
             )
         )
         photoAdapter.haveCamera = xPickerRequest?.haveCameraItem ?: false
-        picker_bottom_layer.visibility =
-            if (xPickerRequest!!.actionType == ActionType.CROP.type) View.GONE
-            else View.VISIBLE
+        picker_bottom_layer.visibility = View.VISIBLE
     }
 
     private fun initListener() {
@@ -178,15 +155,9 @@ class PickerActivity : AppCompatActivity() {
             if (isCamera) {
                 goToCamera()
             } else {
-                if (xPickerRequest!!.actionType == ActionType.CROP.type) {
-                    cropEntity = currentFolder!!.mediaList[position]
-                    goToCrop(cropEntity!!)
-                } else {
-                    if (!currentFolder?.mediaList.isNullOrEmpty()) {
-                        goToPreview(currentFolder!!.mediaList, position)
-                    }
+                if (!currentFolder?.mediaList.isNullOrEmpty()) {
+                    goToPreview(currentFolder!!.mediaList, position)
                 }
-
             }
         }
 
@@ -332,19 +303,6 @@ class PickerActivity : AppCompatActivity() {
             }
         }
 
-    }
-
-    private fun goToCrop(mediaEntity: MediaEntity) {
-        val targetFile = File(mediaEntity.localPath!!)
-        UCrop.of(
-            Uri.fromFile(targetFile),
-            Uri.fromFile(getCropDir(this, targetFile.getPrefix()))
-        )
-            .withAspectRatio(1f, 1f)
-            .withOptions(UCrop.Options().apply {
-                setCircleDimmedLayer(xPickerRequest!!.circleCrop)
-            })
-            .start(this)
     }
 
     @SuppressLint("SetTextI18n")
@@ -507,25 +465,7 @@ class PickerActivity : AppCompatActivity() {
 
     companion object {
         var mediaSelectedCallback: SelectedCallback? = null
-        var cropCallback: CropCallback? = null
-
-        private const val FILENAME = "yyyy-MM-dd-HH-mm-ss-SSS"
-        private const val PHOTO_EXTENSION = ".jpg"
-
-
-        private fun getCropDir(context: Context, prefix: String): File {
-            val compressDir = File(
-                context.externalMediaDirs.first().absolutePath
-                        + File.separator + if (TextUtils.isEmpty(prefix)) PHOTO_EXTENSION else prefix
-            )
-            if (!compressDir.exists()) {
-                compressDir.mkdirs()
-            }
-            return File(
-                compressDir, SimpleDateFormat(FILENAME, Locale.CHINA)
-                    .format(System.currentTimeMillis()) + PHOTO_EXTENSION
-            )
-        }
     }
+
 
 }

@@ -3,9 +3,9 @@
 ## XPicker
 
 
-|            Picker             |            Preview            |             Crop              |
-| :---------------------------: | :---------------------------: | :---------------------------: |
-| <img src="./art/demo1.jpeg"/> | <img src="./art/demo2.jpeg"/> | <img src="./art/demo3.jpeg"/> |
+|            Picker             |            Preview            |
+| :---------------------------: | :---------------------------: |
+| <img src="./art/demo1.jpeg"/> | <img src="./art/demo2.jpeg"/> |
 
 
 ### XPicker is  a great way  to selector local image and video  for Android

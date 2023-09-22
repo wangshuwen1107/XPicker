@@ -8,16 +8,4 @@
     <color name="XPicker_gray_1">#656262</color>
     <color name="XPicker_gray_2">#C8C7C7</color>
     <color name="XPicker_gray_3">#D5F6F2F2</color>
-
-
-    <color name="ucrop_color_toolbar">#3E3C3C</color>
-    <color name="ucrop_color_statusbar">#3E3C3C</color>
-    <color name="ucrop_color_toolbar_widget">#FFFFFF</color>
-    <!-- 底部控制按钮文字颜色-->
-    <color name="ucrop_color_widget_active">#FFFFFF</color>
-    <!-- 底部控制按钮颜色 + 尺标文字颜色-->
-    <color name="ucrop_color_active_controls_color">#1AAD19</color>
-    <color name="ucrop_color_widget_rotate_mid_line">#000000</color>
-    <color name="ucrop_color_widget_background">#000000</color>
-
 </resources>

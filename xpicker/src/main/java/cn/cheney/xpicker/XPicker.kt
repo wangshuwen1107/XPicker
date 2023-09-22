@@ -2,11 +2,9 @@ package cn.cheney.xpicker
 
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.widget.ImageView
 import cn.cheney.xpicker.activity.PickerActivity
 import com.cheney.camera2.callback.CameraSaveCallback
-import cn.cheney.xpicker.callback.CropCallback
 import cn.cheney.xpicker.callback.SelectedCallback
 import cn.cheney.xpicker.entity.ActionType
 import cn.cheney.xpicker.entity.MineType
@@ -86,19 +84,10 @@ class XPicker private constructor() {
     }
 
 
-    /**
-     * set the crop circle/square
-     */
-    fun circleCrop(arg: Boolean = false): XPicker {
-        request.circleCrop = arg
-        return this
-    }
-
     fun start(
         context: Context,
         cameraSaveCallback: CameraSaveCallback? = null,
-        selectedCallback: SelectedCallback? = null,
-        cropCallback: CropCallback? = null
+        selectedCallback: SelectedCallback? = null
     ) {
         when (request.actionType) {
             ActionType.CAMERA.type -> {
@@ -112,12 +101,6 @@ class XPicker private constructor() {
                 intent.putExtra(XPickerConstant.REQUEST_KEY, request)
                 context.startActivity(intent)
                 PickerActivity.mediaSelectedCallback = selectedCallback
-            }
-            ActionType.CROP.type -> {
-                val intent = Intent(context, PickerActivity::class.java)
-                intent.putExtra(XPickerConstant.REQUEST_KEY, request)
-                context.startActivity(intent)
-                PickerActivity.cropCallback = cropCallback
             }
         }
     }
@@ -136,13 +119,6 @@ class XPicker private constructor() {
         fun ofCamera(): XPicker {
             val xPicker = XPicker()
             xPicker.request = PickerRequest(actionType = ActionType.CAMERA.type)
-            return xPicker
-        }
-
-        fun ofCrop(): XPicker {
-            val xPicker = XPicker()
-            xPicker.request = PickerRequest(actionType = ActionType.CROP.type)
-            xPicker.request.mineType = MineType.TYPE_IMAGE_WITHOUT_GIF.type
             return xPicker
         }
 

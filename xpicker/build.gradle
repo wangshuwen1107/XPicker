@@ -1,7 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.github.dcendents.android-maven'
 
 ext {
     PUBLISH_GROUP_ID = "io.github.wangshuwen1107"
@@ -54,8 +53,6 @@ dependencies {
     implementation 'com.gyf.immersionbar:immersionbar:3.0.0'
     //图片压缩
     implementation 'top.zibin:Luban:1.1.8'
-    //图片裁剪
-    implementation 'com.github.yalantis:ucrop:2.2.5'
     if(debug == "true"){
         implementation project(path: ':lib_camera2')
     }else {
