@@ -38,7 +38,7 @@ dependencies {
 
 #### 1. AndroidManifest配置
 
-由于picker内置视频预览功能，且改功能是跳转到系统or三方APP播放视频，需要配置FlieProvider
+由于picker内置视频预览功能，且改功能是跳转到系统or三方APP播放视频，需要配置FileProvider
 
 ```xml
 <provider
@@ -76,7 +76,7 @@ XPicker.imageLoadListener = { imageUri, iv, mineType ->
 #### 3.request permission
 
 ```text
-Manifest.permission.WRITE_EXTERNAL_STORAGE
+ Manifest.permission.WRITE_EXTERNAL_STORAGE
  Manifest.permission.CAMERA
  Manifest.permission.RECORD_AUDIO
  Manifest.permission.READ_EXTERNAL_STORAGE
@@ -89,9 +89,6 @@ XPicker.ofCamera()
         .captureMode(CaptureType.MIXED)
         .start(this,CameraSaveCallback)
 
-  XPicker.ofCrop()
-         .circleCrop(true)
-         .start(this,CropCallback)
 
   XPicker.ofPicker()
          .mineType(MineType.TYPE_ALL)
@@ -100,7 +97,6 @@ XPicker.ofCamera()
 
 ### Thanks
 
-- [Luban](https://github.com/Curzibn/Luban) provide easy compress lib
 - [uCrop](https://github.com/Yalantis/uCrop) provide an  image cropping experience
 - [immersionbar](https://github.com/gyf-dev/ImmersionBar) provide an  statusbar experience
 
