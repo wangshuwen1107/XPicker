@@ -115,7 +115,6 @@ class XPicker private constructor() {
             }
             ActionType.CROP.type -> {
                 val intent = Intent(context, PickerActivity::class.java)
-                val bundle = Bundle()
                 intent.putExtra(XPickerConstant.REQUEST_KEY, request)
                 context.startActivity(intent)
                 PickerActivity.cropCallback = cropCallback

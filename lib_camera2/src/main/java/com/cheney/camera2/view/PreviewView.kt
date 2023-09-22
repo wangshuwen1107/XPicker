@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.util.AttributeSet
-import android.util.Log
 import android.util.Size
 import android.view.MotionEvent
 import androidx.lifecycle.Lifecycle
@@ -60,7 +59,6 @@ class PreviewView @JvmOverloads constructor(
             }
 
             override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture, p1: Int, p2: Int) {
-                TODO("Not yet implemented")
             }
 
             override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
@@ -72,7 +70,6 @@ class PreviewView @JvmOverloads constructor(
             }
 
             override fun onSurfaceTextureUpdated(p0: SurfaceTexture) {
-                TODO("Not yet implemented")
             }
 
 

@@ -13,6 +13,8 @@ import android.text.TextUtils
 import android.webkit.MimeTypeMap
 import java.io.*
 import java.nio.ByteBuffer
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -22,7 +24,6 @@ object FileUtil {
     private const val FILENAME_FORMAT = "yyyy_MM_dd_HH_mm_ss"
     private const val PHOTO_EXTENSION = ".jpg"
     private const val VIDEO_EXTENSION = ".mp4"
-    private const val DEFAULT_MEDIA_DIR_NAME = "xpicker"
 
     fun getVideoAndDuration(videoPath: String): Pair<Bitmap?, Int>? {
         if (TextUtils.isEmpty(videoPath)) {
@@ -132,24 +133,15 @@ object FileUtil {
     }
 
     fun createFile(context: Context, format: String, extension: String): File {
-        val mediaDir =
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absoluteFile
-        if (!mediaDir.exists()) {
-            mediaDir.mkdir()
-        }
+        val picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absoluteFile
         val applicationId = context.applicationInfo.processName
-        var pickerDirName = DEFAULT_MEDIA_DIR_NAME
-        if (!applicationId.isNullOrEmpty()) {
-            pickerDirName = applicationId.split(".").last()
-        }
-        val pickerDir = File(mediaDir, pickerDirName)
+        val pickerDirName = applicationId.replace(".","_")
+        val pickerDir = File(picturesDir, pickerDirName)
         if (!pickerDir.exists()) {
             pickerDir.mkdir()
         }
-        return File(
-            pickerDir, SimpleDateFormat(format, Locale.CHINA)
-                .format(System.currentTimeMillis()) + extension
-        );
+        return File(pickerDir, SimpleDateFormat(format, Locale.CHINA)
+                .format(System.currentTimeMillis()) + extension)
     }
 
 
