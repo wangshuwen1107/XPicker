@@ -12,7 +12,6 @@
 
 - 支持筛选图片(PNG,JPEG),动图GIF,视频
 - 支持图片和视频的拍摄
-- 支持图片的裁剪选择
 
 
 ### 最新版本
@@ -54,7 +53,7 @@ XPicker.imageLoadListener = { imageUri, iv, mineType ->
  Manifest.permission.READ_EXTERNAL_STORAGE
 ```
 
-#### 4.Action
+#### 3.Action
 
 ```kotlin
 XPicker.ofCamera()
