@@ -57,7 +57,6 @@ class MainActivity : AppCompatActivity() {
             .runtime()
             .permission(
                 Permission.READ_EXTERNAL_STORAGE,
-                Permission.WRITE_EXTERNAL_STORAGE,
                 Permission.CAMERA,
                 Permission.RECORD_AUDIO
             )
@@ -75,7 +74,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startPicker() {
         XPicker.ofPicker()
-            .mineType(MineType.TYPE_IMAGE)
+            .mineType(MineType.TYPE_ALL)
             .maxPickerNum(3)
             .haveCameraItem(true)
             .start(this, selectedCallback = object : SelectedCallback {

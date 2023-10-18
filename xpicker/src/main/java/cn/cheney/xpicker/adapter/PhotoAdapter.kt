@@ -101,7 +101,7 @@ class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
             //底部文件类型图标
             if (mediaEntity.fileType == MediaEntity.FILE_TYPE_VIDEO) {
                 holder.videoLayer.visibility = View.VISIBLE
-                holder.videoDurationTv.text = "${timeParse(mediaEntity.duration.toLong())}"
+                holder.videoDurationTv.text = "${timeParse(mediaEntity.duration)}"
                 holder.gifMarkIv.visibility = View.GONE
             } else {
                 if (XPickerConstant.GIF == mediaEntity.mineType) {

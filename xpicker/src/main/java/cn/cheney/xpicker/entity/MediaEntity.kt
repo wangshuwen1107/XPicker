@@ -8,7 +8,7 @@ import kotlinx.android.parcel.Parcelize
 data class MediaEntity(
     var fileType: Int? = null,
     var mineType: String? = null,
-    var duration: Int = 0,
+    var duration: Long = 0,
     var localPath: String? = null,
     var compressLocalUri: Uri? = null,
     var cropPath: String? = null,

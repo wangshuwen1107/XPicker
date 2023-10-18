@@ -1,23 +1,26 @@
 package cn.cheney.xpicker.core
 
 import android.database.Cursor
-import android.media.MediaMetadataRetriever
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.text.TextUtils
+import androidx.core.database.getIntOrNull
+import androidx.core.database.getLongOrNull
 import androidx.fragment.app.FragmentActivity
 import androidx.loader.content.CursorLoader
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.entity.MediaFolder
 import cn.cheney.xpicker.entity.MineType
+import cn.cheney.xpicker.util.Logger
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 
-class MediaLoader(
-    var activity: FragmentActivity,
-    var type: Int = 0
-) {
+class MediaLoader(var activity: FragmentActivity, var type: Int = 0) {
+
+    private val handler = Handler(Looper.getMainLooper())
 
     companion object {
         private const val DURATION = "duration"
@@ -90,13 +93,12 @@ class MediaLoader(
     )
 
 
-    private fun onLoadComplete(data: Cursor?, imageLoadListener: LocalMediaLoadListener) {
+    private fun onLoadComplete(startTime: Long, data: Cursor?, imageLoadListener: LocalMediaLoadListener) {
         val imageFolders: ArrayList<MediaFolder> = arrayListOf()
         try {
             val allImageFolder = MediaFolder()
             val latelyImages: ArrayList<MediaEntity> =
                 ArrayList()
-            val mmr = MediaMetadataRetriever()
             if (data != null) {
                 val count = data.count
                 if (count > 0) {
@@ -108,21 +110,30 @@ class MediaLoader(
                         }
                         val mimeType = data.getString(data.getColumnIndex(IMAGE_PROJECTION[6]))
                         val eqImg = mimeType.startsWith(IMAGE)
-                        val width = if (eqImg) data.getInt(
-                            data.getColumnIndex(IMAGE_PROJECTION[4])
-                        ) else 0
-                        val height = if (eqImg) data.getInt(
-                            data.getColumnIndex(IMAGE_PROJECTION[5])
-                        ) else 0
+                        val width = if (eqImg) {
+                            data.getIntOrNull(data.getColumnIndex(IMAGE_PROJECTION[4])) ?: 0
+                        } else {
+                            0
+                        }
+                        val height = if (eqImg) {
+                            data.getIntOrNull(data.getColumnIndex(IMAGE_PROJECTION[5])) ?: 0
+                        } else {
+                            0
+                        }
                         var fileType = 0
-                        var duration = 0
+                        var duration = 0L
                         if (mimeType.startsWith(IMAGE)) {
                             fileType = MediaEntity.FILE_TYPE_IMAGE
                         } else if (mimeType.startsWith(VIDEO)) {
-                            mmr.setDataSource(path)
-                            duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toInt() ?: 0
                             fileType = MediaEntity.FILE_TYPE_VIDEO
+                            duration = data.getLongOrNull(data.getColumnIndex(VIDEO_PROJECTION[7])) ?: 0L
                         }
+                        val file = File(path)
+                        //过滤文件小于0
+                        if (!file.exists() || file.length() <= 0) {
+                            continue
+                        }
+                        //过滤时间<700ms的视频
                         if (fileType == MediaEntity.FILE_TYPE_VIDEO && duration < 700) {
                             continue
                         }
@@ -156,7 +167,10 @@ class MediaLoader(
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-            activity.runOnUiThread {  imageLoadListener.loadComplete(imageFolders) }
+            handler.post {
+                Logger.d("扫描耗时=${System.currentTimeMillis() - startTime}")
+                imageLoadListener.loadComplete(imageFolders)
+            }
         }
     }
 
@@ -204,7 +218,11 @@ class MediaLoader(
                     MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
                 )
         }
-        loader!!.registerListener(type) { _, data -> thread { onLoadComplete(data, imageLoadListener) } }
+        val startTime = System.currentTimeMillis()
+        loader!!.registerListener(type) { _, data ->
+            thread { onLoadComplete(startTime, data, imageLoadListener) }
+        }
+
         loader.startLoading()
     }
 

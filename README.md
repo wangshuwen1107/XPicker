@@ -36,34 +36,7 @@ dependencies {
 
 ### USE
 
-#### 1. AndroidManifest配置
-
-由于picker内置视频预览功能，且改功能是跳转到系统or三方APP播放视频，需要配置FileProvider
-
-```xml
-<provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths_public">
-            </meta-data>
-  </provider>
-```
-
-在app/res/xml配置file_paths_public.xml
-
-```xml
-<paths>
-    <external-path
-        name="xpicker_external_name"
-        path="." />
-</paths>
-```
-
-#### 2. configuration imageLoad
+#### 1. configuration imageLoad
 
 ```kotlin
 XPicker.imageLoadListener = { imageUri, iv, mineType ->
@@ -73,10 +46,9 @@ XPicker.imageLoadListener = { imageUri, iv, mineType ->
       }
 ```
 
-#### 3.request permission
+#### 2.request permission
 
 ```text
- Manifest.permission.WRITE_EXTERNAL_STORAGE
  Manifest.permission.CAMERA
  Manifest.permission.RECORD_AUDIO
  Manifest.permission.READ_EXTERNAL_STORAGE
@@ -97,7 +69,7 @@ XPicker.ofCamera()
 
 ### Thanks
 
-- [uCrop](https://github.com/Yalantis/uCrop) provide an  image cropping experience
+- [Luban](https://github.com/Curzibn/Luban) provide easy compress lib
 - [immersionbar](https://github.com/gyf-dev/ImmersionBar) provide an  statusbar experience
 
 ### License

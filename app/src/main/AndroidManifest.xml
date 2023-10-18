@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="cn.cheney.picker.app">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
 
     <application
         android:name="cn.cheney.picker.app.MyApp"
