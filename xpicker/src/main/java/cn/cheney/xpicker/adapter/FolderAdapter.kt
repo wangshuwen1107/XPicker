@@ -44,14 +44,16 @@ class FolderAdapter : RecyclerView.Adapter<FolderAdapter.FolderViewHolder>() {
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: FolderViewHolder, position: Int) {
         val mediaFolder = folderList!![position]
-        XPicker.onImageLoad(
-            File(mediaFolder.firstImagePath!!),
-            holder.photoIv, mediaFolder.firstImageMineType
-        )
+        val localPath = mediaFolder.firstImagePath
+        val videoThumbnailBitmap = mediaFolder.firstVideoThumbnailBitmap
+        if (null == videoThumbnailBitmap) {
+            XPicker.onImageLoad(File(localPath), holder.photoIv, mediaFolder.firstImageMineType)
+        } else {
+            XPicker.onBitmapLoad(videoThumbnailBitmap, holder.photoIv, mediaFolder.firstImageMineType)
+        }
         holder.itemView.setOnClickListener {
             itemClickListener?.invoke(position, mediaFolder)
         }
-
         holder.nameTv.text = mediaFolder.name
         holder.numTv.text = "(${mediaFolder.imageNum})"
         if (position == (folderList!!.size - 1)) {

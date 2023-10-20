@@ -8,7 +8,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import cn.cheney.xpicker.R
-import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.util.timeParse
 import com.bumptech.glide.Glide
@@ -43,10 +42,10 @@ class DemoPhotoAdapter(var context: Context) :
         val mediaEntity = mediaList!![position]
         if (mediaEntity.fileType == MediaEntity.FILE_TYPE_VIDEO) {
             holder.videoLayer.visibility = View.VISIBLE
-            holder.videoDurationTv.text = "${timeParse(mediaEntity.duration.toLong())}"
+            holder.videoDurationTv.text = "${timeParse(mediaEntity.duration)}"
             holder.gifMarkIv.visibility = View.GONE
         } else {
-            if (XPickerConstant.GIF == mediaEntity.mineType) {
+            if (MediaEntity.GIF == mediaEntity.mineType) {
                 holder.gifMarkIv.visibility = View.VISIBLE
             } else {
                 holder.gifMarkIv.visibility = View.GONE

@@ -1,7 +1,7 @@
 package cn.cheney.xpicker.core
 
 import android.content.Context
-import android.net.Uri
+import android.os.Environment
 import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.util.Logger
@@ -13,6 +13,11 @@ class MediaPhotoCompress {
 
     private var mediaList = arrayListOf<MediaEntity>()
 
+    companion object {
+        //压缩子目录
+        private const val COMPRESS_DIR_TAG = "compress"
+    }
+
     fun compressImg(
         context: Context,
         mediaList: List<MediaEntity>? = null,
@@ -23,12 +28,13 @@ class MediaPhotoCompress {
             return
         }
         mediaList.forEach {
-            if (null != it.localPath
-                && it.fileType == MediaEntity.FILE_TYPE_IMAGE
-                && XPickerConstant.GIF != it.mineType
-            ) {
+            if (it.fileType == MediaEntity.FILE_TYPE_IMAGE && MediaEntity.GIF != it.mineType) {
                 this.mediaList.add(it)
             }
+        }
+        if (this.mediaList.isNullOrEmpty()) {
+            callback()
+            return
         }
         compressSingle(context, 0, callback)
     }
@@ -36,7 +42,7 @@ class MediaPhotoCompress {
 
     private fun compressSingle(context: Context, index: Int, callback: () -> Unit) {
         Luban.with(context)
-            .load(mediaList[index].localPath!!)
+            .load(mediaList[index].localPath)
             .setTargetDir(getCompressDir(context).absolutePath)
             .setRenameListener {
                 File(it!!).name
@@ -45,7 +51,7 @@ class MediaPhotoCompress {
                 override fun onSuccess(file: File?) {
                     Logger.d("Compress Success ${file?.absolutePath}")
                     if (null != file && file.exists()) {
-                        mediaList[index].compressLocalUri = Uri.fromFile(file)
+                        mediaList[index].compressPath = file.absolutePath
                     }
                     if (index == mediaList.size - 1) {
                         callback.invoke()
@@ -71,14 +77,19 @@ class MediaPhotoCompress {
 
 
     private fun getCompressDir(context: Context): File {
-        val compressDir = File(
-            context.externalMediaDirs.first().absolutePath
-                    + File.separator + XPickerConstant.COMPRESS_DIR_TAG
-        )
-        if (!compressDir.exists()) {
-            compressDir.mkdirs()
+        val publicPicturesDir =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absoluteFile
+        val applicationId = context.applicationInfo.processName
+        val pickerDirName = applicationId.replace(".", "_")
+        val selfPickerDir = File(publicPicturesDir, pickerDirName)
+        if (!selfPickerDir.exists()) {
+            selfPickerDir.mkdir()
         }
-        return compressDir
+        val selfCompressDir = File(selfPickerDir, COMPRESS_DIR_TAG)
+        if (!selfCompressDir.exists()) {
+            selfCompressDir.mkdirs()
+        }
+        return selfCompressDir
     }
 
 }

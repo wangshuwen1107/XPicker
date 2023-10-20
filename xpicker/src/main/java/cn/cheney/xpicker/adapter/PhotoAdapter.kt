@@ -2,7 +2,6 @@ package cn.cheney.xpicker.adapter
 
 import android.content.Context
 import android.graphics.Color
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -98,21 +97,27 @@ class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
                 realPos = position - 1
             }
             val mediaEntity = mediaList!![realPos]
+            val localPath = mediaEntity.localPath
+            val videoThumbnailBitmap = mediaEntity.videoThumbnailBitmap
             //底部文件类型图标
             if (mediaEntity.fileType == MediaEntity.FILE_TYPE_VIDEO) {
                 holder.videoLayer.visibility = View.VISIBLE
                 holder.videoDurationTv.text = "${timeParse(mediaEntity.duration)}"
                 holder.gifMarkIv.visibility = View.GONE
             } else {
-                if (XPickerConstant.GIF == mediaEntity.mineType) {
+                if (MediaEntity.GIF == mediaEntity.mineType) {
                     holder.gifMarkIv.visibility = View.VISIBLE
                 } else {
                     holder.gifMarkIv.visibility = View.GONE
                 }
                 holder.videoLayer.visibility = View.GONE
             }
-            //图片加载
-            XPicker.onImageLoad(File(mediaEntity.localPath!!), holder.photoIv, mediaEntity.mineType)
+
+            if (null == videoThumbnailBitmap) {
+                XPicker.onImageLoad(File(localPath), holder.photoIv, mediaEntity.mineType)
+            } else {
+                XPicker.onBitmapLoad(videoThumbnailBitmap, holder.photoIv, mediaEntity.mineType)
+            }
             //图片选择
             updateItemCheck(realPos)
             //checkLayer

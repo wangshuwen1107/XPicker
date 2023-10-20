@@ -11,7 +11,6 @@ import android.text.TextUtils
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import androidx.annotation.StringDef
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import cn.cheney.xpicker.R
@@ -213,10 +212,7 @@ class PickerActivity : AppCompatActivity() {
                     ignoreUpdate = false
                     return
                 }
-                @StringDef
-                if (!folderList.isNullOrEmpty()
-                    && folderList!![0].mediaList.size == folders[0].mediaList.size
-                ) {
+                if (folderList?.get(0)?.mediaList?.size == folders[0].mediaList.size) {
                     return
                 }
                 picker_empty_tv.visibility = View.GONE

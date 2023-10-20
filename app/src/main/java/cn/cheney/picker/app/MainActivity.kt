@@ -101,6 +101,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onTakePhotoFailed(errorCode: String) {
+
                 }
 
                 override fun onVideoSuccess(cover: Bitmap?, videoFile: File, duration: Int?) {

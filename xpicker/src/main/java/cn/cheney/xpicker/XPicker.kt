@@ -2,6 +2,7 @@ package cn.cheney.xpicker
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.widget.ImageView
 import cn.cheney.xpicker.activity.PickerActivity
 import com.cheney.camera2.callback.CameraSaveCallback
@@ -12,7 +13,10 @@ import cn.cheney.xpicker.entity.PickerRequest
 import com.cheney.camera2.activity.XCameraActivity
 import java.io.File
 
-typealias ImageLoadListener = (file: File, iv: ImageView, mineType: String?) -> Unit
+interface ImageLoadListener {
+    fun onFileLoad(file: File, iv: ImageView, mineType: String?)
+    fun onBitmapLoad(bitmap: Bitmap, iv: ImageView, mineType: String?)
+}
 
 /**
  * @author Cheney
@@ -123,7 +127,11 @@ class XPicker private constructor() {
         }
 
         fun onImageLoad(file: File, iv: ImageView, mineType: String?) {
-            imageLoadListener?.invoke(file, iv, mineType)
+            imageLoadListener?.onFileLoad(file, iv, mineType)
+        }
+
+        fun onBitmapLoad(bitmap: Bitmap, iv: ImageView, mineType: String?) {
+            imageLoadListener?.onBitmapLoad(bitmap, iv, mineType)
         }
     }
 
