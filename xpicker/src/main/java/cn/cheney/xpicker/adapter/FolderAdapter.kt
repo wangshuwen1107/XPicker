@@ -1,7 +1,6 @@
 package cn.cheney.xpicker.adapter
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,12 +44,7 @@ class FolderAdapter : RecyclerView.Adapter<FolderAdapter.FolderViewHolder>() {
     override fun onBindViewHolder(holder: FolderViewHolder, position: Int) {
         val mediaFolder = folderList!![position]
         val localPath = mediaFolder.firstImagePath
-        val videoThumbnailBitmap = mediaFolder.firstVideoThumbnailBitmap
-        if (null == videoThumbnailBitmap) {
-            XPicker.onImageLoad(File(localPath), holder.photoIv, mediaFolder.firstImageMineType)
-        } else {
-            XPicker.onBitmapLoad(videoThumbnailBitmap, holder.photoIv, mediaFolder.firstImageMineType)
-        }
+        XPicker.onImageLoad(File(localPath), holder.photoIv, mediaFolder.firstImageMineType)
         holder.itemView.setOnClickListener {
             itemClickListener?.invoke(position, mediaFolder)
         }

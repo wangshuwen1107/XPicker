@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import cn.cheney.xpicker.R
 import cn.cheney.xpicker.XPicker
-import cn.cheney.xpicker.XPickerConstant
 import cn.cheney.xpicker.entity.MediaEntity
 import cn.cheney.xpicker.util.timeParse
 import java.io.File
@@ -98,7 +97,6 @@ class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
             }
             val mediaEntity = mediaList!![realPos]
             val localPath = mediaEntity.localPath
-            val videoThumbnailBitmap = mediaEntity.videoThumbnailBitmap
             //底部文件类型图标
             if (mediaEntity.fileType == MediaEntity.FILE_TYPE_VIDEO) {
                 holder.videoLayer.visibility = View.VISIBLE
@@ -113,11 +111,7 @@ class PhotoAdapter(var context: Context) : RecyclerView.Adapter<ViewHolder>() {
                 holder.videoLayer.visibility = View.GONE
             }
 
-            if (null == videoThumbnailBitmap) {
-                XPicker.onImageLoad(File(localPath), holder.photoIv, mediaEntity.mineType)
-            } else {
-                XPicker.onBitmapLoad(videoThumbnailBitmap, holder.photoIv, mediaEntity.mineType)
-            }
+            XPicker.onImageLoad(File(localPath), holder.photoIv, mediaEntity.mineType)
             //图片选择
             updateItemCheck(realPos)
             //checkLayer

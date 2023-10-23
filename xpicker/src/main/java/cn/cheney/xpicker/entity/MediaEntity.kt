@@ -1,25 +1,23 @@
 package cn.cheney.xpicker.entity
 
-import android.graphics.Bitmap
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 class MediaEntity(
     var localPath: String,
+    var fileType: Int? = null,
+    var mineType: String? = null,
+    var duration: Long = 0,
+    var compressPath: String? = null,
+    var latitude: String? = null,
+    var longitude: String? = null,
+    var height: Int = 0,
+    var width: Int = 0,
+    var selected: Boolean = false,
+    var selectedNum: Int = 0,
 ) : Parcelable {
 
-    var fileType: Int? = null
-    var mineType: String? = null
-    var duration: Long = 0
-    var videoThumbnailBitmap: Bitmap? = null
-    var compressPath: String? = null
-    var latitude: String? = null
-    var longitude: String? = null
-    var height: Int = 0
-    var width: Int = 0
-    var selected: Boolean = false
-    var selectedNum: Int = 0
 
     companion object {
         //FileType
@@ -34,4 +32,6 @@ class MediaEntity(
         const val MP4 = "video/mp4"
 
     }
+
+
 }

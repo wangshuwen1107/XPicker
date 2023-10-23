@@ -5,7 +5,7 @@ apply plugin: 'kotlin-android-extensions'
 ext {
     PUBLISH_GROUP_ID = "io.github.wangshuwen1107"
     PUBLISH_ARTIFACT_ID = 'xpicker'
-    PUBLISH_VERSION = "$sdkVersion"
+    PUBLISH_VERSION = "1.1.2"
 }
 apply from: "${rootProject.projectDir}/publish-mavencentral.gradle"
 
@@ -53,9 +53,10 @@ dependencies {
     implementation 'com.gyf.immersionbar:immersionbar:3.0.0'
     //图片压缩
     implementation 'top.zibin:Luban:1.1.8'
-    if(debug == "true"){
-        implementation project(path: ':lib_camera2')
-    }else {
-        implementation "io.github.wangshuwen1107:camera2:$sdkVersion"
-    }
+    implementation "io.github.wangshuwen1107:camera2:1.1.1"
+//    if(debug == "true"){
+//        implementation project(path: ':lib_camera2')
+//    }else {
+//
+//    }
 }

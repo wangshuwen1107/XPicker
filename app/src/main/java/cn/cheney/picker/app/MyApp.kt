@@ -1,7 +1,6 @@
 package cn.cheney.picker.app
 
 import android.app.Application
-import android.graphics.Bitmap
 import android.widget.ImageView
 import cn.cheney.xpicker.ImageLoadListener
 import cn.cheney.xpicker.XPicker
@@ -18,12 +17,6 @@ class MyApp : Application() {
             override fun onFileLoad(file: File, iv: ImageView, mineType: String?) {
                 Glide.with(this@MyApp)
                     .load(file)
-                    .into(iv)
-            }
-
-            override fun onBitmapLoad(bitmap: Bitmap, iv: ImageView, mineType: String?) {
-                Glide.with(this@MyApp)
-                    .load(bitmap)
                     .into(iv)
             }
 

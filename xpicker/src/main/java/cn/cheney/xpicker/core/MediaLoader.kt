@@ -1,7 +1,6 @@
 package cn.cheney.xpicker.core
 
 import android.database.Cursor
-import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
@@ -90,7 +89,7 @@ class MediaLoader(var activity: FragmentActivity, var filterType: Int = 0) {
         MediaStore.Video.Media.WIDTH,
         MediaStore.Video.Media.HEIGHT,
         MediaStore.Video.Media.MIME_TYPE,
-        DURATION
+        DURATION,
     )
 
 
@@ -123,19 +122,11 @@ class MediaLoader(var activity: FragmentActivity, var filterType: Int = 0) {
                         }
                         var fileType = 0
                         var duration = 0L
-                        var videoThumbnailBitmap: Bitmap? = null
                         if (mimeType.startsWith(IMAGE)) {
                             fileType = MediaEntity.FILE_TYPE_IMAGE
                         } else if (mimeType.startsWith(VIDEO)) {
                             fileType = MediaEntity.FILE_TYPE_VIDEO
                             duration = data.getLongOrNull(data.getColumnIndex(VIDEO_PROJECTION[7])) ?: 0L
-                            if (id != null) {
-                                videoThumbnailBitmap = MediaStore.Video.Thumbnails.getThumbnail(
-                                    activity.contentResolver,
-                                    id, MediaStore.Video.Thumbnails.MINI_KIND, null
-                                )
-                            }
-
                         }
                         val file = File(path)
                         //过滤文件小于0
@@ -152,8 +143,7 @@ class MediaLoader(var activity: FragmentActivity, var filterType: Int = 0) {
                         mediaEntity.width = width
                         mediaEntity.height = height
                         mediaEntity.mineType = mimeType
-                        mediaEntity.videoThumbnailBitmap = videoThumbnailBitmap
-                        val folder = getImageFolder(path, videoThumbnailBitmap,imageFolders) ?: continue
+                        val folder = getImageFolder(path, imageFolders) ?: continue
                         val mediaList = folder.mediaList
                         mediaList.add(mediaEntity)
                         folder.imageNum = folder.imageNum + 1
@@ -167,9 +157,6 @@ class MediaLoader(var activity: FragmentActivity, var filterType: Int = 0) {
                         imageFolders.add(0, allImageFolder)
                         allImageFolder.firstImagePath = latelyImages[0].localPath
                         allImageFolder.firstImageMineType = latelyImages[0].mineType
-                        if (allImageFolder.firstImageMineType == MediaEntity.MP4) {
-                            allImageFolder.firstVideoThumbnailBitmap = latelyImages[0].videoThumbnailBitmap
-                        }
                         val title = if (filterType == MediaEntity.FILE_TYPE_VIDEO) "所有音频" else "相机胶卷"
                         allImageFolder.name = title
                         allImageFolder.mediaList = latelyImages
@@ -252,7 +239,7 @@ class MediaLoader(var activity: FragmentActivity, var filterType: Int = 0) {
         })
     }
 
-    private fun getImageFolder(path: String,videoThumbnailBitmap:Bitmap?, imageFolders: ArrayList<MediaFolder>): MediaFolder? {
+    private fun getImageFolder(path: String, imageFolders: ArrayList<MediaFolder>): MediaFolder? {
         val imageFile = File(path)
         val folderFile = imageFile.parentFile ?: return null
         //已存在的文件夹里面包含着 自己所属的文件夹
@@ -266,7 +253,6 @@ class MediaLoader(var activity: FragmentActivity, var filterType: Int = 0) {
         newFolder.name = folderFile.name
         newFolder.path = folderFile.absolutePath
         newFolder.firstImagePath = path
-        newFolder.firstVideoThumbnailBitmap = videoThumbnailBitmap
         imageFolders.add(newFolder)
         return newFolder
     }
