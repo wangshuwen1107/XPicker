@@ -1,106 +1,147 @@
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
-task androidSourcesJar(type: Jar) {
-    classifier = 'sources'
-    from android.sourceSets.main.java.source
+def isAar = project.plugins.hasPlugin('com.android.library')
+if (isAar) {
+    task androidSourcesJar(type: Jar) {
+        classifier = 'sources'
+        from android.sourceSets.main.java.source
+    }
+} else {
+    task javadocJar(type: Jar) {
+        archiveClassifier.set("javadoc")
+        classifier = "javadoc"
+    }
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allJava
+    }
 }
-
-ext["signing.keyId"] = ''
-ext["signing.password"] = ''
-ext["signing.secretKeyRingFile"] = ''
-ext["ossrhUsername"] = ''
-ext["ossrhPassword"] = ''
 
 File secretPropsFile = project.rootProject.file('local.properties')
 if (secretPropsFile.exists()) {
     println "Found secret props file, loading props"
     Properties p = new Properties()
     p.load(new FileInputStream(secretPropsFile))
-    p.each { name, value ->
-        ext[name] = value
+    p.each { name, value -> ext[name] = value
     }
 } else {
     println "No props file, loading env vars"
 }
-publishing {
-    publications {
-        release(MavenPublication) {
-            // The coordinates of the library, being set from variables that
-            // we'll set up in a moment
-            groupId PUBLISH_GROUP_ID
-            artifactId PUBLISH_ARTIFACT_ID
-            version PUBLISH_VERSION
 
-            // Two artifacts, the `aar` and the sources
-            artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
-            artifact androidSourcesJar
+def configurePublication = { MavenPublication publication ->
+    groupId PUBLISH_GROUP_ID
+    artifactId PUBLISH_ARTIFACT_ID
+    version PUBLISH_VERSION
 
-            // Self-explanatory metadata for the most part
-            pom {
-                name = PUBLISH_ARTIFACT_ID
-                description = 'XPicker'
-                // If your project has a dedicated site, use its URL here
-                url = 'https://github.com/wangshuwen1107/XPicker.git'
-                licenses {
-                    license {
-                        //协议类型，一般默认Apache License2.0的话不用改：
-                        name = 'The Apache License, Version 2.0'
-                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'wangshuwen1107'
-                        name = 'wangshuwen1107'
-                        email = 'wnwn7375@outlook.com'
-                    }
-                }
-                // Version control info, if you're using GitHub, follow the format as seen here
-                scm {
-                    connection = 'scm:git:github.com/wangshuwen1107/XPicker.git'
-                    developerConnection = 'scm:git:ssh://github.com/wangshuwen1107/XPicker.git'
-                    //分支地址：
-                    url = 'https://github.com/wangshuwen1107/XPicker.git/master'
-                }
-                // A slightly hacky fix so that your POM will include any transitive dependencies
-                // that your library builds upon
-                withXml {
-                    def dependenciesNode = asNode().appendNode('dependencies')
+    def uploadJar = "mavenJava" == publication.name
+    if (uploadJar) {
+        from components.java
+        artifact sourcesJar
+        artifact javadocJar
+    } else {
+        artifact tasks.getByName("bundleReleaseAar")
+        artifact androidSourcesJar
+    }
 
-                    project.configurations.implementation.allDependencies.each {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        if (null != it.group && null != it.name && null != it.version) {
-                            dependencyNode.appendNode('groupId', it.group)
-                            dependencyNode.appendNode('artifactId', it.name)
-                            dependencyNode.appendNode('version', it.version)
-                        }
-                    }
-                }
+    pom {
+        name = PUBLISH_ARTIFACT_ID
+        description = 'XPicker'
+        url = 'https://github.com/wangshuwen1107/XPicker'
+        licenses {
+            license {
+                //协议类型，一般默认Apache License2.0的话不用改：
+                name = 'The Apache License, Version 2.0'
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
             }
         }
-    }
-    repositories {
-        // The repository to publish to, Sonatype/MavenCentral
-        maven {
-            // This is an arbitrary name, you may also use "mavencentral" or
-            // any other name that's descriptive for you
-            name = "xpicker"
-
-            def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-            // You only need this if you want to publish snapshots, otherwise just set the URL
-            // to the release repo directly
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-
-            // The username and password we've fetched earlier
-            credentials {
-                username ossrhUsername
-                password ossrhPassword
+        developers {
+            developer {
+                id = 'wangshuwen1107'
+                name = 'wangshuwen1107'
+                email = 'wnwn7375@outlook.com'
+            }
+        }
+        scm {
+            connection = 'scm:git:https://github.com/wangshuwen1107/XPicker.git'
+            developerConnection = 'scm:git:git@github.com:wangshuwen1107/XPicker.git'
+            url = 'https://github.com/wangshuwen1107/XPicker'
+        }
+        withXml {
+            if (!uploadJar) {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                project.configurations.implementation.allDependencies.each {
+                    if (null != it.group && null != it.name && null != it.version) {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
+                }
             }
         }
     }
 }
+
+afterEvaluate {
+    publishing {
+        publications {
+            if (isAar) {
+                release(MavenPublication, configurePublication)
+            } else {
+                mavenJava(MavenPublication, configurePublication)
+            }
+        }
+        repositories {
+            maven {
+                url = uri('../repo')
+            }
+        }
+    }
+}
+
+
 signing {
     sign publishing.publications
+}
+
+task zipRepo(type: Zip) {
+    group = "publishing"
+    dependsOn isAar ? 'publishReleasePublicationToMavenRepository' : 'publishMavenJavaPublicationToMavenRepository'
+    def componentDirPath = "${PUBLISH_GROUP_ID.replace(".", "/")}/$PUBLISH_ARTIFACT_ID/$PUBLISH_VERSION"
+    archiveBaseName = PUBLISH_ARTIFACT_ID
+    archiveVersion = PUBLISH_VERSION
+    destinationDirectory = file("../publish")
+    from("${rootProject.projectDir}/repo/$componentDirPath") {
+        into("$componentDirPath")
+    }
+}
+
+task publishSonatype {
+    group = "publishing"
+    dependsOn 'zipRepo'
+    doLast {
+        def publishZipFile = file("../publish/$PUBLISH_ARTIFACT_ID-$PUBLISH_VERSION" + ".zip")
+        def uploadToken = Base64.getEncoder().encodeToString("$ossrhUsername:$ossrhPassword".getBytes("UTF-8"))
+        println "发布 uploadToken=$uploadToken"
+        println "发布 bundle=${publishZipFile.absolutePath}"
+        def curlOutput = new ByteArrayOutputStream()
+        def curlError = new ByteArrayOutputStream()
+        try {
+            exec {
+                commandLine 'curl', '--request', 'POST',
+                        '--header', "Authorization: Bearer $uploadToken",
+                        '--form', "bundle=@${publishZipFile.absolutePath}",
+                        '--form', "publishingType=AUTOMATIC",
+                        //'--form', "publishingType=USER_MANAGED",
+                        'https://central.sonatype.com/api/v1/publisher/upload'
+                standardOutput = curlOutput
+                errorOutput = curlError
+            }
+            println "发布结果*********: ${curlOutput.toString()}"
+        } catch (Exception e) {
+            println "发布失败*********: ${curlError.toString()}"
+            throw e
+        }
+    }
 }
